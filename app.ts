@@ -1,3 +1,10 @@
+///<reference path='types/node/node.d.ts'/>
+///<reference path='types/express/express.d.ts'/> 
+
+interface Error {
+  status?: number;
+}
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');

@@ -1,3 +1,7 @@
+///<reference path='../types/node/node.d.ts'/>
+
+///<reference path='../types/express/express.d.ts'/> 
+
 var express = require('express');
 var router = express.Router();
 

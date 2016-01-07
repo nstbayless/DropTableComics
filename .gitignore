@@ -1,3 +1,6 @@
 bin/*
 data/*
 node_modules/*
+types/*
+app.js
+routes/*.js

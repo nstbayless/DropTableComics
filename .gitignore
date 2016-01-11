@@ -5,3 +5,5 @@ types/*
 types
 app.js
 routes/*.js
+npm-debug.log
+install/*

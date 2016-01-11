@@ -18,7 +18,7 @@ start() {
   var bodyParser = require('body-parser');
   var mongo = require('mongodb');
   var monk = require('monk');
-  var db = monk('localhost:27018/cpsc303');
+  var db = monk('localhost:27018/cpsc310');
   
   var routes = require('./routes/index');
   var users = require('./routes/users');
@@ -74,6 +74,8 @@ start() {
       error: {}
     });
   });
+
+  //console.log("serving at "+app.address())
 
   module.exports = app;
 }

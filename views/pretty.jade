@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/pretty.css')
+    script(src="/javascripts/searchform.js")
+  body
+    ul.headerbar
+      li.headerlink
+        a test
+      li.headerlink
+        a test2
+      ul.headerright
+        li.headerlink
+          a test3
+        li.headerlink
+          input(type=text, value="Search...", onkeypress="searchKeypress(event);" onfocus="searchFocusClear();").search#search
+    p content

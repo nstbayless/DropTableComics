@@ -1,0 +1,41 @@
+ul.headerbar {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333333;
+}
+
+ul.headerright{
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333333;
+  float:right;
+}
+
+li.headerlink {
+    float: left;
+}
+
+li.headerlink a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li.headerlink a:hover {
+    background-color: #8b0;
+}
+
+input.search {
+  display: block;
+  text-align: left;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: white;
+  background-color:#111; 
+}

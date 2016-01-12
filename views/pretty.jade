@@ -3,6 +3,7 @@ html
   head
     title= title
     link(rel='stylesheet', href='/stylesheets/pretty.css')
+    script(src="/jquery-2.2.0.min.js")
     script(src="/javascripts/searchform.js")
   body
     ul.headerbar
@@ -15,4 +16,4 @@ html
           a test3
         li.headerlink
           input(type=text, value="Search...", onkeypress="searchKeypress(event);" onfocus="searchFocusClear();").search#search
-    p content
+    block content

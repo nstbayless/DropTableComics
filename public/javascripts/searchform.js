@@ -1,5 +1,6 @@
 function searchSubmit(text){
   console.log("searching for '"+text+"'")
+  window.location.href="/pretty/search/"+text
 }
 
 //called when the search form gets a keypress

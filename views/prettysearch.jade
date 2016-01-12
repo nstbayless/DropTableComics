@@ -1,0 +1,9 @@
+extends pretty
+
+block content
+  h2 Search Results
+  ul
+    each result, i in searchresults
+      li
+        a(href=result.href) #{result.linktext}
+        p= result.description

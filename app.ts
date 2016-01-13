@@ -10,6 +10,8 @@ var bodyParser = require('body-parser');
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk('localhost:27018/cpsc310');
+var RouteIndex = require('./routes/index')
+var RoutePretty = require('./routes/pretty')
 
 interface Error {
   status?: number;
@@ -19,8 +21,8 @@ class Application {
 //app stored as public member (type not known)
   app_: any;
 constructor() {
-  var route_index = require('./routes/index');
-  var route_pretty = require('./routes/pretty');
+  var routeIndex = new RouteIndex();
+  var routePretty = new RoutePretty();
 
   var app = express();
   
@@ -43,8 +45,8 @@ constructor() {
       next();
   });
   
-  app.use('/', route_index);
-  app.use('/pretty', route_pretty);
+  app.use('/', routeIndex.getRouter());
+  app.use('/pretty', routePretty.getRouter());
   //app.use('/users', users);
   
   // catch 404 and forward to error handler
@@ -89,7 +91,4 @@ getApp(){
 }
 }
 
-
-var application = new Application();
-
-module.exports=application
+module.exports=Application

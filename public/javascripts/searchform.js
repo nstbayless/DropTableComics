@@ -1,13 +1,13 @@
-function searchSubmit(text){
-  console.log("searching for '"+text+"'")
-  window.location.href="/pretty/search/"+text
+function searchSubmit(){
+  var text = document.getElementById("search").value;
+  window.location.href="/pretty/search/"+text;
 }
 
 //called when the search form gets a keypress
 function searchKeypress(e){
   if (e.which==13||e.which==10) {
     //user presses enter
-    searchSubmit(document.getElementById("search").value);
+    searchSubmit();
   }
 }
 

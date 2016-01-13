@@ -8,8 +8,9 @@
  */
 declare var require: any;
 declare var process: any;
-var app_ = require('./app');
-var app = app_.getApp()
+var Application = require('./app')
+var application = new Application();
+var app = application.getApp()
 var debug = require('debug')('cpsc303-tutorial:server');
 var http = require('http');
 
@@ -95,4 +96,4 @@ function onListening() {
 }
 
 //alert app has started
-app_.onStart(port);
+application.onStart(port);

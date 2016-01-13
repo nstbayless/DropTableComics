@@ -3,7 +3,6 @@
 ///<reference path='../types/express/express.d.ts'/> 
   
 var express = require('express');
-var router = express.Router();
 
 interface UserInterface {
   getName(): string;
@@ -26,11 +25,11 @@ class User {
   }
 }
 
-class Router {
+class RouteIndex {
+  router_: any;
   constructor(){
-    //nothing yet
-  }
-  start(){
+    var router = express.Router();
+
     /* GET home page. */
     router.get('/', function(req, res, next) {
       res.render('index', { title: 'Express' });
@@ -84,10 +83,11 @@ class Router {
             }
         });
     });
-  
-    module.exports = router;
+    this.router_ = router;
+  }
+  getRouter(){
+    return this.router_;
   }
 }
 
-var router_ = new Router();
-router_.start();
+module.exports=RouteIndex

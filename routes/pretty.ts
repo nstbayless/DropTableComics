@@ -5,7 +5,6 @@
 //displays some pretty webpage
 
 var express = require('express');
-var router = express.Router();
 
 //struct for a single result in a list of search results
 class SearchResult{
@@ -14,16 +13,14 @@ class SearchResult{
   href: string;
 }
 
-class PrettyRouter {
-  constructor(){
-    //nothing yet
-  }
+class RoutePretty {
+  router_: any;
   static searchFor(searchtext: string): SearchResult[] {
      var results: SearchResult[] = []
      for (var i=0;i<12;i++) {
        //make random search results
        var result: SearchResult = {
-         linktext:"text",
+         linktext:"search result "+i,
          description:"description "+i,
          href:"/pretty/"
        }
@@ -31,7 +28,8 @@ class PrettyRouter {
      }
      return results;
   }
-  start(){
+  constructor() {
+    var router = express.Router();
     /* GET pretty home page. */
     router.get('/', function(req, res, next) {
       res.render('pretty', {
@@ -41,17 +39,18 @@ class PrettyRouter {
     
     /* GET pretty search results */
     router.get('/search/*', function(req,res,next) {
-      var results = PrettyRouter.searchFor(req.url.substring('/pretty/search/'.length))
-      console.log(results);
+      var results = RoutePretty.searchFor(req.url.substring('/pretty/search/'.length))
       res.render('prettysearch', {
         title: 'pretty search',
         searchresults: results
       });
     })
   
-    module.exports = router;
+    this.router_=router;
+  }
+  getRouter(){
+    return this.router_;
   }
 }
 
-var prouter_ = new PrettyRouter();
-prouter_.start();
+module.exports=RoutePretty

@@ -23,8 +23,12 @@ li.headerlink a {
     display: block;
     color: white;
     text-align: center;
-    padding: 14px 16px;
+    padding: 10px 16px;
     text-decoration: none;
+}
+
+li.headerlink a.lowpad{
+    padding: 4px 4px;
 }
 
 li.headerlink a:hover {
@@ -34,7 +38,7 @@ li.headerlink a:hover {
 input.search {
   display: block;
   text-align: left;
-  padding: 14px 16px;
+  padding: 10px 11px;
   text-decoration: none;
   color: white;
   background-color:#111; 

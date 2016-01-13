@@ -4,6 +4,7 @@ node_modules/*
 types/*
 types
 app.js
+www.js
 routes/*.js
 npm-debug.log
 install/*

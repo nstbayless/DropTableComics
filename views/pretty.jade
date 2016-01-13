@@ -8,12 +8,15 @@ html
   body
     ul.headerbar
       li.headerlink
-        a test
+        a(href="/pretty/") Home
       li.headerlink
-        a test2
+        a Comics
       ul.headerright
         li.headerlink
-          a test3
+          a Sign In
         li.headerlink
           input(type=text, value="Search...", onkeypress="searchKeypress(event);" onfocus="searchFocusClear();").search#search
+        li.headerlink
+          a(href="javascript:searchSubmit();").lowpad
+            img(src="/images/headerbar_icon_search.png" alt="Search")
     block content

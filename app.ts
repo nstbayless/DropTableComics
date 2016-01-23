@@ -1,17 +1,22 @@
 ///<reference path='types/node/node.d.ts'/>
 ///<reference path='types/express/express.d.ts'/> 
 
+var config = require('./config')
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var passport = require('passport');
+var passportjwt = require('passport-jwt');
+var jwt = require('jwt-simple');
 var mongo = require('mongodb');
 var monk = require('monk');
-var db = monk('localhost:27018/cpsc310');
-var RouteIndex = require('./routes/index')
-var RoutePretty = require('./routes/pretty')
+var db = monk(config.db);
+var RouteIndex = require('./routes/index');
+var RoutePretty = require('./routes/pretty');
+var RouteAuthentication = require('./routes/authentication');
 
 interface Error {
   status?: number;
@@ -33,21 +38,48 @@ constructor() {
   //make html output prettier:
   app.locals.pretty = true;
   
-  // uncomment after placing your favicon in /public
+  //middleware
   app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
   app.use(logger('dev'));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(cookieParser());
+  app.use(passport.initialize());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(function(req,res,next){
       req.db = db;
       next();
   });
   
+  //public routes
+  app.use('/', routeAuthentication.getRouter())
+  
+  //registration-protected routes
   app.use('/', routeIndex.getRouter());
   app.use('/pretty', routePretty.getRouter());
-  //app.use('/users', users);
+
+  //configure passport
+  passport.use(new passportjwt.Strategy{{
+      secretOrKey = config.secret;
+    },
+    function(payload, done) {
+      var id = payload.id;
+      //database read via mongoose
+      User.findOne({id: id}, function(err, user_id){
+        //user verification
+        if (err)
+          return done(err);
+        if (user_id) {
+          var user//: User;
+          //get user class
+          return done(null,false,
+            {message: 'userid lookup not yet implemented!'});
+        }
+        else
+          return done(null,false, {message: 'user id not found'});
+      })
+    },
+  })
   
   // catch 404 and forward to error handler
   app.use(function(req, res, next) {

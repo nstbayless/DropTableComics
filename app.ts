@@ -17,6 +17,7 @@ var db = monk(config.db);
 var RouteIndex = require('./routes/index');
 var RoutePretty = require('./routes/pretty');
 var RouteAuthentication = require('./routes/authentication');
+var AuthID = require('./mongoose/authschema');
 
 interface Error {
   status?: number;
@@ -28,6 +29,7 @@ class Application {
 constructor() {
   var routeIndex = new RouteIndex();
   var routePretty = new RoutePretty();
+  var routeAuthentication = new RouteAuthentication();
 
   var app = express();
   
@@ -59,13 +61,13 @@ constructor() {
   app.use('/pretty', routePretty.getRouter());
 
   //configure passport
-  passport.use(new passportjwt.Strategy{{
-      secretOrKey = config.secret;
+  passport.use(new passportjwt.Strategy({
+      secretOrKey: config.secret
     },
     function(payload, done) {
       var id = payload.id;
       //database read via mongoose
-      User.findOne({id: id}, function(err, user_id){
+      AuthID.findOne({id: id}, function(err, user_id){
         //user verification
         if (err)
           return done(err);
@@ -78,8 +80,8 @@ constructor() {
         else
           return done(null,false, {message: 'user id not found'});
       })
-    },
-  })
+    }
+  ))
   
   // catch 404 and forward to error handler
   app.use(function(req, res, next) {

@@ -3,17 +3,22 @@
 ///<reference path='../types/express/express.d.ts'/> 
   
 var express = require('express');
-var AuthID = require('../mongoose/authschema.ts');
+var AuthID = require('../mongoose/authschema');
 
-class RouteIndex {
+class RouteAuth {
   router_: any;
   constructor(){
     var router = express.Router();
+    /* GET login page. */
+    router.get('auth/register', function(req, res, next) {
+      res.render('simpleregister', {
+        title: 'pretty page'
+      });
+    });
 
-
-    /* POST authentication. */
+    /* POST registration. */
     //adapted without permission from https://devdactic.com/restful-api-user-authentication-1/
-    router.post('/register', function(req, res, next) {
+    router.post('/auth/register', function(req, res, next) {
       if (!req.body.username || !req.body.password)
         res.json({success: false, msg: 'Provide username and password'});
       else {
@@ -32,6 +37,31 @@ class RouteIndex {
         })
       }
     });
+
+    /* POST authentication. */
+    //adapted without permission from https://devdactic.com/restful-api-user-authentication-1/
+    router.post('/auth/authenticate', function(req, res) {
+    AuthID.findOne({
+      name: req.body.name
+    }, function(err, user) {
+      if (err) throw err;
+      if (!user) {
+        res.send({success: false, msg: 'Authentication failed. User not found.'});
+      } else {
+        // check if password matches
+        user.comparePassword(req.body.password, function (err, isMatch) {
+          if (isMatch && !err) {
+            // if user is found and password is right create a token
+            var token = jwt.encode(user, config.secret);
+            // return the information including token as JSON
+            res.json({success: true, token: 'JWT ' + token});
+          } else {
+            res.send({success: false, msg: 'Authentication failed. Wrong password.'});
+          }
+        });
+      }
+    });
+  });
    
     this.router_ = router;
   }
@@ -40,4 +70,4 @@ class RouteIndex {
   }
 }
 
-module.exports=RouteIndex
+module.exports=RouteAuth

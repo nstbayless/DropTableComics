@@ -1,26 +1,21 @@
 ///<reference path='../types/node/node.d.ts'/>
-  
 ///<reference path='../types/express/express.d.ts'/> 
-
 //adapted without permission from https://devdactic.com/restful-api-user-authentication-1/
-
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var bcrypt = require('bcrypt');
-
 // set up a mongoose model
 var UserIDSchema = new Schema({
-  name: {
+    name: {
         type: String,
         unique: true,
         required: true
     },
-  password: {
+    password: {
         type: String,
         required: true
     }
 });
-
 // perform dark ritual to save password hash
 UserIDSchema.pre('save', function (next) {
     var user = this;
@@ -37,11 +32,11 @@ UserIDSchema.pre('save', function (next) {
                 next();
             });
         });
-    } else {
+    }
+    else {
         return next();
     }
 });
-
 UserIDSchema.methods.comparePassword = function (passw, cb) {
     bcrypt.compare(passw, this.password, function (err, isMatch) {
         if (err) {
@@ -50,5 +45,4 @@ UserIDSchema.methods.comparePassword = function (passw, cb) {
         cb(null, isMatch);
     });
 };
-
 module.exports = mongoose.model('UserAuth', UserIDSchema);

@@ -1,0 +1,16 @@
+doctype html
+html
+  head
+    title= title
+    script(src="/angular.min.js")
+    script(src="/jquery-2.2.0.min.js")
+    script(src="/javascripts/searchform.js")
+  body
+    div(ng-app="")
+      h1 register
+      p username
+        input(type="text" ng-model="user.name" placeholder="Enter name here")
+      p password
+        input(type="password" ng-model="password" placeholder="Password" ng-model="user.password")
+      button(ng-click="register()") Register
+      

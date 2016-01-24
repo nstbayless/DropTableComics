@@ -7,6 +7,6 @@ var config = {
     db: 'localhost:27018/cpsc310',
     port: '3000',
     porthttps: '3001',
-    https: true //use https instead of http
+    https: false //use https instead of http; run https-genkey before 
 };
 module.exports = config;

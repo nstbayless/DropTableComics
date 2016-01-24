@@ -17,9 +17,13 @@ app.controller('authController', function($scope, $http) {
     //user attempts to register a new account
     $scope.register=function(){
       $scope.response=""
+      if ($scope.auth_password!=$scope.auth_password_confirm){
+        $scope.response="passwords must match!"
+        return;
+      }
       $http.post("/auth/register", {
-        username: $scope.username,
-        password: $scope.password
+        username: $scope.auth_username,
+        password: $scope.auth_password
       }).then(function(response){
          if (response.data.success) //redirect to dashboard
            window.location='/';

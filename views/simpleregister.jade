@@ -2,12 +2,14 @@ extends pretty
 
 block content
   div(ng-app="authentication" ng-controller="authController")
-    h1 register
+    h1 Register
     form
       p username
         input(type="text" ng-model="auth_username" placeholder="Enter name here")
       p password
         input(type="password" ng-model="auth_password" placeholder="Password")
-      button(ng-click="register()") Register as {{username}}
+      p confirm password
+        input(type="password" ng-model="auth_password_confirm" placeholder="Password")
+      button(ng-click="register()" ng-show="auth_username.length>0") Register as {{auth_username}}
     p
       font(color="red") {{response}}

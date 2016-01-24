@@ -70,7 +70,7 @@ class RouteAuth {
     router.get('/auth/login', function(req, res, next) {
       if (!req.user)
         res.render('simplelogin', {
-          title: 'log in'
+          title: 'Log In'
         });
       else //user already logged in, no need to see this page.
         res.redirect('/')
@@ -89,14 +89,14 @@ class RouteAuth {
     /* POST login. */
     router.post('/auth/login', function(req, res, next) {
       if (!req.body.username || !req.body.password) //incorrect POST body
-        res.send({success: false, msg: 'Provide username and password'});
+        res.send({success: false, msg: 'Please provide username and password'});
       else {
         if (RouteAuth.authorizeUser(req,res)) {
           var user = {username:req.body.username,password:req.body.password};
           RouteAuth.setAuthenticationCookie(req,res,user);
           res.send({success: true, msg: 'Valid Credentials!'})
         } else {
-          res.send({success: false, msg: 'Incorrect username or password!'})
+          res.send({success: false, msg: 'Incorrect username or password'})
         }
       }
     });
@@ -130,18 +130,42 @@ class RouteAuth {
         res.send({success: false, msg: 'Provide username and password'});
       else {
         //register new user!
+        //check username/password are valid
+        if (req.body.username.length<3)
+          return res.send({success: false, msg: 'Username must be at least 3 characters'})
+        if (req.body.password.length<4)
+          return res.send({success: false, msg: 'Password must be at least 4 characters'})
         var username_exists = false;//TODO(NaOH)
 	if (username_exists) {
           res.send({success: false, msg: 'Username already exists!'})
           return;
         }
+        //Everything good!
         //TODO(NaOH): create user in database
         var user=null;
-	RouteAuth.setAuthenticationCookie(req,res,user);
+        if (user)
+          RouteAuth.setAuthenticationCookie(req,res,user);
         res.send({success: false, msg: 'Registration not yet implemented!'})
       }
     });
    
+    //block all access to app after this point:
+    router.get('/*', function(req,res,next) {
+      if (!req.user)
+        return res.render('simplelogin', {
+          title: 'Log In'
+        });
+      next();
+    });
+    router.all('/*', function(req,res,next) {
+      if (!req.user) {
+        res.status(401)
+        return res.send("Authentication required");
+      }
+      next();
+    });
+
+
     this.router_ = router;
   }
   getRouter(){

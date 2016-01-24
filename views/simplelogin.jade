@@ -2,12 +2,16 @@ extends pretty
 
 block content
   div
-   h1 log in
+   h1 Log In
+   font(size="2")
+     p First time user? 
+       a(href="/auth/register") Sign up
+       | !
    form
     p username
       input(type="text" ng-model="auth_username" placeholder="Enter name here")
     p password
       input(type="password" ng-model="auth_password" placeholder="Password")
-    button(ng-click="login()") Log In {{username}}
+    button(ng-click="login()" ng-show="auth_username.length>0") Log in as {{auth_username}}
   p
     font(color="red") {{response}}

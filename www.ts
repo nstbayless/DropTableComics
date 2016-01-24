@@ -13,17 +13,36 @@ var config = require('./config')
 var Application = require('./app')
 var application = new Application()
 var app = application.getApp()
-var debug = require('debug')('cpsc303-tutorial:server');
+var debug = require('debug')
 var http = require('http');
-
+var https = require('https');
+var fs = require('fs')
 var port = config.port;
+if (config.https)
+  port = config.porthttps;
 app.set('port', port);
-
 /**
  * Create HTTP server.
  */
-
-var server = http.createServer(app);
+var server;
+if (config.https) {
+  //create https server
+  server = https.createServer({
+    key: fs.readFileSync('ssl/key.pem'),
+    cert: fs.readFileSync('ssl/cert.pem')
+  },app);
+  //redirect http traffic to https
+  http.createServer(function (req, res) {
+    var host_spl = req.headers['host'].split(":");
+    var host = host_spl[0]
+    if (host_spl.length>1) //if port specified, redirect with port
+      host+=":"+port;
+    res.writeHead(302, { "Location": "https://" + host + req.url });
+    res.end();
+  }).listen(config.port);
+}
+else
+  server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.

@@ -6,5 +6,6 @@ types
 app.js
 www.js
 routes/*.js
-npm-debug.log
+*.log
 install/*
+ssl/*

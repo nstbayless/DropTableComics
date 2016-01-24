@@ -3,6 +3,7 @@
 ///<reference path='../types/express/express.d.ts'/> 
   
 var express = require('express');
+var config = require('../config');
 
 class RouteAuth {
   router_: any;
@@ -15,6 +16,7 @@ class RouteAuth {
      }, {
        maxAge: 900000,
        httpOnly: true,
+       secure: config.https,
        path: '/'
      });
     }

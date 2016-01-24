@@ -90,7 +90,10 @@ constructor() {
 }
 //called after www start script
 onStart(port) {
-  console.log("serving on port " + port)
+  var httptype = "http";
+  if (config.https)
+    httptype = "https";
+  console.log("serving " + httptype + " on port " + port)
 }
 getApp(){
   return this.app_;

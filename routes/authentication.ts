@@ -3,65 +3,142 @@
 ///<reference path='../types/express/express.d.ts'/> 
   
 var express = require('express');
-var AuthID = require('../mongoose/authschema');
 
 class RouteAuth {
   router_: any;
+  //sets the cookie to store credentials in user's browser
+  static setAuthenticationCookie(req,res,user){
+    if (user && user.username){
+     res.cookie('credentials',{
+       username: user.username,
+       password: user.password,
+     }, {
+       maxAge: 900000,
+       httpOnly: true,
+       path: '/'
+     });
+    }
+  }
+  //attempts to validate user credentials. 
+  //attaches user object to request if valid
+  //sends user info back to client
+  //returns true if valid, false otherwise
+  static authorizeUser(req,res){
+    var username = ""
+    var password = ""
+    if (req.body.username && req.body.password) {
+      //creds included in request body
+      username=req.body.username;
+      password=req.body.password;
+    } else if (req.cookies.credentials) {
+      var creds = req.cookies.credentials;
+      //creds included in cookies
+      if (creds.username && creds.password) {
+        username=creds.username;
+        password=creds.password;
+      }
+    }
+    //TODO(NaOH): validate user
+    if (username=="johnny" && password=="dichotomy") {
+      //user is valid!
+      //TODO: swap out for User type declaration
+      req.user = {
+        username: username
+      }
+      //tell client about client-specific information in all future responses
+      res.append('username',username)
+      res.append('authenticated',true)
+      return true;
+    }
+    //default information
+    res.append('username','')
+    res.append('authenticated',false)
+    return false;
+  }
   constructor(){
     var router = express.Router();
+
+    /* (Middleware) Authentication. Checks for credentials in cookie or body.*/
+    router.use(function(req, res, next) {
+      RouteAuth.authorizeUser(req,res)
+      next();
+    });
+
     /* GET login page. */
-    router.get('auth/register', function(req, res, next) {
-      res.render('simpleregister', {
-        title: 'pretty page'
-      });
+    router.get('/auth/login', function(req, res, next) {
+      if (!req.user)
+        res.render('simplelogin', {
+          title: 'log in'
+        });
+      else //user already logged in, no need to see this page.
+        res.redirect('/')
+    });
+
+    /* GET registration page. */
+    router.get('/auth/register', function(req, res, next) {
+      if (!req.user)
+        res.render('simpleregister', {
+          title: 'register'
+        });
+      else //user already logged in, no need to see this page.
+        res.redirect('/')
+    });
+
+    /* POST login. */
+    router.post('/auth/login', function(req, res, next) {
+      if (!req.body.username || !req.body.password) //incorrect POST body
+        res.send({success: false, msg: 'Provide username and password'});
+      else {
+        if (RouteAuth.authorizeUser(req,res)) {
+          var user = {username:req.body.username,password:req.body.password};
+          RouteAuth.setAuthenticationCookie(req,res,user);
+          res.send({success: true, msg: 'Valid Credentials!'})
+        } else {
+          res.send({success: false, msg: 'Incorrect username or password!'})
+        }
+      }
+    });
+
+    /* POST logout (this just deletes the credentials cookie in the broswer). */
+    router.post('/auth/logout', function(req, res, next) {
+       //overwrite old cookie, just to be sure
+       res.cookie('credentials',{
+         username: "?",
+         password: "?",
+       }, {
+         maxAge: 1,
+         httpOnly: true,
+         path: '/'
+       });
+       //erase cookie
+       res.clearCookie('credentials',{
+         maxAge: 900000,
+         httpOnly: true,
+         path: '/'
+       });
+       res.send({success: false, msg: 'Clearing cookies'})
     });
 
     /* POST registration. */
-    //adapted without permission from https://devdactic.com/restful-api-user-authentication-1/
     router.post('/auth/register', function(req, res, next) {
-      if (!req.body.username || !req.body.password)
-        res.json({success: false, msg: 'Provide username and password'});
+      if (req.user)//user already registered:
+        res.send({success: false,
+          msg: 'Registration not necessary. Credentials already validated'})
+      else if (!req.body.username || !req.body.password) //incorrect POST body
+        res.send({success: false, msg: 'Provide username and password'});
       else {
-        //create userIDAuth in database
-        var newAuthID = new AuthID({
-          name: req.body.username,
-          password: req.body.password
-        });
-        //TODO(NaOH): look up user data in backend to check for conflicts.
-        //TODO(NaOH): make new user data in backend
-        newAuthID.save(function(err){
-          if (err) {
-            return res.json({success: false, msg: 'Mongoose Error'});
-          }
-          res.json({success: true, msg: 'Successfully created new user.'});
-        })
+        //register new user!
+        var username_exists = false;//TODO(NaOH)
+	if (username_exists) {
+          res.send({success: false, msg: 'Username already exists!'})
+          return;
+        }
+        //TODO(NaOH): create user in database
+        var user=null;
+	RouteAuth.setAuthenticationCookie(req,res,user);
+        res.send({success: false, msg: 'Registration not yet implemented!'})
       }
     });
-
-    /* POST authentication. */
-    //adapted without permission from https://devdactic.com/restful-api-user-authentication-1/
-    router.post('/auth/authenticate', function(req, res) {
-    AuthID.findOne({
-      name: req.body.name
-    }, function(err, user) {
-      if (err) throw err;
-      if (!user) {
-        res.send({success: false, msg: 'Authentication failed. User not found.'});
-      } else {
-        // check if password matches
-        user.comparePassword(req.body.password, function (err, isMatch) {
-          if (isMatch && !err) {
-            // if user is found and password is right create a token
-            var token = jwt.encode(user, config.secret);
-            // return the information including token as JSON
-            res.json({success: true, token: 'JWT ' + token});
-          } else {
-            res.send({success: false, msg: 'Authentication failed. Wrong password.'});
-          }
-        });
-      }
-    });
-  });
    
     this.router_ = router;
   }

@@ -1,10 +1,13 @@
-doctype html
-html
-  head
-    title= title
-    script(src="/angular.min.js")
-    script(src="/jquery-2.2.0.min.js")
-    script(src="/javascripts/searchform.js")
-  body
-    div(ng-app="")
-      p hello!
+extends pretty
+
+block content
+  div
+   h1 log in
+   form
+    p username
+      input(type="text" ng-model="auth_username" placeholder="Enter name here")
+    p password
+      input(type="password" ng-model="auth_password" placeholder="Password")
+    button(ng-click="login()") Log In {{username}}
+  p
+    font(color="red") {{response}}

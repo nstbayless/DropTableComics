@@ -8,16 +8,12 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var passport = require('passport');
-var passportjwt = require('passport-jwt');
-var jwt = require('jwt-simple');
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk(config.db);
 var RouteIndex = require('./routes/index');
 var RoutePretty = require('./routes/pretty');
 var RouteAuthentication = require('./routes/authentication');
-var AuthID = require('./mongoose/authschema');
 
 interface Error {
   status?: number;
@@ -46,7 +42,6 @@ constructor() {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: false }));
   app.use(cookieParser());
-  app.use(passport.initialize());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(function(req,res,next){
       req.db = db;
@@ -60,29 +55,6 @@ constructor() {
   app.use('/', routeIndex.getRouter());
   app.use('/pretty', routePretty.getRouter());
 
-  //configure passport
-  passport.use(new passportjwt.Strategy({
-      secretOrKey: config.secret
-    },
-    function(payload, done) {
-      var id = payload.id;
-      //database read via mongoose
-      AuthID.findOne({id: id}, function(err, user_id){
-        //user verification
-        if (err)
-          return done(err);
-        if (user_id) {
-          var user//: User;
-          //get user class
-          return done(null,false,
-            {message: 'userid lookup not yet implemented!'});
-        }
-        else
-          return done(null,false, {message: 'user id not found'});
-      })
-    }
-  ))
-  
   // catch 404 and forward to error handler
   app.use(function(req, res, next) {
     var err = new Error('Not Found');

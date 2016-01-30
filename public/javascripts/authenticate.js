@@ -21,7 +21,7 @@ app.controller('authController', function($scope, $http) {
         $scope.response="passwords must match!"
         return;
       }
-      $http.post("/auth/register", {
+      $http.post("/auth/accounts", {
         username: $scope.auth_username,
         password: $scope.auth_password
       }).then(function(response){
@@ -46,7 +46,7 @@ app.controller('authController', function($scope, $http) {
     }
     //log user out by deleting credential cookie
     $scope.logout=function(){
-      $http.post("/auth/logout");
+      $http.get("/auth/logout");
       window.location='/';
     }
   });

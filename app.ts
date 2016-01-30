@@ -15,6 +15,10 @@ var RouteIndex = require('./routes/index');
 var RoutePretty = require('./routes/pretty');
 var RouteAuthentication = require('./routes/authentication');
 
+import DatabaseManager = require("src/DatabaseManager")
+
+var dbManager: DatabaseManager = new DatabaseManager(db);
+
 interface Error {
   status?: number;
 }
@@ -44,7 +48,8 @@ constructor() {
   app.use(cookieParser());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(function(req,res,next){
-      req.db = db;
+      req.dbManager = dbManager;
+      req.db=db;
       next();
   });
   
@@ -57,7 +62,7 @@ constructor() {
 
   // catch 404 and forward to error handler
   app.use(function(req, res, next) {
-    var err = new Error('Not Found');
+    var err: Error = new Error('Not Found');
     err.status = 404;
     next(err);
   });

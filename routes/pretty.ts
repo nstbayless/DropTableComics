@@ -32,8 +32,9 @@ class RoutePretty {
     var router = express.Router();
     /* GET pretty home page. */
     router.get('/', function(req, res, next) {
-      res.render('pretty', {
-        title: 'pretty page'
+      res.render('prettyhome', {
+        title: 'pretty page',
+        stuff: 'hello from typescript'
       });
     });
     

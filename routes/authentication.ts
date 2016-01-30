@@ -4,6 +4,7 @@
   
 var express = require('express');
 var config = require('../config');
+import User = require('../src/User')
 
 class RouteAuth {
   router_: any;
@@ -21,9 +22,10 @@ class RouteAuth {
      });
     }
   }
+
   //attempts to validate user credentials. 
   //attaches user object to request if valid
-  //sends user info back to client
+  //attaches user info to the headers for the next http data sent
   //returns true if valid, false otherwise
   static authorizeUser(req,res){
     var username = ""
@@ -40,6 +42,7 @@ class RouteAuth {
         password=creds.password;
       }
     }
+
     //TODO(NaOH): validate user
     if (username=="johnny" && password=="dichotomy") {
       //user is valid!
@@ -86,7 +89,7 @@ class RouteAuth {
         res.redirect('/')
     });
 
-    /* POST login. */
+    /* POST login. (POSTs a new session) */
     router.post('/auth/login', function(req, res, next) {
       if (!req.body.username || !req.body.password) //incorrect POST body
         res.send({success: false, msg: 'Please provide username and password'});
@@ -101,8 +104,8 @@ class RouteAuth {
       }
     });
 
-    /* POST logout (this just deletes the credentials cookie in the broswer). */
-    router.post('/auth/logout', function(req, res, next) {
+    /* GET logout (this just deletes the credentials cookie in the broswer). */
+    router.get('/auth/logout', function(req, res, next) {
        //overwrite old cookie, just to be sure
        res.cookie('credentials',{
          username: "?",
@@ -122,7 +125,7 @@ class RouteAuth {
     });
 
     /* POST registration. */
-    router.post('/auth/register', function(req, res, next) {
+    router.post('/auth/accounts', function(req, res, next) {
       if (req.user)//user already registered:
         res.send({success: false,
           msg: 'Registration not necessary. Credentials already validated'})
@@ -135,17 +138,17 @@ class RouteAuth {
           return res.send({success: false, msg: 'Username must be at least 3 characters'})
         if (req.body.password.length<4)
           return res.send({success: false, msg: 'Password must be at least 4 characters'})
-        var username_exists = false;//TODO(NaOH)
-	if (username_exists) {
+        var user: User.User = req.dbManager.getUser(req.body.username);
+	if (user) {
           res.send({success: false, msg: 'Username already exists!'})
           return;
         }
         //Everything good!
-        //TODO(NaOH): create user in database
-        var user=null;
-        if (user)
+        user=req.dbManager.createViewer(req.body.username,req.body.password);
+        if (user) {
           RouteAuth.setAuthenticationCookie(req,res,user);
-        res.send({success: false, msg: 'Registration not yet implemented!'})
+          res.send({success: true, msg: 'Account successfuly created!'})
+        } else res.send({success: false, msg: 'Unknown error creating account'})
       }
     });
    

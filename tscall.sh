@@ -1,8 +1,10 @@
 #!/bin/bash
 echo "compiling TypeScript files..."
-tsc config.ts
-tsc app.ts
-tsc www.ts
+tsc --module amd config.ts
+tsc --module amd app.ts
+tsc --module amd www.ts
 echo "Compiling routes..."
-tsc routes/*.ts
+tsc --module amd routes/*.ts
+echo "Compiling backend..."
+tsc --module amd src/*.ts
 echo "Complete"

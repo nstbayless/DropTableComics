@@ -9,7 +9,7 @@ interface UserInterface {
   getEmail(): string;
 }
 
-class User {
+class User_ {
   private name_:string;
   private email_:string;
   constructor(name: string, email: string){
@@ -63,7 +63,7 @@ class RouteIndex {
         var db = req.db;
     
         // Get our form values. These rely on the "name" attributes
-        var user = new User(req.body.username,req.body.useremail)
+        var user = new User_(req.body.username,req.body.useremail)
     
         // Set our collection
         var collection = db.get('usercollection');

@@ -2,6 +2,7 @@
 ///<reference path='../types/express/express.d.ts'/> 
 /** Represents a manager of the database, through which Users and Comics access the database*/
 var User = require('./User');
+var bcrypt = require('bcrypt');
 var DatabaseManager = (function () {
     function DatabaseManager(db) {
         this.db = db;
@@ -45,12 +46,11 @@ var DatabaseManager = (function () {
     };
     //creates a hash for the given password
     DatabaseManager.prototype.computeHash = function (password) {
-        //TODO(NaOH): encrypt passwords
-        return password;
+        return bcrypt.hashSync(password, bcrypt.genSaltSync(3));
     };
     //returns true if the given password matches the given hash
     DatabaseManager.prototype.checkHash = function (password, hash) {
-        return password == hash;
+        return bcrypt.compareSync(password, hash);
     };
     return DatabaseManager;
 })();

@@ -136,6 +136,8 @@ class RouteAuth {
           msg: 'Registration not necessary. Credentials already validated'})
       else if (!req.body.username || !req.body.password) //incorrect POST body
         res.send({success: false, msg: 'Provide username and password'});
+      else if (req.body.account_type!="pleb"&&req.body.account_type!="artist")
+        res.send({success: false, msg: 'account_type must be one of "pleb" or "artist"'});
       else {
         //register new user!
         //check username/password are valid
@@ -149,7 +151,10 @@ class RouteAuth {
             return;
           }
           //Everything good!
-          user=req.dbManager.createViewer(req.body.username,req.body.password);
+          if (req.body.account_type=="pleb")
+            user=req.dbManager.createViewer(req.body.username,req.body.password);
+          else
+            user=req.dbManager.createArtist(req.body.username,req.body.password);
           if (user) {
             RouteAuth.setAuthenticationCookie(req,res,req.body.username,req.body.password);
             res.send({success: true, msg: 'Account successfuly created!'})

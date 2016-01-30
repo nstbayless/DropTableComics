@@ -10,6 +10,15 @@ block content
         input(type="password" ng-model="auth_password" placeholder="Password")
       p confirm password
         input(type="password" ng-model="auth_password_confirm" placeholder="Password")
-      button(ng-click="register()" ng-show="auth_username.length>0") Register as {{auth_username}}
+      p Select user type
+        p
+          input(type="radio" ng-model="auth_usertype" value="pleb")
+          b  Pleb: 
+          i you can view and subscribe to comics
+        p
+          input(type="radio" ng-model="auth_usertype" value="artist")
+          b  Artist: 
+          i you can create and contribute to comics
+      button(ng-click="register()" ng-show="auth_username.length>0 && auth_usertype") Register as {{auth_username}}
     p
       font(color="red") {{response}}

@@ -3,6 +3,7 @@
 
 /** Represents a manager of the database, through which Users and Comics access the database*/
 import User = require('./User')
+var bcrypt = require('bcrypt');
 
 class DatabaseManager {
 
@@ -54,13 +55,12 @@ class DatabaseManager {
 
   //creates a hash for the given password
   computeHash(password: string): string {
-    //TODO(NaOH): encrypt passwords
-    return password;
+    return bcrypt.hashSync(password,bcrypt.genSaltSync(3));
   }
 
   //returns true if the given password matches the given hash
   checkHash(password: string, hash: string): boolean{
-    return password == hash;
+    return bcrypt.compareSync(password,hash);
   }
 }
 

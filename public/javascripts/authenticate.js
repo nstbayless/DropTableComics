@@ -23,7 +23,8 @@ app.controller('authController', function($scope, $http) {
       }
       $http.post("/auth/accounts", {
         username: $scope.auth_username,
-        password: $scope.auth_password
+        password: $scope.auth_password,
+        account_type: $scope.auth_usertype
       }).then(function(response){
          if (response.data.success) //redirect to dashboard
            window.location='/';

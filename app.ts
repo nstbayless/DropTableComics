@@ -15,7 +15,7 @@ var RouteIndex = require('./routes/index');
 var RoutePretty = require('./routes/pretty');
 var RouteAuthentication = require('./routes/authentication');
 
-import DatabaseManager = require("src/DatabaseManager")
+import DatabaseManager = require("./src/DatabaseManager")
 
 var dbManager: DatabaseManager = new DatabaseManager(db);
 

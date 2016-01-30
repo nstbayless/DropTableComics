@@ -3,7 +3,7 @@
 
 /** Represents a manager of the database, through which Users and Comics access the database*/
 
-import User = require('User')
+import User = require('./User')
 
 class DatabaseManager {
 
@@ -16,20 +16,39 @@ class DatabaseManager {
 
   //creates a new Artist and adds it to the database
   createArtist(username: string, password: string): User.Artist {
-    var artist = new User.Artist(username,this.computeHash(password));
+    var hash = this.computeHash(password);
+    var artist = new User.Artist(username,hash);
+    var users = this.db.get('users');
+    console.log("creating artist")
+    users.insert({username:username,hash:hash,type:"artist"});    
     return artist;
   }
 
   //creates a new Viewer and adds it to the database
   createViewer(username: string, password: string): User.Viewer {
-    var viewer = new User.Viewer(username,this.computeHash(password));
+    var hash = this.computeHash(password);
+    var viewer = new User.Viewer(username,hash);
+    var users = this.db.get('users');
+    users.insert({username:username,hash:hash,type:"pleb"});    
     return viewer;
   }
 
-  //retrieves the given user from the database
-  getUser(username: string) {
-    var viewer = new User.Viewer(username,"");
-    return viewer;
+  //asynchronously retrieves the given user from the database
+  // callback: [](err,user)
+  getUser(username: string, callback:any) {
+    var users = this.db.get('users');
+    users.findOne({username:username}, function(err,user_canon){
+      if (err||!user_canon) return callback(err,null);
+      var user: User.User;
+      if (user_canon.type=="artist")
+        user = new User.Artist(user_canon.username,user_canon.hash);
+      else if (user_canon.type=="pleb")
+        user = new User.Viewer(user_canon.username,user_canon.hash);
+      else
+        throw new Error("Corrupted database: user.type == '" + user_canon.type + "'")
+      //fill user fields based on canononical version of user...
+      callback(null,user);
+    });
   }
 
   //creates a hash for the given password
@@ -38,15 +57,9 @@ class DatabaseManager {
     return password;
   }
 
-  //returns true if the given password matches the hash stored in the database
-  checkPassword(username: string, password: string): boolean{
-    var user = this.getUser(username);
-    if (!user)
-      throw new Error("User does not exist ("+username+")")
-    //TODO(NaOH): encrypt passwords
-    if (password==user.getHash())
-      return true;
-    return false;
+  //returns true if the given password matches the given hash
+  checkHash(password: string, hash: string): boolean{
+    return password == hash;
   }
 }
 

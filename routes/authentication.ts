@@ -9,11 +9,11 @@ import User = require('../src/User')
 class RouteAuth {
   router_: any;
   //sets the cookie to store credentials in user's browser
-  static setAuthenticationCookie(req,res,user){
-    if (user && user.username){
+  static setAuthenticationCookie(req,res,username,password){
+    if (username){
      res.cookie('credentials',{
-       username: user.username,
-       password: user.password,
+       username: username,
+       password: password,
      }, {
        maxAge: 900000,
        httpOnly: true,
@@ -23,11 +23,12 @@ class RouteAuth {
     }
   }
 
-  //attempts to validate user credentials. 
+  //asynchronously attempts to validate user credentials. 
   //attaches user object to request if valid
   //attaches user info to the headers for the next http data sent
-  //returns true if valid, false otherwise
-  static authorizeUser(req,res){
+  //callback [](authenticated):
+  //  authenticated is true if user is successfuly authenticated.
+  static authorizeUser(req,res,callback){
     var username = ""
     var password = ""
     if (req.body.username && req.body.password) {
@@ -43,30 +44,32 @@ class RouteAuth {
       }
     }
 
-    //TODO(NaOH): validate user
-    if (username=="johnny" && password=="dichotomy") {
-      //user is valid!
-      //TODO: swap out for User type declaration
-      req.user = {
-        username: username
+    req.dbManager.getUser(username, function(err,user) {
+      if (user&&!err) {
+        if (req.dbManager.checkHash(password,user.getHash())) {
+          //user is valid!
+          req.user = user
+          //tell client about client-specific information in all future responses
+          res.append('username',username)
+          res.append('authenticated',true)
+          return callback(true);
+        }
       }
-      //tell client about client-specific information in all future responses
-      res.append('username',username)
-      res.append('authenticated',true)
-      return true;
-    }
-    //default information
-    res.append('username','')
-    res.append('authenticated',false)
-    return false;
+      //default information
+      res.append('username','')
+      res.append('authenticated',false)
+      callback(false);
+    });
   }
+
   constructor(){
     var router = express.Router();
 
-    /* (Middleware) Authentication. Checks for credentials in cookie or body.*/
+    /* (custom middleware) Authentication. Checks for credentials in cookie or body.*/
     router.use(function(req, res, next) {
-      RouteAuth.authorizeUser(req,res)
-      next();
+      RouteAuth.authorizeUser(req,res,function(authenticated) {
+        next();
+      });
     });
 
     /* GET login page. */
@@ -94,13 +97,15 @@ class RouteAuth {
       if (!req.body.username || !req.body.password) //incorrect POST body
         res.send({success: false, msg: 'Please provide username and password'});
       else {
-        if (RouteAuth.authorizeUser(req,res)) {
-          var user = {username:req.body.username,password:req.body.password};
-          RouteAuth.setAuthenticationCookie(req,res,user);
-          res.send({success: true, msg: 'Valid Credentials!'})
-        } else {
-          res.send({success: false, msg: 'Incorrect username or password'})
-        }
+        RouteAuth.authorizeUser(req,res,function(authenticated){
+          console.log(authenticated);
+          if (authenticated) {
+            RouteAuth.setAuthenticationCookie(req,res,req.body.username,req.body.password);
+            res.send({success: true, msg: 'Valid Credentials!'})
+          } else {
+            res.send({success: false, msg: 'Incorrect username or password'})
+          }
+        });
       }
     });
 
@@ -138,17 +143,18 @@ class RouteAuth {
           return res.send({success: false, msg: 'Username must be at least 3 characters'})
         if (req.body.password.length<4)
           return res.send({success: false, msg: 'Password must be at least 4 characters'})
-        var user: User.User = req.dbManager.getUser(req.body.username);
-	if (user) {
-          res.send({success: false, msg: 'Username already exists!'})
-          return;
-        }
-        //Everything good!
-        user=req.dbManager.createViewer(req.body.username,req.body.password);
-        if (user) {
-          RouteAuth.setAuthenticationCookie(req,res,user);
-          res.send({success: true, msg: 'Account successfuly created!'})
-        } else res.send({success: false, msg: 'Unknown error creating account'})
+        var user: User.User = req.dbManager.getUser(req.body.username, function(err,user){
+	  if (user) {
+            res.send({success: false, msg: 'Username already exists!'})
+            return;
+          }
+          //Everything good!
+          user=req.dbManager.createViewer(req.body.username,req.body.password);
+          if (user) {
+            RouteAuth.setAuthenticationCookie(req,res,req.body.username,req.body.password);
+            res.send({success: true, msg: 'Account successfuly created!'})
+          } else res.send({success: false, msg: 'Unknown error creating account'})
+        });
       }
     });
    

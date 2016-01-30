@@ -2,7 +2,7 @@
 
 
 var app = angular.module('authentication', [])
-app.controller('authController', function($scope, $http) {
+app.controller('authController', function($scope, $http, $timeout) {
     //read http headers: 
     var req = new XMLHttpRequest();
     req.open('GET', document.location, false);
@@ -26,9 +26,9 @@ app.controller('authController', function($scope, $http) {
         password: $scope.auth_password,
         email: $scope.auth_email,
         account_type: $scope.auth_usertype
-      }).then(function(response){
-         if (response.data.success) //redirect to dashboard
-           window.location='/';
+      }).then(function(response) {
+         if (response.data.success) //wait for cookie, then redirect to dashboard
+           $timeout(function(){window.location='/';},200);
          else if (response.data.msg)
            $scope.response=response.data.msg
       })

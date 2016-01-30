@@ -139,8 +139,8 @@ class RouteAuth {
       else if (!req.body.email) //incorrect POST body
         res.send({success: false, msg: 'Provide email address'});
       else if (!req.body.email.match(/\S+@\S+\.\S+/)) //email address of wrong form
-        res.send({success: false, msg: 'Provide email address of the form *@*.*'});// no account type specified
-      else if (req.body.account_type!="pleb"&&req.body.account_type!="artist")
+        res.send({success: false, msg: 'Email address must be formatted correctly'});
+      else if (req.body.account_type!="pleb"&&req.body.account_type!="artist")// no account type specified
         res.send({success: false, msg: 'account_type must be one of "pleb" or "artist"'});
       else {
         //register new user!

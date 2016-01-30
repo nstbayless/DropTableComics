@@ -1,6 +1,6 @@
 extends layout
 
-block content
+block content_layout
     h1= title
     form#formAddUser(name="adduser",method="post",action="/adduser")
         input#inputUserName(type="text", placeholder="username", name="username")

@@ -9,6 +9,7 @@ export interface User {
 
     username: string; /** The username of the user */
     hash: string;  /** the hash of the user's password */
+    email: string; /** the email address of the user */
     description: string; /** A description associated with the user */
     manager:DatabaseManager; /** Database Manager */
     viewlist:string[]; /** A list of all viewable comics */	
@@ -19,6 +20,7 @@ export interface User {
     getViewlist():string[];
     getManager():DatabaseManager;
     getDescription():string;
+    getEmail(): string;
 }
 
 /** Represents a viewer of DropComix */
@@ -26,6 +28,7 @@ export class Viewer implements User {
 
     username: string; /** The username of the artist */
     hash: string;
+    email: string; /** the email address of the user */
     description: string; /** A description associated with the artist */
     manager:DatabaseManager; /** Database Manager */
     viewlist:string[]; /** A list of all viewable comics */
@@ -47,15 +50,19 @@ export class Viewer implements User {
 	getDescription():string {
 		return this.description;
 	}
-    getHash(){
+    getHash(): string {
       return this.hash;
     }
+    getEmail(): string {
+      return this.email;
+    }	
 }
 
 /** Represents an artist on DropComix */
 export class Artist implements User {
 	username: string; /** The username of the artist */
     hash: string;
+    email: string; /** the email address of the user */
 	description: string; /** A description associated with the artist */
 	manager:DatabaseManager; /** Database Manager */
 	viewlist:string[]; /** A list of all viewable comics */
@@ -88,8 +95,11 @@ export class Artist implements User {
 	getDescription():string {
 		return this.description;
 	}
-    getHash(){
+    getHash(): string {
       return this.hash;
-    }		
+    }	
+    getEmail(): string {
+      return this.email;
+    }			
 
 }

@@ -15,22 +15,25 @@ class DatabaseManager {
   }
 
   //creates a new Artist and adds it to the database
-  createArtist(username: string, password: string): User.Artist {
+  createArtist(username: string, password: string, email: string): User.Artist {
     var hash = this.computeHash(password);
     var artist = new User.Artist(username);
     artist.hash=hash;
+    artist.email=email;
     var users = this.db.get('users');
     console.log("creating artist")
-    users.insert({username:username,hash:hash,type:"artist"});    
+    users.insert({username:username,hash:hash,type:"artist",email:email});
     return artist;
   }
 
   //creates a new Viewer and adds it to the database
-  createViewer(username: string, password: string): User.Viewer {
+  createViewer(username: string, password: string, email: string): User.Viewer {
     var hash = this.computeHash(password);
     var viewer = new User.Viewer(username);
+    viewer.hash=hash;
+    viewer.email=email;
     var users = this.db.get('users');
-    users.insert({username:username,hash:hash,type:"pleb"});    
+    users.insert({username:username,hash:hash,type:"pleb",email:email});
     return viewer;
   }
 
@@ -49,6 +52,7 @@ class DatabaseManager {
         throw new Error("Corrupted database: user.type == '" + user_canon.type + "'")
       //fill user fields based on canononical version of user...
       user.hash=user_canon.hash;
+      user.email=user_canon.email;
       callback(null,user);
     });
   }

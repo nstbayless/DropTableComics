@@ -2,6 +2,11 @@ doctype html
 html
   head
     title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/stylesheets/pretty.css')
+    script(src="/angular.min.js")
+    script(src="/jquery-2.2.0.min.js")
+    script(src="/javascripts/searchform.js")
+    script(src="/javascripts/authenticate.js")
   body
-    block content
+    div(ng-app="authentication" ng-controller="authController")
+      block content_layout

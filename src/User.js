@@ -21,6 +21,9 @@ var Viewer = (function () {
     Viewer.prototype.getHash = function () {
         return this.hash;
     };
+    Viewer.prototype.getEmail = function () {
+        return this.email;
+    };
     return Viewer;
 })();
 exports.Viewer = Viewer;
@@ -52,6 +55,9 @@ var Artist = (function () {
     };
     Artist.prototype.getHash = function () {
         return this.hash;
+    };
+    Artist.prototype.getEmail = function () {
+        return this.email;
     };
     return Artist;
 })();

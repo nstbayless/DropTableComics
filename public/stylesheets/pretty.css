@@ -43,3 +43,10 @@ input.search {
   color: white;
   background-color:#111; 
 }
+
+table.auth {
+  background-color:#ddf;
+}
+table.auth td {
+  padding: 2px 8px 2px 8px;
+}

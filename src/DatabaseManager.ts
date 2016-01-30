@@ -2,7 +2,6 @@
 ///<reference path='../types/express/express.d.ts'/> 
 
 /** Represents a manager of the database, through which Users and Comics access the database*/
-
 import User = require('./User')
 
 class DatabaseManager {

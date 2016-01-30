@@ -16,7 +16,8 @@ class DatabaseManager {
   //creates a new Artist and adds it to the database
   createArtist(username: string, password: string): User.Artist {
     var hash = this.computeHash(password);
-    var artist = new User.Artist(username,hash);
+    var artist = new User.Artist(username);
+    artist.hash=hash;
     var users = this.db.get('users');
     console.log("creating artist")
     users.insert({username:username,hash:hash,type:"artist"});    
@@ -26,7 +27,7 @@ class DatabaseManager {
   //creates a new Viewer and adds it to the database
   createViewer(username: string, password: string): User.Viewer {
     var hash = this.computeHash(password);
-    var viewer = new User.Viewer(username,hash);
+    var viewer = new User.Viewer(username);
     var users = this.db.get('users');
     users.insert({username:username,hash:hash,type:"pleb"});    
     return viewer;
@@ -40,12 +41,13 @@ class DatabaseManager {
       if (err||!user_canon) return callback(err,null);
       var user: User.User;
       if (user_canon.type=="artist")
-        user = new User.Artist(user_canon.username,user_canon.hash);
+        user = new User.Artist(user_canon.username);
       else if (user_canon.type=="pleb")
-        user = new User.Viewer(user_canon.username,user_canon.hash);
+        user = new User.Viewer(user_canon.username);
       else
         throw new Error("Corrupted database: user.type == '" + user_canon.type + "'")
       //fill user fields based on canononical version of user...
+      user.hash=user_canon.hash;
       callback(null,user);
     });
   }

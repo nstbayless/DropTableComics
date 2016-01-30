@@ -1,9 +1,9 @@
 ///<reference path='../types/node/node.d.ts'/>  
 ///<reference path='../types/express/express.d.ts'/> 
 
-var DBManager = require("./DatabaseManager")
+import DatabaseManager = require("./DatabaseManager")
 
-/** Represents a user of DropComix */s
+/** Represents a user of DropComix */
  
 export interface User {
 

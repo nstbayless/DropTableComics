@@ -2,7 +2,8 @@
 ///<reference path='../types/express/express.d.ts'/> 
 
 /** Represents a manager of the database, through which Users and Comics access the database*/
-import User = require('./User')
+import User = require('./User');
+import { Comic } from './Comic';
 var bcrypt = require('bcrypt');
 
 class DatabaseManager {
@@ -24,6 +25,20 @@ class DatabaseManager {
     console.log("creating artist")
     users.insert({username:username,hash:hash,type:"artist",email:email});
     return artist;
+  }
+  
+   //creates a new comic and adds it to the database
+  createComic(name: string, artist: string): Comic {
+    var comic = new Comic(name);
+	var viewlist = new Array<string>();
+	var adminlist = new Array<string>();
+	var editlist = new Array<string>();
+	editlist[0] = artist;
+	adminlist[0] = artist;
+    var comics = this.db.get('comics');
+    console.log("creating comic")
+    comics.insert({name:name,viewlist:viewlist,editlist:editlist,adminlist:adminlist});
+    return comic;
   }
 
   //creates a new Viewer and adds it to the database

@@ -34,7 +34,10 @@ export class Viewer implements User {
     viewlist:string[]; /** A list of all viewable comics */
 	
     /** CONSTRUCTOR */
-    constructor(username: string){} /** stub */
+	/** Not to be called outside DBManager */
+    constructor(username: string){
+		this.username = username;
+	}
 	
     /** GETTERS */
     getUsername():string{
@@ -72,8 +75,11 @@ export class Artist implements User {
 		
 		
 	/** CONSTRUCTOR */
-		/** Looks up Artist from database by name */
-	 constructor(username: string){} /** stub */
+		/** Initializes Artist username */
+		/** Not to be called outside DBManager */
+	 constructor(username: string){
+		 this.username = username;
+	 } /** stub */
 	
 		/** GETTERS */
 	getUsername():string{

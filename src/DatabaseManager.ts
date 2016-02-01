@@ -71,6 +71,21 @@ class DatabaseManager {
       callback(null,user);
     });
   }
+  // asynchronously retrieves the given comic from the database
+  // callback: [](err,comic)
+  getComic(name: string, username:string, callback:any) {
+    var comics = this.db.get('comics');
+    comics.findOne({name:name}, function(err,comic_canon){
+      if (err||!comic_canon) return callback(err,null);
+      var comic: Comic;
+	  comic = new Comic(name);
+      comic.viewlist=comic_canon.viewlist;
+      comic.editlist=comic_canon.editlist;
+	  comic.adminlist=comic_canon.adminlist;
+	  comic.pages=comic_canon.pages;
+      callback(null,comic);
+    });
+  }
 
   //creates a hash for the given password
   computeHash(password: string): string {

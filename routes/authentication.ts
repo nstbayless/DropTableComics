@@ -39,8 +39,8 @@ class RouteAuth {
       var creds = req.cookies.credentials;
       //creds included in cookies
       if (creds.username && creds.password) {
-        username=creds.username;
-        password=creds.password;
+        username = creds.username;
+        password = creds.password;
       }
     }
 

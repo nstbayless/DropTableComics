@@ -36,8 +36,9 @@ class DatabaseManager {
 	editlist[0] = artist;
 	adminlist[0] = artist;
     var comics = this.db.get('comics');
-    console.log("creating comic")
-    comics.insert({name:name,viewlist:viewlist,editlist:editlist,adminlist:adminlist});
+    console.log("creating comic");
+	
+    comics.insert({"title":name,"viewlist":viewlist,"editlist":editlist,"adminlist":adminlist,"creator":artist});
     return comic;
   }
 

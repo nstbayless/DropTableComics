@@ -1,8 +1,12 @@
 extends pretty
 
 block content
-  h1.bannertext= stuff
+  h1.bannertext= header
   form
     p Comic
       input(type="text" ng-model="comic_name" placeholder="Enter name here")
-    button(ng-click="create_comic()" ng-show="comic_name.length>0") Create {{comic_name}}
+    button(ng-click = "create_comic()" ng-show = "comic_name.length>0") Create {{comic_name}}
+  ul
+    each comic, i in editable
+      li
+        a(href="see/" + comic.creator+ "-"+ comic.title)= comic.title

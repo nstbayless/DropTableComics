@@ -6,7 +6,8 @@
 
 var express = require('express');
 var config = require('../config');
-import User = require('../src/User');
+import {User } from'../src/User' ;
+import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
 
 //struct for a single result in a list of search results
@@ -23,8 +24,8 @@ class RoutePretty {
      for (var i=0;i<12;i++) {
        //make random search results
        var result: SearchResult = {
-         linktext:"search result "+i,
-         description:"description "+i,
+         linktext:"search result " + i,
+         description:"description " + i,
          href:"/pretty/"
        }
        results.push(result);
@@ -33,12 +34,17 @@ class RoutePretty {
   }
   constructor() {
     var router = express.Router();
-    /* GET dashboard page. */
+    
+	/* GET dashboard page. */
     router.get('/', function(req, res, next) {
-      res.render('dashboard', {
-        title: 'dashboard',
-        stuff: 'Dashboard'
-      });
+		var username = req.user.getUsername();  // artist username
+		var comics = req.db.get('comics');
+        comics.find({},{},function(e,docs){
+			res.render('dashboard', {
+				title: 'dashboard',
+				editable: docs
+			});
+        });    
     });
     
     /* GET pretty search results */
@@ -50,32 +56,38 @@ class RoutePretty {
       });
     })
 	
+	 /* GET pretty comic page */
+    router.get('/see/*', function(req,res,next) {
+      res.render('newcomic', {
+        title: 'hi from arnold',
+      });
+    })
+	
+	
 	 /* POST Comic. */
     router.post('/comic', function(req, res, next) {
-		console.log("in pretty.ts");
-      if (req.comic)//comic already exists:
-        res.send({success: false,
-          msg: 'Comic already exists'})
-      else if (!req.body.name) //incorrect POST body
-        res.send({success: false, msg: 'Provide comic name'});
+		console.log(req.body.nameblah);
+		if (!req.body.nameblah) //incorrect POST body
+			res.send({success: false, msg: 'Provide comic name'});
+		
      // else if (req.body.account_type!="artist") //incorrect account type
      //   res.send({success: false, msg: 'account_type must be"artist"'});
+	 
       else {
         // check if user is signed in
-        if (!req.body.artist)
+        if (!req.user)
           return res.send({success: false, msg: 'Please sign-in to create a comic'})
-        var comic: Comic = req.dbManager.getComic(req.body.name, req.body.artist, function(err,comic){
-	  if (comic) {
-            res.send({success: false, msg: 'Comic already exists!'})
-            return;
-          }
-          //Everything good!
-            comic = req.dbManager.createComic(req.body.comic,req.body.artist);
+        var comic: Comic = req.dbManager.getComic(req.body.nameblah, req.user.getUsername(), function(err,comic){
+			console.log(req.body.nameblah);
+            comic = req.dbManager.createComic(req.body.nameblah,req.user.getUsername());
+			res.send({success: true})
         });
       } 
     }); 
-	 this.router_=router;
+	 this.router_ = router;
   }
+  
+  
   
   
   

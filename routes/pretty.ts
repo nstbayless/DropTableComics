@@ -39,9 +39,24 @@ class RoutePretty {
     router.get('/', function(req, res, next) {
 		var username = req.user.getUsername();  // artist username
 		var comics = req.db.get('comics');
+		var isArtist = true;
+		console.log(isArtist);
         comics.find({},{},function(e,docs){
 			res.render('dashboard', {
 				title: 'dashboard',
+				artist: isArtist,
+				editable: docs
+			});
+        });    
+    });
+	
+	/* GET create comic page. */
+    router.get('/create', function(req, res, next) {
+		var username = req.user.getUsername();  // artist username
+		var comics = req.db.get('comics');
+        comics.find({},{},function(e,docs){
+			res.render('createcomic', {
+				title: 'create comic',
 				editable: docs
 			});
         });    
@@ -58,7 +73,7 @@ class RoutePretty {
 	
 	 /* GET pretty comic page */
     router.get('/see/*', function(req,res,next) {
-      res.render('newcomic', {
+	    res.render('newcomic', {
         title: 'hi from arnold',
       });
     })
@@ -78,8 +93,8 @@ class RoutePretty {
         if (!req.user)
           return res.send({success: false, msg: 'Please sign-in to create a comic'})
         var comic: Comic = req.dbManager.getComic(req.body.nameblah, req.user.getUsername(), function(err,comic){
-			console.log(req.body.nameblah);
             comic = req.dbManager.createComic(req.body.nameblah,req.user.getUsername());
+			
 			res.send({success: true})
         });
       } 

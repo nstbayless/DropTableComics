@@ -3,9 +3,9 @@ extends layout
 block content_layout
   ul.headerbar
     li.headerlink
-      a(href="/pretty/") Home
+      a(href="/pretty/create") + Create Comic
     li.headerlink
-      a Comics
+      a(href="/pretty/") Comics Dashboard
     ul.headerright
       li.headerlink(ng-show="!authenticated")
         a(href="/auth/login")  Sign In

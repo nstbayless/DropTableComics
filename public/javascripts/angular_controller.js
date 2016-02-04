@@ -13,6 +13,8 @@ app.controller('authController', function($scope, $http) {
     $scope.authenticated = req.getResponseHeader("authenticated")=="true"
     //username (if registered and logged in)
     $scope.username = req.getResponseHeader("username")
+	//username (if registered and logged in)
+    $scope.type = req.getResponseHeader("username")
 
     //user attempts to register a new account
     $scope.register=function(){
@@ -39,10 +41,11 @@ app.controller('authController', function($scope, $http) {
       $scope.response=""
 	  $http.post("/pretty/comic", {
         nameblah: $scope.comic_name,
+		username: $scope.comic_name,
       }).then(function(response){
 		  console.log(response);
          if (response.data.success)
-		    window.location='/pretty';
+		    window.location='/pretty/see/' + $scope.comic_name + '-' + $scope.comic_name;
          else if (response.data.msg)
            $scope.response=response.data.msg
       }) 

@@ -49,6 +49,7 @@ app.controller('authController', function($scope, $http, $timeout) {
     //log user out by deleting credential cookie
     $scope.logout=function(){
       $http.get("/auth/logout");
-      window.location='/';
+      //wait for cookie then redirect:
+      $timeout(function(){window.location='/';},200);
     }
   });

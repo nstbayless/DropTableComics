@@ -58,7 +58,9 @@ app.controller('authController', function($scope, $http) {
         password: $scope.auth_password
       }).then(function(response){
          if (response.data.success) //redirect to dashboard
-           window.location='/pretty';
+           window.location='/';
+         else if (response.data.msg)
+           $scope.response=response.data.msg
        })
     }
     //log user out by deleting credential cookie

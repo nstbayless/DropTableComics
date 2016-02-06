@@ -77,13 +77,14 @@ class DatabaseManager {
   getComic(comic_name: string, username:string, callback:any) {
 	  console.log(comic_name);
 	  var comics = this.db.get('comics');
-	  comics.findOne({name:comic_name}, function(err,comic_canon){
-		  if (!comic_canon){ 
+	  comics.findOne({title:comic_name}, function(err,comic_canon){
+		  if (err||!comic_canon){ 
+		  console.log(err);
 		  console.log("whoops, it seems we can't find the comic");
 		  return callback(err,null); 
 		  }
 		  var comic: Comic;
-		  comic = new Comic(name, username, null);
+		  comic = new Comic(comic_name, username, null);
 		  comic.viewlist = comic_canon.viewlist;
 		  comic.editlist = comic_canon.editlist;
 		  comic.adminlist = comic_canon.adminlist;

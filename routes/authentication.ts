@@ -112,7 +112,7 @@ path: '/'
 				});
 			}
 		});
-
+		
 		/* GET logout (this just deletes the credentials cookie in the broswer). */
 		router.get('/auth/logout', function(req, res, next) {
 			//overwrite old cookie, just to be sure
@@ -132,7 +132,7 @@ path: '/'
 			});
 			res.send({success: false, msg: 'Clearing cookies'})
 		});
-
+		
 		/* POST registration. */
 		router.post('/auth/accounts', function(req, res, next) {
 			if (req.user)//user already registered:

@@ -9,3 +9,4 @@ routes/*.js
 *.log
 install/*
 ssl/*
+src/*.js

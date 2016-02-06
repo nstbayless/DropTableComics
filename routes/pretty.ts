@@ -92,7 +92,7 @@ class RoutePretty {
         req.dbManager.getComic(req.body.nameblah, req.user.getUsername(), function(err,comic){
             if (comic){
 			console.log("I found the comic, suckers!");
-			return res.send({success:false});}
+			return res.send({success:false, msg: 'Comic already exists'});}
 			console.log("I couldn't find the comic");
 			comic = req.dbManager.createComic(req.body.nameblah,req.user.getUsername(),req.body.description);
 			res.send({success: true})

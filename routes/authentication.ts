@@ -49,9 +49,13 @@ class RouteAuth {
         if (req.dbManager.checkHash(password,user.getHash())) {
           //user is valid!
           req.user = user
+		 
           //tell client about client-specific information in all future responses
-          res.append('username',username)
-          res.append('authenticated',true)
+		  var isartist = req.user.isArtist();
+		  console.log(isartist);
+		  res.append('isartist',isartist);
+          res.append('username',username);
+          res.append('authenticated',true);
           return callback(true);
         }
       }

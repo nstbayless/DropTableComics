@@ -37,12 +37,13 @@ class RoutePretty {
     
 	/* GET dashboard page. */
     router.get('/', function(req, res, next) {
-		var username = req.user.getUsername();  // artist username
+		var username = req.user.getUsername();  // username
+		var isartist = req.user.isArtist();  // whether the user is a pleb
 		var comics = req.db.get('comics');
         comics.find({creator:username},{},function(e,docs){
 			res.render('dashboard', {
 				title: 'dashboard',
-				editable: docs
+				editable: docs,		// list of comics created by use	
 			});
         });    
     });
@@ -50,13 +51,12 @@ class RoutePretty {
 	/* GET create comic page. */
     router.get('/create', function(req, res, next) {
 		var username = req.user.getUsername();  // artist username
-		var comics = req.db.get('comics');
-        comics.find({},{},function(e,docs){
-			res.render('createcomic', {
-				title: 'create comic',
-				editable: docs
+		var isartist = req.user.isArtist(); // true if user is an artist
+		if (isartist){   
+				res.render('createcomic', {
+					title: 'create comic'
 			});
-        });    
+		}		
     });
     
     /* GET pretty search results */
@@ -83,8 +83,8 @@ class RoutePretty {
 		console.log(req.body.nameblah);
 		if (!req.body.nameblah) //incorrect POST body
 			res.send({success: false, msg: 'Provide comic name'});
-     // else if (req.body.account_type!="artist") //incorrect account type
-     //   res.send({success: false, msg: 'account_type must be"artist"'});
+     else if (!req.user.isArtist) //incorrect account type
+     res.send({success: false, msg: 'account_type must be"artist"'});
       else {
         // check if user is signed in
         if (!req.user)

@@ -2,7 +2,7 @@ extends layout
 
 block content_layout
   ul.headerbar
-    li.headerlink
+    li.headerlink(ng-show="isartist")
       a(href="/pretty/create") + Create Comic
     li.headerlink
       a(href="/pretty/") Comics Dashboard

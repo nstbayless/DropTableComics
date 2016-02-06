@@ -13,6 +13,7 @@ export interface User {
     description: string; /** A description associated with the user */
     manager:DatabaseManager; /** Database Manager */
     viewlist:string[]; /** A list of all viewable comics */	
+	type:string; /** type of the user, either "pleb" or "artist"*/
 	
     /** GETTERS */
     getUsername():string;
@@ -21,6 +22,8 @@ export interface User {
     getManager():DatabaseManager;
     getDescription():string;
     getEmail(): string;
+	getType(): string;
+	isArtist(): boolean;
 }
 
 /** Represents a viewer of DropComix */
@@ -32,11 +35,13 @@ export class Viewer implements User {
     description: string; /** A description associated with the artist */
     manager:DatabaseManager; /** Database Manager */
     viewlist:string[]; /** A list of all viewable comics */
+	type:string; /** type of the user, either "pleb" or "artist"*/
 	
     /** CONSTRUCTOR */
 	/** Not to be called outside DBManager */
     constructor(username: string){
 		this.username = username;
+		this.type = "pleb";
 	}
 	
     /** GETTERS */
@@ -58,7 +63,13 @@ export class Viewer implements User {
     }
     getEmail(): string {
       return this.email;
-    }	
+    }
+	getType(): string{
+		return this.type;
+	}
+	isArtist(): boolean{
+		return false; 
+	}
 }
 
 /** Represents an artist on DropComix */
@@ -68,6 +79,7 @@ export class Artist implements User {
     email: string; /** the email address of the user */
 	description: string; /** A description associated with the artist */
 	manager:DatabaseManager; /** Database Manager */
+	type:string; /** type of the user, either "pleb" or "artist"*/
 	viewlist:string[]; /** A list of all viewable comics */
 	editlist:string[]; /** A list of all editable comics */
 	adminlist:string[]; /** A list of all adminstrated comics */
@@ -79,11 +91,13 @@ export class Artist implements User {
 		/** Not to be called outside DBManager */
 	 constructor(username: string){
 		 this.username = username;
+		 this.type = "artist";
 	 } /** stub */
 	
 		/** GETTERS */
 	getUsername():string{
 		return this.username;
+		
 	}
 	
 	getViewlist():string[] {
@@ -106,6 +120,11 @@ export class Artist implements User {
     }	
     getEmail(): string {
       return this.email;
-    }			
-
+    }
+	getType(): string{
+		return this.type;
+	}
+	isArtist(): boolean{
+		return true;
+	}
 }

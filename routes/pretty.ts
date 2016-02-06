@@ -79,7 +79,7 @@ class RoutePretty {
 		
 		/* POST Comic. */
 		router.post('/comic', function(req, res, next) {
-			//TODO:(Arman): fix comic_name
+			//TODO:(Arman): check for reserved characters while parsing names
 			console.log(req.body.comic_name);
 			if (!req.body.comic_name) //incorrect POST body
 			res.send({success: false, msg: 'Provide comic name'});

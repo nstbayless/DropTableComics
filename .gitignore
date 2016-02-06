@@ -6,7 +6,6 @@ types
 app.js
 www.js
 routes/*.js
-src/*.js
 *.log
 install/*
 ssl/*

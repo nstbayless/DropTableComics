@@ -149,8 +149,8 @@ class RouteAuth {
           return res.send({success: false, msg: 'Username must be at least 3 characters'})
         if (req.body.password.length<4)
           return res.send({success: false, msg: 'Password must be at least 4 characters'})
-        var user: User.User = req.dbManager.getUser(req.body.username, function(err,user){
-	  if (user) {
+        req.dbManager.getUser(req.body.username, function(err,user){
+			if (user) {
             res.send({success: false, msg: 'Username already exists!'})
             return;
           }

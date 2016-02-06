@@ -7,6 +7,8 @@ var manager = require("./DatabaseManager");
 export class Comic {
 	
 	 name:string; /** Unique name of comic */
+	 private creator:string; /** original creator of comic  < Cannot be changed > */
+	 description:string; /** description */ 
 	 viewlist:string[]; /** A list of all viewers of this comic */
 	 editlist:string[]; /** A list of all editors of this comic */
 	 adminlist:string[]; /** A list of all admins of this comic */ 
@@ -17,13 +19,21 @@ export class Comic {
 	/** CONSTRUCTOR */
 	
 	/** Looks up Comic from database by name */
-	 constructor(name: string){
+	 constructor(name: string, creator: string, description: string){
 		 this.name = name;
+		 this.creator = creator;
+		 this.description = description;
 	 } /** stub */
 	
 	/** GETTERS */
 	getName():string{
 		return this.name;
+	}
+	getCreator():string{
+		return this.creator;
+	}
+	getDescription():string{
+		return this.description;
 	}
 	getViewlist():string[] {
 		return this.viewlist;

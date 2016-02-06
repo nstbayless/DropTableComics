@@ -28,8 +28,8 @@ class DatabaseManager {
   }
   
    //creates a new comic and adds it to the database
-  createComic(name: string, artist: string): Comic {
-    var comic = new Comic(name);
+  createComic(name: string, artist: string, description:string): Comic {
+    var comic = new Comic(name, artist, description);
 	var viewlist = new Array<string>();
 	var adminlist = new Array<string>();
 	var editlist = new Array<string>();
@@ -38,7 +38,7 @@ class DatabaseManager {
     var comics = this.db.get('comics');
     console.log("creating comic");
 	
-    comics.insert({"title":name,"viewlist":viewlist,"editlist":editlist,"adminlist":adminlist,"creator":artist});
+    comics.insert({"title":name,"viewlist":viewlist,"editlist":editlist,"adminlist":adminlist,"creator":artist, "description":description});
     return comic;
   }
 
@@ -74,17 +74,22 @@ class DatabaseManager {
   }
   // asynchronously retrieves the given comic from the database
   // callback: [](err,comic)
-  getComic(name: string, username:string, callback:any) {
-    var comics = this.db.get('comics');
-    comics.findOne({name:name}, function(err,comic_canon){
-      if (err||!comic_canon) return callback(err,null);
-      var comic: Comic;
-	  comic = new Comic(name);
-      comic.viewlist=comic_canon.viewlist;
-      comic.editlist=comic_canon.editlist;
-	  comic.adminlist=comic_canon.adminlist;
-	  comic.pages=comic_canon.pages;
-      callback(null,comic);
+  getComic(comic_name: string, username:string, callback:any) {
+	  console.log(comic_name);
+	  var comics = this.db.get('comics');
+	  comics.findOne({name:comic_name}, function(err,comic_canon){
+		  if (!comic_canon){ 
+		  console.log("whoops, it seems we can't find the comic");
+		  return callback(err,null); 
+		  }
+		  var comic: Comic;
+		  comic = new Comic(name, username, null);
+		  comic.viewlist = comic_canon.viewlist;
+		  comic.editlist = comic_canon.editlist;
+		  comic.adminlist = comic_canon.adminlist;
+		  comic.pages = comic_canon.pages;
+		  comic.description = comic_canon.description;
+		  callback(null,comic);
     });
   }
 

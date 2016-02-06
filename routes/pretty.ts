@@ -39,7 +39,7 @@ class RoutePretty {
     router.get('/', function(req, res, next) {
 		var username = req.user.getUsername();  // artist username
 		var comics = req.db.get('comics');
-        comics.find({},{},function(e,docs){
+        comics.find({creator:username},{},function(e,docs){
 			res.render('dashboard', {
 				title: 'dashboard',
 				editable: docs

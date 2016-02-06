@@ -79,9 +79,9 @@ class RoutePretty {
 	
 	 /* POST Comic. */
     router.post('/comic', function(req, res, next) {
-		//TODO:(Arman): fix nameblah
-		console.log(req.body.nameblah);
-		if (!req.body.nameblah) //incorrect POST body
+		//TODO:(Arman): fix comic_name
+		console.log(req.body.comic_name);
+		if (!req.body.comic_name) //incorrect POST body
 			res.send({success: false, msg: 'Provide comic name'});
      else if (!req.user.isArtist) //incorrect account type
      res.send({success: false, msg: 'account_type must be"artist"'});
@@ -89,12 +89,12 @@ class RoutePretty {
         // check if user is signed in
         if (!req.user)
           return res.send({success: false, msg: 'Please sign-in to create a comic'})
-        req.dbManager.getComic(req.body.nameblah, req.user.getUsername(), function(err,comic){
+        req.dbManager.getComic(req.body.comic_name, req.user.getUsername(), function(err,comic){
             if (comic){
 			console.log("I found the comic, suckers!");
 			return res.send({success:false, msg: 'Comic already exists'});}
 			console.log("I couldn't find the comic");
-			comic = req.dbManager.createComic(req.body.nameblah,req.user.getUsername(),req.body.description);
+			comic = req.dbManager.createComic(req.body.comic_name,req.user.getUsername(),req.body.description);
 			res.send({success: true})
         });
       } 

@@ -13,6 +13,8 @@ app.controller('authController', function($scope, $http) {
     $scope.authenticated = req.getResponseHeader("authenticated")=="true"
     //username (if registered and logged in)
     $scope.username = req.getResponseHeader("username")
+	//true only if user is artist
+	$scope.isartist = req.getResponseHeader("isartist")=="true"
 
 
     //user attempts to register a new account
@@ -39,14 +41,14 @@ app.controller('authController', function($scope, $http) {
     $scope.create_comic=function(){
       $scope.response=""
 	  $http.post("/pretty/comic", {
-        nameblah: $scope.comic_name,
+        comic_name: $scope.comic_name,
 		description: $scope.comic_description
       }).then(function(response){
 		  console.log(response);
          if (response.data.success)
 		    window.location='/pretty/see/' + $scope.username + '/' + $scope.comic_name;
          else if (response.data.msg)
-           $scope.response=response.data.msg
+           $scope.response = response.data.msg
       }) 
     }
 	
@@ -60,7 +62,7 @@ app.controller('authController', function($scope, $http) {
          if (response.data.success) //redirect to dashboard
            window.location='/';
          else if (response.data.msg)
-           $scope.response=response.data.msg
+           $scope.response = response.data.msg
        })
     }
     //log user out by deleting credential cookie

@@ -10,32 +10,34 @@ import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
 var multer  = require('multer');
-var upload = multer({ dest: 'uploads/' });
+var upload = multer({ dest: './data/images/' });
 var fs = require('fs');
 
 //struct for a single result in a list of search results
 class SearchResult{
-linktext: string;
-description: string;
-href: string;
+	linktext: string;
+	description: string;
+	href: string;
 }
 
-// Parses comic name from uri
-function parseComicName(url: string):string {
+//TODO: these functions should go into RoutePretty as static methods
+
+// Parses comic uri from full uri
+function parseComicURI(url: string):string {
 	var res = url.split("/");
-	return res[3]; // stub TODO: Add dash/space checking parseComicName
+	if (res.length<=3)
+		return null;
+	var comic_uri = res[3];
+	return Comic.canonicalURI(comic_uri);
 }
 
-function generateComicURL(name: string, creator: string):string {
-	return name; // stub TODO: Implement generateComicURL and use in other methods
-}
-
-// Parses comic name from uri
+// Parses author name from uri
 function parseComicCreator(url: string):string {
 	var res = url.split("/");
+	if (res.length<=2)
+		return null;
 	return res[2];// stub TODO: Add dash/space checking parseComicCreator
 }
-
 
 class RoutePretty {
 	router_: any;
@@ -59,11 +61,12 @@ class RoutePretty {
 		router.get('/', function(req, res, next) {
 			var username = req.user.getUsername();  // username
 			var isartist = req.user.isArtist();  // whether the user is a pleb
+			//TODO: should use a dbManager method here, not dbManager
 			var comics = req.db.get('comics');
-			comics.find({creator:username},{},function(e,docs){
+			comics.find({creator:username},{},function(err,comics){
 				res.render('dashboard', {
 					title: 'dashboard',
-					editable: docs		// list of comics created by use	
+					comics: comics		// list of comics created by use	
 				});
 			});    
 		});
@@ -90,116 +93,94 @@ class RoutePretty {
 			
 		/* GET pretty comic page */
 		router.get('/see/*', function(req,res,next) {
-			var isartist = req.user.isArtist(); // true if user is an artist
-			var comic_name = parseComicName(req.url);
+			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
-			var image_collection = req.dbManager.db.get(comic_creator + '_' + comic_name);
-			var x;
-			image_collection.find({}, { stream: true })
-			.each(function(myDoc){
-			var img = myDoc;
-				console.log('IMAGE PATH ACCORDING TO EDIT IS ' + img.path);
-				console.log("DOWNLOADING IMAGE FROM " + img.path);
-				var source = fs.createReadStream(img.path);
-				x ='public\\' + img.path;
-				var dest = fs.createWriteStream(x); 													// TODO: Make path more legit
-				source.pipe(dest);
-				console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x);
-				x = img.path;
-				source.on('end', function() {console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x)});
-				source.on('error', function(err) { console.log("ERROR: " + err) });
-			});
-			if (comic_creator == req.user.getUsername()){									// TODO: (Edward) Make legit permission check				
-				image_collection.find({},{},function(e,docs){ 					// TODO: Load images and render them
+			if (!comic_uri||comic_creator)
+				return next();
+			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
+				req.dbManager.getComic(comic_creator,comic_uri,function(err,comic){
+					//TODO: rename 'newcomic' to 'viewcomic' or something
 					return res.render('newcomic', {									// TODO: (Edward) Make legit permission check
-						title: comic_name,
+						title: comic.getName(),
 						comic_creator: comic_creator,
-						comic_name: comic_name,
-						isartist:isartist,
-						panels: docs															// list of comics created by use									});
-					}); 
-				});	
-			}
-			else res.send({success: false, msg: 'This is not your comic!'});
+						comic_name: comic.getName(),
+						comic_uri: comic_uri,
+						panels: comic.getPage(1)
+					})
+				})
+			} else res.status(401).send("This is not your comic!")
 		});
 		
 		/* GET pretty comic edit page */
 		router.get('/edit/*', function(req,res,next) {
-			var isartist = req.user.isArtist(); // true if user is an artist
-			var comic_name = parseComicName(req.url);
+			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
-			var image_collection = req.dbManager.db.get(comic_creator + '_' + comic_name);
-			var x;
-			image_collection.find({}, { stream: true })
-			.each(function(myDoc){
-			var img = myDoc;
-				console.log('IMAGE PATH ACCORDING TO EDIT IS ' + img.path);
-				console.log("DOWNLOADING IMAGE FROM " + img.path);
-				var source = fs.createReadStream(img.path);
-				x ='public\\' + img.path;
-				var dest = fs.createWriteStream(x); 													// TODO: Make path more legit
-				source.pipe(dest);
-				console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x);
-				x = img.path;
-				source.on('end', function() {console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x)});
-				source.on('error', function(err) { console.log("ERROR: " + err) });
-			});
-			if (comic_creator == req.user.getUsername()){									// TODO: (Edward) Make legit permission check				
-				image_collection.find({},{},function(e,docs){ 					// TODO: Load images and render them
+			if (!comic_uri||comic_creator)
+				return next();
+			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
+				req.dbManager.getComic(comic_creator,comic_uri,function(err,comic){
 					return res.render('editcomic', {									// TODO: (Edward) Make legit permission check
-						title: comic_name,
+						title: comic.getName(),
 						comic_creator: comic_creator,
-						comic_name: comic_name,
-						panels: docs															// list of comics created by use									});
-					}); 
-				});	
-			}
-		});																					// TODO: Get comi from database		
-		
+						comic_name: comic.getName(),
+						comic_uri: comic_uri,
+						panels: comic.getPage(1)
+					})
+				})
+			} else res.status(401).send("This is not your comic!")
+		});		
 		
 		/* POST Comic. */
+		//TODO: this is not restful. URI location is /<user-name>/comics/
 		router.post('/comic', function(req, res, next) {
-			//TODO: check for reserved characters while parsing names
 			if (!req.body.comic_name) //incorrect POST body
-			res.send({success: false, msg: 'Provide comic name'});
+			res.status(413).send({success: false, msg: 'Provide comic name'});
 			else if (!req.user.isArtist) //incorrect account type
-			res.send({success: false, msg: 'account_type must be"artist"'});
+			res.status(413).send({success: false, msg: 'account_type must be"artist"'});
 			else {
 				// check if user is signed in
 				if (!req.user)
-				return res.send({success: false, msg: 'Please sign-in to create a comic'})
-				req.dbManager.getComic(req.body.comic_name, req.user.getUsername(), function(err,comic){
+				return res.status(401).send({success: false, msg: 'Please sign-in to create a comic'})
+				req.dbManager.getComic(Comic.canonicalURI(req.body.comic_name),
+					 req.user.getUsername(), function(err,comic){
 					if (comic){
-						console.log("I found the comic, suckers!");
-						return res.send({success:false, msg: 'Comic already exists'});
+						console.log("Comic found: " + req.body.comic_name);
+						return res.status(409).send({success:false, msg: 'Comic already exists'});
 					}
-					console.log("I couldn't find the comic");
+					console.log("Creating comic: "+req.body.comic_name);
 					comic = req.dbManager.createComic(req.body.comic_name,req.user.getUsername(),req.body.description);
-					res.send({success: true})
+					res.status(200).send({success: true})
 				});
 			} 
 		});
-		
 	
-		/* POST Image */
-		router.post('/file-upload/*',upload.single('thumbnail'), function(req, res, next) {
+		/* POST panel */
+		router.post(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/,
+      upload.single('image'), function(req, res, next) {
+			//TODO(Edward): check permissions when uploading panel.
 			var comic_creator = parseComicCreator(req.url);
-			var comic_name = parseComicName(req.url);
-			var image_collection = comic_creator + "_" + comic_name;
+			var comic_uri = parseComicURI(req.url);
 			console.log("DETAILS OF FILE UPLOAD!");
 			console.log(req.file.path);
 			console.log(req.file.filename);
 			var path:string = req.file.path;
 			var name:string = req.file.filename;
-			req.dbManager.getComic(comic_name,comic_creator, function(err,comic){
+			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic){
 				if (!comic){
-					return res.send({success:false, msg: 'Comic does not exist'});
+					return res.status(404).send('Comic does not exist: '
+						+comic_uri+" author: " + comic_creator);
 				}
 				else {
 					console.log("Inserting image..." + name);
-					req.dbManager.insertImage(image_collection, path, name); // TODO: create naming system for multiple names
-					console.log("Inserted image " + name);
-					res.redirect('back');
+					req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,comic){
+						if (comic&&!err) {
+							console.log("Inserted image " + name);
+							res.redirect(req.url);
+						} else {
+							console.log("Error inserting panel!");
+							res.status('500').send("Error inserting panel");
+						}
+					});
 				}
 			}); 
 		});

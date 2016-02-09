@@ -4,6 +4,7 @@
 ///<reference path='../types/express/express.d.ts'/>
  
 import { Comic } from './Comic';
+//TODO: use this class
 class Page {
 	
 	pageno:number; /** A page number */

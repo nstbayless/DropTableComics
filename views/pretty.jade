@@ -5,13 +5,11 @@ block content_layout
 		li.headerlink(ng-show="isartist")
 			a(href="/pretty/create") + Create Comic
 		li.headerlink
-			a(href="/pretty/") Comics Dashboard
+			a(href="/pretty/") My Dashboard
 		ul.headerright
-			li.headerlink(ng-show="!authenticated")
-				a(href="/auth/login")  Sign In
-			li.headerlink(ng-show="authenticated")
+			li.headerlink
 				a(href="/") {{username}}
-			li.headerlink(ng-show="authenticated")
+			li.headerlink
 				a(ng-click="logout()" href="") Sign Out
 			li.headerlink
 				input(type=text, value="Search...", onkeypress="searchKeypress(event);" onfocus="searchFocusClear();").search#search

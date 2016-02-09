@@ -11,4 +11,3 @@ install/*
 ssl/*
 src/*.js
 uploads/*
-public/uploads/*

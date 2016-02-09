@@ -60,7 +60,6 @@ class Application {
 		app.use(function(req,res,next){
 			req.dbManager = dbManager;
 			req.db=db;
-      console.log(db);
 			next();
 		});
 

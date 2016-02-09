@@ -8,6 +8,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var http = require('http');
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk(config.db);
@@ -18,6 +19,15 @@ var RouteAuthentication = require('./routes/authentication');
 import DatabaseManager = require("./src/DatabaseManager")
 
 var dbManager: DatabaseManager = new DatabaseManager(db);
+
+//fatal error if cannot connect to database:
+try {
+	http.get("http://"+config.db);
+  console.log("Connected to MongoDB.")
+} catch (err) {
+	console.log("Could not connect to MongoDB!");
+	console.log(err);
+}
 
 interface Error {
 	status?: number;
@@ -50,6 +60,7 @@ class Application {
 		app.use(function(req,res,next){
 			req.dbManager = dbManager;
 			req.db=db;
+      console.log(db);
 			next();
 		});
 

@@ -12,13 +12,13 @@ class RouteAuth {
 	static setAuthenticationCookie(req,res,username,password){
 		if (username){
 			res.cookie('credentials',{
-username: username,
-password: password,
+				username: username,
+				password: password,
 			}, {
-maxAge: 900000,
-httpOnly: true,
-secure: config.https,
-path: '/'
+				maxAge: 900000,
+				httpOnly: true,
+				secure: config.https,
+				path: '/'
 			});
 		}
 	}
@@ -27,7 +27,7 @@ path: '/'
 	//attaches user object to request if valid
 	//attaches user info to the headers for the next http data sent
 	//callback [](authenticated):
-	//  authenticated is true if user is successfuly authenticated.
+	//	authenticated is true if user is successfuly authenticated.
 	static authorizeUser(req,res,callback){
 		var username = ""
 		var password = ""
@@ -52,7 +52,6 @@ path: '/'
 					
 					//tell client about client-specific information in all future responses
 					var isartist = req.user.isArtist();
-					console.log(isartist);
 					res.append('isartist',isartist);
 					res.append('username',username);
 					res.append('authenticated',true);
@@ -99,13 +98,12 @@ path: '/'
 		/* POST login. (POSTs a new session) */
 		router.post('/auth/login', function(req, res, next) {
 			if (!req.body.username || !req.body.password) //incorrect POST body
-			res.send({success: false, msg: 'Please provide username and password'});
+			res.status(400).send({success: false, msg: 'Please provide username and password'});
 			else {
 				RouteAuth.authorizeUser(req,res,function(authenticated){
-					console.log(authenticated);
 					if (authenticated) {
 						RouteAuth.setAuthenticationCookie(req,res,req.body.username,req.body.password);
-						res.send({success: true, msg: 'Valid Credentials!'})
+						res.status(200).send({success: true, msg: 'Valid Credentials!'})
 					} else {
 						res.send({success: false, msg: 'Incorrect username or password'})
 					}
@@ -174,9 +172,9 @@ path: '/'
 		//block all access to app after this point:
 		router.get('/*', function(req,res,next) {
 			if (!req.user)
-			return res.render('simplelogin', {
-				title: 'Log In'
-			});
+				return res.render('simplelogin', {
+					title: 'Log In'
+				});
 			next();
 		});
 		router.all('/*', function(req,res,next) {

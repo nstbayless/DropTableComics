@@ -14,6 +14,7 @@ editlist:string[]; /** A list of all editors of this comic */
 adminlist:string[]; /** A list of all admins of this comic */ 
 	/* INVARIANT:  A user is on at most one list */
 pages:number[] /** Pages in the comic */
+image_collection: string;
 manager:any; /** Database Manager */
 	
 	/** CONSTRUCTOR */
@@ -23,6 +24,7 @@ manager:any; /** Database Manager */
 		this.name = name;
 		this.creator = creator;
 		this.description = description;
+		this.image_collection = creator + '_' + name;
 	} /** stub */
 	
 	/** GETTERS */
@@ -50,6 +52,8 @@ manager:any; /** Database Manager */
 	getManager():any {
 		return this.manager;
 	}
+	getImageCollection(): string{
+		return this.image_collection}
 	
 	
 	

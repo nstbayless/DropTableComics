@@ -37,7 +37,7 @@ class DatabaseManager {
 		adminlist[0] = artist;
 		var comics = this.db.get('comics');
 		console.log("creating comic");
-		comics.insert({"title":name,"viewlist":viewlist,"editlist":editlist,"adminlist":adminlist,"creator":artist, "description":description});
+		comics.insert({"title":name,"viewlist":viewlist,"editlist":editlist,"adminlist":adminlist,"creator":artist, "description":description, "image_collection":comic.getImageCollection()});
 		return comic;
 	}
 
@@ -78,7 +78,6 @@ class DatabaseManager {
 		var comics = this.db.get('comics');
 		comics.findOne({title:comic_name, creator:username}, function(err,comic_canon){
 			if (err||!comic_canon){ 
-				console.log(err);
 				console.log("whoops, it seems we can't find the comic");
 				return callback(err,null); 
 			}
@@ -92,7 +91,33 @@ class DatabaseManager {
 			callback(null,comic);
 		});
 	}
-
+	// Inserts the given image (path and name) into the database
+	insertImage(image_collection_name:string, path:string, name:string){
+		var image_collection = this.db.get(image_collection_name);
+		image_collection.insert({path:path,name:name});
+		}
+		
+		// Async gets the given image from the database
+		// callback: [] (err, file)
+	getImage(image_collection_name:string, name:string, callback:any){
+		var image_collection = this.db.get(image_collection_name);
+		image_collection.findOne({name:name}, function(err,img){
+			if (err||!img){ 
+				console.log("No image");
+				return callback(err,null); 
+			};
+			console.log('DETAILS OF FILE IN DATABASE');
+			console.log(img);
+			console.log('RETURNING');
+			console.log(img.path);
+			callback(null, img.path);
+		});
+		}
+	// Return Image Collection object, given name	
+	getImageCollection(image_collection_name:string){
+		var image_collection = this.db.get(image_collection_name);
+	}
+		
 	//creates a hash for the given password
 	computeHash(password: string): string {
 		return bcrypt.hashSync(password,bcrypt.genSaltSync(3));

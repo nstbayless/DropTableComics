@@ -9,6 +9,9 @@ var config = require('../config');
 import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
+var multer  = require('multer');
+var upload = multer({ dest: 'uploads/' });
+var fs = require('fs');
 
 //struct for a single result in a list of search results
 class SearchResult{
@@ -16,6 +19,23 @@ linktext: string;
 description: string;
 href: string;
 }
+
+// Parses comic name from uri
+function parseComicName(url: string):string {
+	var res = url.split("/");
+	return res[3]; // stub TODO: Add dash/space checking parseComicName
+}
+
+function generateComicURL(name: string, creator: string):string {
+	return name; // stub TODO: Implement generateComicURL and use in other methods
+}
+
+// Parses comic name from uri
+function parseComicCreator(url: string):string {
+	var res = url.split("/");
+	return res[2];// stub TODO: Add dash/space checking parseComicCreator
+}
+
 
 class RoutePretty {
 	router_: any;
@@ -43,7 +63,7 @@ class RoutePretty {
 			comics.find({creator:username},{},function(e,docs){
 				res.render('dashboard', {
 					title: 'dashboard',
-					editable: docs,		// list of comics created by use	
+					editable: docs		// list of comics created by use	
 				});
 			});    
 		});
@@ -54,7 +74,7 @@ class RoutePretty {
 			var isartist = req.user.isArtist(); // true if user is an artist
 			if (isartist){   
 				res.render('createcomic', {
-					title: 'create comic'
+					title: 'Create Comic'
 				});
 			}		
 		});
@@ -67,20 +87,61 @@ class RoutePretty {
 				searchresults: results
 			});
 		})
-		
+			
 		/* GET pretty comic page */
 		router.get('/see/*', function(req,res,next) {
-			res.render('newcomic', {
-				title: req.url,
-				heading: req.url
-			});
+			var isartist = req.user.isArtist(); // true if user is an artist
+			var comic_name = parseComicName(req.url);
+			var creator_name = parseComicCreator(req.url);
+		
+											// TODO: Get comic from database
+			if (creator_name == req.user.getUsername()){
+				 // TODO: (Edward) Change this to to check for permission and send authentication failure if permissions not kosher
+				res.render('newcomic', {				// TODO: Load images and render them
+					title: comic_name,
+					comic_name: comic_name,
+					creator_name: creator_name
+				});
+			} else res.send({success: false, msg: 'This is not your comic!'});
 		})
+		
+		/* GET pretty comic edit page */
+		router.get('/edit/*', function(req,res,next) {
+			var isartist = req.user.isArtist(); // true if user is an artist
+			var comic_name = parseComicName(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			var image_collection = req.dbManager.db.get(comic_creator + '_' + comic_name);
+			var x;
+			image_collection.find({}, { stream: true })
+			.each(function(myDoc){
+			var img = myDoc;
+				console.log('IMAGE PATH ACCORDING TO EDIT IS ' + img.path);
+				console.log("DOWNLOADING IMAGE FROM " + img.path);
+				var source = fs.createReadStream(img.path);
+				x ='C:\\Users\\Arman\\SkyDrive\\Documents\\310 Project\\DropTableStudents\\public\\' + img.path;
+				var dest = fs.createWriteStream(x); 													// TODO: Make path more legit
+				source.pipe(dest);
+				console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x);
+				x = img.path;
+				source.on('end', function() {console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x)});
+				source.on('error', function(err) { console.log("ERROR: " + err) });
+			});
+			if (comic_creator == req.user.getUsername()){									// TODO: (Edward) Make legit permission check				
+				image_collection.find({},{},function(e,docs){ 					// TODO: Load images and render them
+					return res.render('editcomic', {									// TODO: (Edward) Make legit permission check
+						title: comic_name,
+						comic_creator: comic_creator,
+						comic_name: comic_name,
+						panels: docs															// list of comics created by use									});
+					}); 
+				});	
+			}
+		});																					// TODO: Get comi from database		
 		
 		
 		/* POST Comic. */
 		router.post('/comic', function(req, res, next) {
-			//TODO:(Arman): check for reserved characters while parsing names
-			console.log(req.body.comic_name);
+			//TODO: check for reserved characters while parsing names
 			if (!req.body.comic_name) //incorrect POST body
 			res.send({success: false, msg: 'Provide comic name'});
 			else if (!req.user.isArtist) //incorrect account type
@@ -99,9 +160,33 @@ class RoutePretty {
 					res.send({success: true})
 				});
 			} 
-		}); 
+		});
+		
+	
+		/* POST Image */
+		router.post('/file-upload/*',upload.single('thumbnail'), function(req, res, next) {
+			var comic_creator = parseComicCreator(req.url);
+			var comic_name = parseComicName(req.url);
+			var image_collection = comic_creator + "_" + comic_name;
+			console.log("DETAILS OF FILE UPLOAD!");
+			console.log(req.file.path);
+			console.log(req.file.filename);
+			var path:string = req.file.path;
+			var name:string = req.file.filename;
+			req.dbManager.getComic(comic_name,comic_creator, function(err,comic){
+				if (!comic){
+					return res.send({success:false, msg: 'Comic does not exist'});
+				}
+				else {
+					console.log("Inserting image..." + name);
+					req.dbManager.insertImage(image_collection, path, name); // TODO: create naming system for multiple names
+					console.log("Inserted image " + name);
+					res.redirect('back');
+				}
+			}); 
+		});
 		this.router_ = router;
-	}
+}
 	
 	getRouter(){
 		return this.router_;

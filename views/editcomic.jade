@@ -1,0 +1,10 @@
+extends pretty
+
+block content
+	h1.bannertext Edit My Comic
+	body
+		form(method='post', enctype='multipart/form-data', action= '/pretty/file-upload/' + comic_creator + '/' + comic_name)
+			input(type='file', name='thumbnail')
+			input(type='submit')
+		each pic, i in panels
+			img(src= "\\" + pic.path alt="Search")

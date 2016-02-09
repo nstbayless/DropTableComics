@@ -16,7 +16,6 @@ app.controller('authController', function($scope, $http) {
 	//true only if user is artist
 	$scope.isartist = req.getResponseHeader("isartist")=="true"
 
-
 	//user attempts to register a new account
 	$scope.register=function(){
 		$scope.response=""

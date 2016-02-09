@@ -1,4 +1,5 @@
 extends pretty
 
 block content
-  h1.bannertext My Comic
+	h1.bannertext=comic_name
+	a(href="/pretty/edit/" + creator_name + "/" + comic_name) Edit

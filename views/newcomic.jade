@@ -2,4 +2,6 @@ extends pretty
 
 block content
 	h1.bannertext=comic_name
-	a(href="/pretty/edit/" + creator_name + "/" + comic_name) Edit
+	a(href="/pretty/edit/" + comic_creator + "/" + comic_name, ng-show="isartist") Edit
+	each pic, i in panels
+		img(src= "\\" + pic.path alt="Search")

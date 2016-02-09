@@ -92,18 +92,36 @@ class RoutePretty {
 		router.get('/see/*', function(req,res,next) {
 			var isartist = req.user.isArtist(); // true if user is an artist
 			var comic_name = parseComicName(req.url);
-			var creator_name = parseComicCreator(req.url);
-		
-											// TODO: Get comic from database
-			if (creator_name == req.user.getUsername()){
-				 // TODO: (Edward) Change this to to check for permission and send authentication failure if permissions not kosher
-				res.render('newcomic', {				// TODO: Load images and render them
-					title: comic_name,
-					comic_name: comic_name,
-					creator_name: creator_name
-				});
-			} else res.send({success: false, msg: 'This is not your comic!'});
-		})
+			var comic_creator = parseComicCreator(req.url);
+			var image_collection = req.dbManager.db.get(comic_creator + '_' + comic_name);
+			var x;
+			image_collection.find({}, { stream: true })
+			.each(function(myDoc){
+			var img = myDoc;
+				console.log('IMAGE PATH ACCORDING TO EDIT IS ' + img.path);
+				console.log("DOWNLOADING IMAGE FROM " + img.path);
+				var source = fs.createReadStream(img.path);
+				x ='public\\' + img.path;
+				var dest = fs.createWriteStream(x); 													// TODO: Make path more legit
+				source.pipe(dest);
+				console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x);
+				x = img.path;
+				source.on('end', function() {console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x)});
+				source.on('error', function(err) { console.log("ERROR: " + err) });
+			});
+			if (comic_creator == req.user.getUsername()){									// TODO: (Edward) Make legit permission check				
+				image_collection.find({},{},function(e,docs){ 					// TODO: Load images and render them
+					return res.render('newcomic', {									// TODO: (Edward) Make legit permission check
+						title: comic_name,
+						comic_creator: comic_creator,
+						comic_name: comic_name,
+						isartist:isartist,
+						panels: docs															// list of comics created by use									});
+					}); 
+				});	
+			}
+			else res.send({success: false, msg: 'This is not your comic!'});
+		});
 		
 		/* GET pretty comic edit page */
 		router.get('/edit/*', function(req,res,next) {
@@ -118,7 +136,7 @@ class RoutePretty {
 				console.log('IMAGE PATH ACCORDING TO EDIT IS ' + img.path);
 				console.log("DOWNLOADING IMAGE FROM " + img.path);
 				var source = fs.createReadStream(img.path);
-				x ='C:\\Users\\Arman\\SkyDrive\\Documents\\310 Project\\DropTableStudents\\public\\' + img.path;
+				x ='public\\' + img.path;
 				var dest = fs.createWriteStream(x); 													// TODO: Make path more legit
 				source.pipe(dest);
 				console.log("IMAGE DOWNLOADED TO CLIENT AT:" + x);

@@ -28,13 +28,18 @@ export class Comic {
 		this.uri_sanitized = uri_sanitized;
 		this.creator = creator;
 		this.description = description;
-		this.image_collection = creator + '_' + name;
+		this.image_collection = creator + '_' + uri_sanitized;
+		this.pages=[]
 		this.pages[0]=[];
+		this.panel_map=[];
 	} /** stub */
 	
 	/* GETTERS */
-	getName():string{
+	getName():string {
 		return this.name;
+	}
+	getURI():string {
+		return this.uri;
 	}
 	getCreator():string{
 		return this.creator;

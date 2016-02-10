@@ -1,6 +1,5 @@
 //handles client-side authentication
 
-
 var app = angular.module('authentication', [])
 app.controller('authController', function($scope, $http) {
 	//read http headers: 
@@ -30,10 +29,13 @@ app.controller('authController', function($scope, $http) {
 			account_type: $scope.auth_usertype
 		}).then(function(response){
 			if (response.data.success) //redirect to dashboard
-			window.location='/';
+				window.location='/';
 			else if (response.data.msg)
-			$scope.response=response.data.msg
-		})
+				$scope.response=response.data.msg
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  }) 
 	}
 	
 	//user attempts to create a new comic
@@ -43,12 +45,12 @@ app.controller('authController', function($scope, $http) {
 			comic_name: $scope.comic_name,
 			description: $scope.comic_description
 		}).then(function(response){
-			console.log(response);
 			if (response.data.success)
-			window.location='/pretty/see/' + $scope.username + '/' + $scope.comic_name;
-			else if (response.data.msg)
-			$scope.response = response.data.msg
-		}) 
+				window.location=response.data.comic_url;
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  }) 
 	}
 	
 	//user attempts log-in
@@ -59,14 +61,26 @@ app.controller('authController', function($scope, $http) {
 			password: $scope.auth_password
 		}).then(function(response){
 			if (response.data.success) //redirect to dashboard
-			window.location='/';
+				window.location='/';
 			else if (response.data.msg)
-			$scope.response = response.data.msg
-		})
+				$scope.response = response.data.msg
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  }) 
 	}
 	//log user out by deleting credential cookie
 	$scope.logout=function(){
 		$http.get("/auth/logout");
 		window.location='/';
 	}
+
+	//sanitize uri for comic (Identical to Comic.sanitizeName()):
+	$scope.sanitizeName=function(name) {
+		if (!name)
+			return ""
+		return name
+						.replace(/[ _*&\^@\/\\]+/g,'-') //swap space-like characters for dash
+						.replace(/[^a-zA-Z0-9\-]/,'') //remove bad characters
+  }
 });

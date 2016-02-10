@@ -68,6 +68,7 @@ class Application {
 
 		//registration-protected routes
 		app.use('/', routeIndex.getRouter());
+		//TODO: pretty and index should be replaced
 		app.use('/pretty', routePretty.getRouter());
 
 		// catch 404 and forward to error handler
@@ -107,7 +108,7 @@ class Application {
 	onStart(port) {
 		var httptype = "http";
 		if (config.https)
-		httptype = "https";
+			httptype = "https";
 		console.log("serving " + httptype + " on port " + port)
 	}
 	getApp(){

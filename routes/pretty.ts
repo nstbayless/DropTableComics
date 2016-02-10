@@ -25,18 +25,39 @@ class SearchResult{
 // Parses comic uri from full uri
 function parseComicURI(url: string):string {
 	var res = url.split("/");
-	if (res.length<=3)
+	var id=res.indexOf("comics");
+	if (!id)
 		return null;
-	var comic_uri = res[3];
+	if (res.length<=id)
+		return null;
+	var comic_uri = res[id+1];
 	return Comic.canonicalURI(comic_uri);
 }
 
 // Parses author name from uri
 function parseComicCreator(url: string):string {
 	var res = url.split("/");
-	if (res.length<=2)
+	var id=res.indexOf("comics");
+	if (!id)
 		return null;
-	return res[2];// stub TODO: Add dash/space checking parseComicCreator
+	if (id==0)
+		return null;
+	var author = res[id-1];
+  //  TODO: Add dash/space checking parseComicCreator
+	return author;
+}
+
+// Parses comic panel # from uri
+function parsePanelID(url: string):string {
+	var res = url.split("/");
+	var id=res.indexOf("panels");
+	if (!id)
+		return null;
+	if (res.length<=id)
+		return null;
+	var panel = res[id+1];
+  //  TODO: Add dash/space checking parseComicCreator
+	return panel;
 }
 
 class RoutePretty {
@@ -66,7 +87,7 @@ class RoutePretty {
 			comics.find({creator:username},{},function(err,comics){
 				res.render('dashboard', {
 					title: 'dashboard',
-					comics: comics		// list of comics created by use	
+					comics: comics		// list of comics created by user	
 				});
 			});    
 		});
@@ -95,7 +116,7 @@ class RoutePretty {
 		router.get('/see/*', function(req,res,next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
-			if (!comic_uri||comic_creator)
+			if (!comic_uri||!comic_creator)
 				return next();
 			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
 				req.dbManager.getComic(comic_creator,comic_uri,function(err,comic){
@@ -115,7 +136,7 @@ class RoutePretty {
 		router.get('/edit/*', function(req,res,next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
-			if (!comic_uri||comic_creator)
+			if (!comic_uri||!comic_creator)
 				return next();
 			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
 				req.dbManager.getComic(comic_creator,comic_uri,function(err,comic){
@@ -140,16 +161,17 @@ class RoutePretty {
 			else {
 				// check if user is signed in
 				if (!req.user)
-				return res.status(401).send({success: false, msg: 'Please sign-in to create a comic'})
-				req.dbManager.getComic(Comic.canonicalURI(req.body.comic_name),
-					 req.user.getUsername(), function(err,comic){
-					if (comic){
-						console.log("Comic found: " + req.body.comic_name);
-						return res.status(409).send({success:false, msg: 'Comic already exists'});
+					return res.status(401).send({success: false, msg: 'Please sign in to create a comic'})
+				req.dbManager.getComic(req.user.getUsername(),
+					Comic.canonicalURI(req.body.comic_name), function(err,comic){
+					if (comic) {
+						console.log("Comic already exists: " + req.body.comic_name);
+						return res.status(409).send({success:false, msg: 'Comic already exists with that name'});
 					}
 					console.log("Creating comic: "+req.body.comic_name);
 					comic = req.dbManager.createComic(req.body.comic_name,req.user.getUsername(),req.body.description);
-					res.status(200).send({success: true})
+					var url_comic_redirect=("/pretty/see/"+req.user.getUsername()+"/comics/"+comic.getURI());
+					res.status(200).send({success: true,comic_url:url_comic_redirect})
 				});
 			} 
 		});
@@ -160,30 +182,63 @@ class RoutePretty {
 			//TODO(Edward): check permissions when uploading panel.
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
+			if (!comic_creator||!comic_uri==null)
+				return next();
 			console.log("DETAILS OF FILE UPLOAD!");
-			console.log(req.file.path);
-			console.log(req.file.filename);
+			console.log("path:" + req.file.path);
+			console.log("filename: " + req.file.filename);
 			var path:string = req.file.path;
 			var name:string = req.file.filename;
+			//TODO: check submission is not empty (500 error occurs currently)
 			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic){
-				if (!comic){
+				if (err||!comic){
 					return res.status(404).send('Comic does not exist: '
-						+comic_uri+" author: " + comic_creator);
+						+comic_uri+" (author: " + comic_creator+")");
 				}
 				else {
 					console.log("Inserting image..." + name);
-					req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,comic){
-						if (comic&&!err) {
+					req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,panel_id){
+						if (panel_id!=null&&!err) {
 							console.log("Inserted image " + name);
-							res.redirect(req.url);
+							//user should refresh:
+							res.redirect(req.get('referer'));
 						} else {
 							console.log("Error inserting panel!");
+							console.log(err);
 							res.status('500').send("Error inserting panel");
 						}
 					});
 				}
 			}); 
 		});
+
+		/* GET panel */
+		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/[0-9]+$/, function(req,res,next) {
+			//TODO(Edward): check permissions when getting panel.
+			var comic_creator = parseComicCreator(req.url);
+			var comic_uri = parseComicURI(req.url);
+			var panel = parsePanelID(req.url);
+			if (!comic_creator||!comic_uri||panel==null)
+				return next();
+
+			// TODO(NaOH): retrieving the panels from the database
+			// for _each panel_ seems pretty slow to me.
+			// caching would be helpful here.
+			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic){
+				if (err||!comic){
+					return res.status(404).send('Comic does not exist: '
+						+comic_uri+" (author: " + comic_creator+")");
+				}
+				else {
+					var path = comic.getPanelPath(panel);
+					if (!path)
+						return next();
+					path=__dirname.substring(0,__dirname.lastIndexOf('/')+1) + path;
+					res.sendFile(path);
+				}
+			});
+		})
+
 		this.router_ = router;
 }
 	

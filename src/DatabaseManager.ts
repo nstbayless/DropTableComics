@@ -27,6 +27,37 @@ class DatabaseManager {
 		return artist;
 	}
 
+	// creates a new Viewer and adds it to the database
+	createViewer(username: string, password: string, email: string): User.Viewer {
+		var hash = this.computeHash(password);
+		var viewer = new User.Viewer(username);
+		viewer.hash=hash;
+		viewer.email=email;
+		var users = this.db.get('users');
+		users.insert({username:username,hash:hash,type:"pleb",email:email});
+		return viewer;
+	}
+
+	// asynchronously retrieves the given user from the database
+	// callback: [](err,user)
+	getUser(username: string, callback:any) {
+		var users = this.db.get('users');
+		users.findOne({username:username}, function(err,user_canon){
+			if (err||!user_canon) return callback(err,null);
+			var user: User.User;
+			if (user_canon.type=="artist")
+			user = new User.Artist(user_canon.username);
+			else if (user_canon.type=="pleb")
+			user = new User.Viewer(user_canon.username);
+			else
+				throw new Error("Corrupted database: user.type == '" + user_canon.type + "'")
+			//fill user fields based on canononical version of user...
+			user.hash=user_canon.hash;
+			user.email=user_canon.email;
+			callback(null,user);
+		});
+	}
+
 	// creates a new comic and adds it to the database
 	createComic(name: string, artist: string, description:string): Comic {
     var uri = Comic.sanitizeName(name);
@@ -51,45 +82,14 @@ class DatabaseManager {
 		return comic;
 	}
 
-	// creates a new Viewer and adds it to the database
-	createViewer(username: string, password: string, email: string): User.Viewer {
-		var hash = this.computeHash(password);
-		var viewer = new User.Viewer(username);
-		viewer.hash=hash;
-		viewer.email=email;
-		var users = this.db.get('users');
-		users.insert({username:username,hash:hash,type:"pleb",email:email});
-		return viewer;
-	}
-
-	// asynchronously retrieves the given user from the database
-	// callback: [](err,user)
-	getUser(username: string, callback:any) {
-		var users = this.db.get('users');
-		users.findOne({username:username}, function(err,user_canon){
-			if (err||!user_canon) return callback(err,null);
-			var user: User.User;
-			if (user_canon.type=="artist")
-			user = new User.Artist(user_canon.username);
-			else if (user_canon.type=="pleb")
-			user = new User.Viewer(user_canon.username);
-			else
-			throw new Error("Corrupted database: user.type == '" + user_canon.type + "'")
-			//fill user fields based on canononical version of user...
-			user.hash=user_canon.hash;
-			user.email=user_canon.email;
-			callback(null,user);
-		});
-	}
 	// asynchronously retrieves the given comic from the database
 	// callback: [](err,comic)
 	getComic(username:string, comic_uri: string, callback:any) {
-		console.log(comic_uri);
 		comic_uri = Comic.canonicalURI(comic_uri);
 		var comics = this.db.get('comics');
 		comics.findOne({"urisan":comic_uri, creator:username}, function(err,comic_canon){
 			if (err||!comic_canon){ 
-				console.log("whoops, it seems we can't find the comic");
+				console.log("comic not found: " + username+"/comics/" + comic_uri);
 				return callback(err,null); 
 			}
 			var comic: Comic;
@@ -100,6 +100,7 @@ class DatabaseManager {
 			comic.editlist = comic_canon.editlist;
 			comic.adminlist = comic_canon.adminlist;
 			comic.pages = comic_canon.pages;
+			comic.panel_map=comic_canon.panel_map;
 			comic.description = comic_canon.description;
 			callback(null,comic);
 		});
@@ -109,6 +110,7 @@ class DatabaseManager {
 	// - if no error occurred, err field is null
 	// - otherwise, new_panel_id is the id of the new panel
 	postPanel(username:string, comic_uri:string, page:number, path:string, callback: any){
+		var db=this.db;
 		if (page<1)
 			callback(new Error("page must be at least 1"),null);
 		comic_uri = Comic.canonicalURI(comic_uri);
@@ -119,10 +121,10 @@ class DatabaseManager {
 					var panel_map=comic.panel_map;
 					var new_panel_id=panel_map.length;
 					//add new panel to the page:
-					pages[page-1].append(new_panel_id)
+					pages[page-1].push(new_panel_id)
 					//add new panel to map
-					panel_map.append(path);
-					var comics = this.db.get('comics');
+					panel_map.push(path);
+					var comics = db.get('comics');
 					comics.update({
 						"urisan":comic_uri,
 						"creator":username

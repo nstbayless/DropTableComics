@@ -2,8 +2,10 @@ extends pretty
 
 block content
 	h1.bannertext Edit #{comic_name}
-	form(method='post', enctype='multipart/form-data', action= '/pretty/' + comic_creator + '/comics/' + comic_uri+"/panels")
-		input(type='file', name='image')
-		input(type='submit')
+	p
+		form(method='post', enctype='multipart/form-data', action= '/pretty/' + comic_creator + '/comics/' + comic_uri+"/panels")
+			input(type='file', name='image')
+			input(type='submit')
 	each pic, i in panels
-		img(src= "/pretty/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+		p
+			img(src= "/pretty/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)

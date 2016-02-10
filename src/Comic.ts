@@ -88,6 +88,5 @@ export class Comic {
   static canonicalURI(uri: string): string {
 		return Comic.sanitizeName(uri).toLowerCase();
   }
-	
 }
 

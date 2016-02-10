@@ -120,12 +120,15 @@ class RoutePretty {
 				return next();
 			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
 				req.dbManager.getComic(comic_creator,comic_uri,function(err,comic){
+					if (err||!comic)
+						return next();
 					//TODO: rename 'newcomic' to 'viewcomic' or something
-					return res.render('newcomic', {									// TODO: (Edward) Make legit permission check
+					return res.render('newcomic', {	
 						title: comic.getName(),
 						comic_creator: comic_creator,
 						comic_name: comic.getName(),
 						comic_uri: comic_uri,
+						share_link: req.get('host') + req.url,
 						panels: comic.getPage(1)
 					})
 				})
@@ -140,7 +143,9 @@ class RoutePretty {
 				return next();
 			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
 				req.dbManager.getComic(comic_creator,comic_uri,function(err,comic){
-					return res.render('editcomic', {									// TODO: (Edward) Make legit permission check
+					if (err||!comic)
+						return next();
+					return res.render('editcomic', { 
 						title: comic.getName(),
 						comic_creator: comic_creator,
 						comic_name: comic.getName(),

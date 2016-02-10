@@ -7,3 +7,9 @@ block content
 	each pic, i in panels
 		p
 			img(src= "/pretty/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+	p
+		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
+			img(src="/images/icon_share.png" alt="share")
+			| share
+		span(ng-show="shlink.length>0")
+			input(readonly="readonly" ng-model="shlink" ng-init="")

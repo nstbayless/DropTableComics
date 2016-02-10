@@ -5,4 +5,6 @@ block content
 	ul
 		each comic, i in editable
 			li
-				a(href="/pretty/see/" + comic.creator + "/" + comic.title)= comic.title
+				a(href="/pretty/see/" + comic.creator + "/" + comic.title)= comic.title 
+				br
+				a(href="/pretty/" + comic.creator + "/" + "adminpage" + "/" + comic.title)= "Edit Permissions" 

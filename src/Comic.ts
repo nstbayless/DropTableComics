@@ -36,6 +36,7 @@ manager:any; /** Database Manager */
 		return this.description;
 	}
 	getViewlist():string[] {
+		this.viewlist = ["hello", "this", "works?"];
 		return this.viewlist;
 	}
 	getEditlist():string[] {

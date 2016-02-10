@@ -21,7 +21,3 @@ function searchFocusClear(){
     firstfocus=false;
   }
 }
-
-function viewlistSubmit(){
-  winow.location.href="*/adminpage";
-}

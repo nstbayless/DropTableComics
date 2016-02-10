@@ -50,3 +50,8 @@ table.auth {
 table.auth td {
   padding: 2px 8px 2px 8px;
 }
+a.share {
+  color: gray;
+  text-decoration: none;
+  size: 2;
+}

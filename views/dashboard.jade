@@ -1,10 +1,10 @@
 extends pretty
 
 block content
-	h1.bannertext= header
+	h1.bannertext= Dashboard
 	ul
-		each comic, i in editable
+		each comic, i in comics
 			li
-				a(href="/pretty/see/" + comic.creator + "/" + comic.title)= comic.title 
+				a(href="/pretty/see/" + comic.creator + "/comics/" + comic.uri)= comic.title
 				br
-				a(href="/pretty/" + comic.creator + "/" + "adminpage" + "/" + comic.title)= "Edit Permissions" 
+				a(href="/pretty/adminpage/" + comic.creator + "/comics/" + comic.uri)= "Edit Permisions"

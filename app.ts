@@ -8,17 +8,26 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var http = require('http');
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk(config.db);
 var RouteIndex = require('./routes/index');
-var RouteAdminPage = require('./routes/adminpage');
 var RoutePretty = require('./routes/pretty');
 var RouteAuthentication = require('./routes/authentication');
 
 import DatabaseManager = require("./src/DatabaseManager")
 
 var dbManager: DatabaseManager = new DatabaseManager(db);
+
+//fatal error if cannot connect to database:
+try {
+	http.get("http://"+config.db);
+  console.log("Connected to MongoDB.")
+} catch (err) {
+	console.log("Could not connect to MongoDB!");
+	console.log(err);
+}
 
 interface Error {
 	status?: number;
@@ -30,11 +39,9 @@ class Application {
 	constructor() {
 		var routeIndex = new RouteIndex();
 		var routePretty = new RoutePretty();
-		var routeadminpage = new RouteAdminPage();
 		var routeAuthentication = new RouteAuthentication();
 
 		var app = express();
-
 
 		// view engine setup
 		app.set('views', path.join(__dirname, 'views'));
@@ -61,8 +68,8 @@ class Application {
 
 		//registration-protected routes
 		app.use('/', routeIndex.getRouter());
+		//TODO: pretty and index should be replaced
 		app.use('/pretty', routePretty.getRouter());
-		app.use('*/adminpage', routeadminpage.getRouter());
 
 		// catch 404 and forward to error handler
 		app.use(function(req, res, next) {
@@ -101,7 +108,7 @@ class Application {
 	onStart(port) {
 		var httptype = "http";
 		if (config.https)
-		httptype = "https";
+			httptype = "https";
 		console.log("serving " + httptype + " on port " + port)
 	}
 	getApp(){

@@ -151,6 +151,30 @@ class RoutePretty {
 			});
 		});
 
+		/* GET pretty comic edit page */
+		router.get('/edit/*', function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			console.log(req.user.username);
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				return res.render('editcomic', {
+					title: comic.getName(),
+					comic_creator: comic_creator,
+					comic_name: comic.getName(),
+					comic_uri: comic_uri,
+					//TODO: change to getUserCanAdmin()
+					adminable: comic.getUserCanEdit(req.user.getUsername()),
+					panels: comic.getPage(1)
+				})
+			})
+		});
+
 		/* GET pretty adminpage */
 		router.get('/adminpage/*', function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
@@ -255,34 +279,6 @@ class RoutePretty {
 				})
 			})
 		})
-
-		/* GET pretty comic edit page */
-		router.get('/edit/*', function(req, res, next) {
-			var comic_uri = parseComicURI(req.url);
-			var comic_creator = parseComicCreator(req.url);
-			console.log(req.user.username);
-			if (!comic_uri || !comic_creator)
-				return next();
-			// this checks permission by looking at the comic editlist
-			req.dbManager.checkEditPermission(comic_creator, req.user.username, comic_uri, function(err, boolean) {
-				// if user was found in editlist it will proceed to render the edit page
-				if (boolean && !err) {  
-					console.log("went through now rendering edit page");	
-					req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
-						if (err || !comic)
-							return next();
-						return res.render('editcomic', {
-							title: comic.getName(),
-							comic_creator: comic_creator,
-							comic_name: comic.getName(),
-							comic_uri: comic_uri,
-							panels: comic.getPage(1)
-						})
-					})
-					// if user was not found, produces a null callback
-				} else res.status(401).send("You currently do not have permission to edit the comic.")
-			})
-		});
 
 		/* POST Comic. */
 		//TODO: this is not restful. URI location is /<user-name>/comics/

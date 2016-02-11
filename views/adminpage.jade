@@ -1,0 +1,35 @@
+extends pretty
+
+block content
+	h1.bannertext= "Permissions Page: " + title
+
+	div(id=viewlistdiv1)
+		p Comic viewlist: #{viewlist.length}
+			br
+			each user, i in viewlist
+				input(type="checkbox" name= user)
+				text #{user}
+				br
+
+		ul
+			button(id="mybtn", onclick="function()")="Try me out"
+		form
+			p Username:
+				input(type="text" ng-model="username_input" placeholder="Enter username here")
+			button(ng-click = 'viewlist_add()' ng-show='username_input.length>0') Submit {{username_input}}
+		p
+			font(color="red") {{response1}}
+
+	div(id=editlistdiv2) 
+		p Comic editlist: #{editlist.length}
+			br
+			each user, i in editlist
+				input(type="checkbox" name= user)
+				text #{user}
+				br
+		form
+			p Username of Collaborator:
+				input(type="text" ng-model="editor_input" placeholder="Enter username here")
+			button(ng-click="editlist_add()" ng-show="editor_input.length>0") Submit {{editor_input}}
+		p
+			font(color="red") {{response2}}

@@ -226,10 +226,11 @@ class DatabaseManager {
 			if (comic && !err) {
 				console.log("checking comic viewlist for permissions...")
 				var viewlist = comic.viewlist;
+				var editlist = comic.editlist;
 				// checks to see if given username is in the editlist
-				if (viewlist.indexOf(username) != -1); {
+				if (viewlist.indexOf(username) != -1 || editlist.indexOf(username) != -1); {
 					callback(err, true);
-				}
+				} 
 			} else {
 				console.log("returning false for permission check")
 				callback(err, null);

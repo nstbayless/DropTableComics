@@ -1,21 +1,19 @@
 extends layout
 
 block content_layout
-  ul.headerbar
-    li.headerlink
-      a(href="/pretty/") Home
-    li.headerlink
-      a Comics
-    ul.headerright
-      li.headerlink(ng-show="!authenticated")
-        a(href="/auth/login")  Sign In
-      li.headerlink(ng-show="authenticated")
-        a(href="/") {{username}}
-      li.headerlink(ng-show="authenticated")
-        a(ng-click="logout()" href="") Sign Out
-      li.headerlink
-        input(type=text, value="Search...", onkeypress="searchKeypress(event);" onfocus="searchFocusClear();").search#search
-      li.headerlink
-        a(href="javascript:searchSubmit();").lowpad
-          img(src="/images/headerbar_icon_search.png" alt="Search")
-  block content
+	ul.headerbar
+		li.headerlink(ng-show="isartist")
+			a(href="/create") + Create Comic
+		li.headerlink
+			a(href="/") My Dashboard
+		ul.headerright
+			li.headerlink
+				a(href="/") {{username}}
+			li.headerlink
+				a(ng-click="logout()" href="") Sign Out
+			li.headerlink
+				input(type=text, value="Search...", onkeypress="searchKeypress(event);" onfocus="searchFocusClear();").search#search
+			li.headerlink
+				a(href="javascript:searchSubmit();").lowpad
+				img(src="/images/headerbar_icon_search.png" alt="Search")
+	block content

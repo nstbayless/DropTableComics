@@ -1,0 +1,15 @@
+extends pretty
+
+block content
+	h1.bannertext=comic_name
+	p
+		a(href="/edit/" + comic_creator + "/comics/" + comic_uri, ng-show="isartist") Edit
+	each pic, i in panels
+		p
+			img(src= "/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+	p
+		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
+			img(src="/images/icon_share.png" alt="share")
+			| share
+		span(ng-show="shlink.length>0")
+			input(readonly="readonly" ng-model="shlink" ng-init="")

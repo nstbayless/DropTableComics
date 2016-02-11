@@ -4,40 +4,48 @@
 import DatabaseManager = require("./DatabaseManager")
 
 /** Represents a user of DropComix */
- 
+
 export interface User {
 
-    username: string; /** The username of the user */
-    hash: string;  /** the hash of the user's password */
-    email: string; /** the email address of the user */
-    description: string; /** A description associated with the user */
-    manager:DatabaseManager; /** Database Manager */
-    viewlist:string[]; /** A list of all viewable comics */	
+username: string; /** The username of the user */
+hash: string;  /** the hash of the user's password */
+email: string; /** the email address of the user */
+description: string; /** A description associated with the user */
+manager:DatabaseManager; /** Database Manager */
+viewlist:string[]; /** A list of all viewable comics */	
+type:string; /** type of the user, either "pleb" or "artist"*/
 	
-    /** GETTERS */
-    getUsername():string;
-    getHash(): string;
-    getViewlist():string[];
-    getManager():DatabaseManager;
-    getDescription():string;
-    getEmail(): string;
+	/** GETTERS */
+	getUsername():string;
+	getHash(): string;
+	getViewlist():string[];
+	getManager():DatabaseManager;
+	getDescription():string;
+	getEmail(): string;
+	getType(): string;
+	isArtist(): boolean;
 }
 
 /** Represents a viewer of DropComix */
 export class Viewer implements User {
 
-    username: string; /** The username of the artist */
-    hash: string;
-    email: string; /** the email address of the user */
-    description: string; /** A description associated with the artist */
-    manager:DatabaseManager; /** Database Manager */
-    viewlist:string[]; /** A list of all viewable comics */
+username: string; /** The username of the artist */
+hash: string;
+email: string; /** the email address of the user */
+description: string; /** A description associated with the artist */
+manager:DatabaseManager; /** Database Manager */
+viewlist:string[]; /** A list of all viewable comics */
+type:string; /** type of the user, either "pleb" or "artist"*/
 	
-    /** CONSTRUCTOR */
-    constructor(username: string){} /** stub */
+	/** CONSTRUCTOR */
+	/** Not to be called outside DBManager */
+	constructor(username: string){
+		this.username = username;
+		this.type = "pleb";
+	}
 	
-    /** GETTERS */
-    getUsername():string{
+	/** GETTERS */
+	getUsername():string{
 		return this.username;
 	}
 	
@@ -50,34 +58,46 @@ export class Viewer implements User {
 	getDescription():string {
 		return this.description;
 	}
-    getHash(): string {
-      return this.hash;
-    }
-    getEmail(): string {
-      return this.email;
-    }	
+	getHash(): string {
+		return this.hash;
+	}
+	getEmail(): string {
+		return this.email;
+	}
+	getType(): string{
+		return this.type;
+	}
+	isArtist(): boolean{
+		return false; 
+	}
 }
 
 /** Represents an artist on DropComix */
 export class Artist implements User {
-	username: string; /** The username of the artist */
-    hash: string;
-    email: string; /** the email address of the user */
-	description: string; /** A description associated with the artist */
-	manager:DatabaseManager; /** Database Manager */
-	viewlist:string[]; /** A list of all viewable comics */
-	editlist:string[]; /** A list of all editable comics */
-	adminlist:string[]; /** A list of all adminstrated comics */
-		/* INVARIANT:  A comic is on at most one list */
-		
-		
-	/** CONSTRUCTOR */
-		/** Looks up Artist from database by name */
-	 constructor(username: string){} /** stub */
+username: string; /** The username of the artist */
+hash: string;
+email: string; /** the email address of the user */
+description: string; /** A description associated with the artist */
+manager:DatabaseManager; /** Database Manager */
+type:string; /** type of the user, either "pleb" or "artist"*/
+viewlist:string[]; /** A list of all viewable comics */
+editlist:string[]; /** A list of all editable comics */
+adminlist:string[]; /** A list of all adminstrated comics */
+	/* INVARIANT:  A comic is on at most one list */
 	
-		/** GETTERS */
+	
+	/** CONSTRUCTOR */
+	/** Initializes Artist username */
+	/** Not to be called outside DBManager */
+	constructor(username: string){
+		this.username = username;
+		this.type = "artist";
+	} /** stub */
+	
+	/** GETTERS */
 	getUsername():string{
 		return this.username;
+		
 	}
 	
 	getViewlist():string[] {
@@ -95,11 +115,16 @@ export class Artist implements User {
 	getDescription():string {
 		return this.description;
 	}
-    getHash(): string {
-      return this.hash;
-    }	
-    getEmail(): string {
-      return this.email;
-    }			
-
+	getHash(): string {
+		return this.hash;
+	}	
+	getEmail(): string {
+		return this.email;
+	}
+	getType(): string{
+		return this.type;
+	}
+	isArtist(): boolean{
+		return true;
+	}
 }

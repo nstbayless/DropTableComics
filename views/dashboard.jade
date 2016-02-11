@@ -1,0 +1,8 @@
+extends pretty
+
+block content
+	h1.bannertext= Dashboard
+	ul
+		each comic, i in comics
+			li
+				a(href="/see/" + comic.creator + "/comics/" + comic.uri)= comic.title

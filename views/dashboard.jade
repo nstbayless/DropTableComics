@@ -6,3 +6,5 @@ block content
 		each comic, i in comics
 			li
 				a(href="/see/" + comic.creator + "/comics/" + comic.uri)= comic.title
+				br
+				a(href="/adminpage/" + comic.creator + "/comics/" + comic.uri)= "Edit Permisions"

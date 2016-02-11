@@ -29,7 +29,9 @@ export class Comic {
 		this.creator = creator;
 		this.description = description;
 		this.image_collection = creator + '_' + uri_sanitized;
-		this.pages=[]
+		this.viewlist = [];
+		this.editlist = [];
+		this.pages = [];
 		this.pages[0]=[];
 		this.panel_map=[];
 	} /** stub */

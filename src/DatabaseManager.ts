@@ -105,6 +105,138 @@ class DatabaseManager {
 			callback(null,comic);
 		});
 	}
+
+	// asynchronously inserts the user into the viewlist
+	// callback: [](err, viewlist)
+	postViewlist(username: string, comic_uri: string, user:string, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		if (user.length < 3) {
+			console.log("ARE YOU GOING THROUGH THIS 1?")
+			callback(new Error("user must be at least 3 letters long"), null);
+		} else {
+			this.getComic(username, comic_uri, function(err, comic) {
+				if (comic && !err) {
+					console.log("got the comic and now am putting into viewlist")
+					var viewlist = comic.viewlist;
+					var comics = db.get('comics');
+					console.log(viewlist[0]);
+					console.log(viewlist.indexOf(user) != -1);
+					if (viewlist.indexOf(user) === -1) {
+						viewlist.push(user);
+						console.log("Pushed viewer into viewlist")
+						comics.update({
+							"urisan": comic_uri,
+							"creator": username
+						},
+							{
+								$set: {
+									"viewlist": viewlist,
+								}
+							}); callback(err, viewlist);
+					} else {
+						console.log('USER WAS FOUND IN VIEWLIST')
+						callback(err, null);
+					}
+				} else if (!comic || err) {
+					console.log("ARE YOU GOING THROUGH THIS 2?")
+					callback(err, null);
+				}
+			})
+		}
+	}
+
+	// asynchronously inserts the user into the editlist
+	// callback: [](err, editlist)
+	postEditlist(username: string, comic_uri: string, user: string, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		// This was working code for inputting comic into users editlist
+	// 	this.getUser(user, function(err, artist) {
+	// 		var userEditlist = artist.editlist;
+	// 		var users = db.get('users');
+	// 		if (userEditlist.indexOf(comic_uri) != -1) {
+	// 			console.log('USERS EDITLIST IS BEING UPDATED');
+	// 			userEditlist.push(comic_uri);
+	// 			console.log("Pushed comic into user's editlist");
+	// 			users.update({ "username": user },
+	// 				{ $set: { "editlist": userEditlist, } }
+	// 			});
+	// });
+		if (user.length < 3) {
+			console.log("ARE YOU GOING THROUGH THIS 1?")
+			callback(new Error("user must be at least 3 letters long"), null);
+		} else {
+			this.getComic(username, comic_uri, function(err, comic) {
+				if (comic && !err) {
+					console.log("got the comic and now am putting into editlist")
+					var editlist = comic.editlist;
+					console.log(editlist[1]);
+					console.log(editlist.indexOf(user) === -1);
+					var comics = db.get('comics');
+					if (editlist.indexOf(user) === -1) {
+						console.log('USER WAS NOT IN EDITLIST');
+						editlist.push(user);
+						console.log("Pushed editor into editlist")
+						comics.update({
+							"urisan": comic_uri,
+							"creator": username
+						},
+							{
+								$set: {
+									"editlist": editlist,
+								}
+							}); callback(err, editlist);
+					} else {
+						console.log('USER WAS FOUND IN EDITLIST')
+						callback(err, null);
+					}
+				} else if (!comic || err) {
+					console.log("ARE YOU GOING THROUGH THIS 2?")
+					callback(err, null);
+				}
+			})
+		}
+	}
+
+	//checks permission if user has editing rights to the comic
+	checkEditPermission(username:string, creator:string, comic_uri:string, callback:any) {
+		var db = this.db;
+		console.log("starting permission check");
+		this.getComic(creator, comic_uri, function(err,comic) {
+			if (comic && !err) {
+				console.log("checking comic editlist for permissions...")
+				var editlist = comic.editlist;
+				// checks to see if given username is in the editlist
+				if (editlist.indexOf(username) != -1); {
+					callback(err, true);
+				}
+			} else {
+				console.log("returning false for permission check")
+				callback(err, null);
+			}
+		})
+	}
+
+	//checks permission if user has editing rights to the comic
+	checkViewPermission(username: string, creator: string, comic_uri: string, callback: any) {
+		var db = this.db;
+		console.log("starting permission check");
+		this.getComic(creator, comic_uri, function(err, comic) {
+			if (comic && !err) {
+				console.log("checking comic viewlist for permissions...")
+				var viewlist = comic.viewlist;
+				// checks to see if given username is in the editlist
+				if (viewlist.indexOf(username) != -1); {
+					callback(err, true);
+				}
+			} else {
+				console.log("returning false for permission check")
+				callback(err, null);
+			}
+		})
+	}
+
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)
 	// - if no error occurred, err field is null

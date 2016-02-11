@@ -200,9 +200,11 @@ class DatabaseManager {
 		}
 	}
 
+	//!!!!!!!!!!!! possible deprecation
 	//checks permission if user has editing rights to the comic
 	//callback: [](err, bool)
 	checkEditPermission(username:string, creator:string, comic_uri:string, callback:any) {
+	//NaOH suggests this method should be deprecated, use comic.getUserCanEdit() instead
 		console.log("starting permission check");
 		this.getComic(creator, comic_uri, function(err,comic) {
 			if (comic && !err) {
@@ -221,20 +223,22 @@ class DatabaseManager {
 		})
 	}
 
+	//!!!!!!!!!!!! possible deprecation
 	//checks permission if user has editing rights to the comic
 	//callback: [](err, bool)
 	checkViewPermission(username: string, creator: string, comic_uri: string, callback: any) {
+		//NaOH suggests this method should be deprecated, use comic.getUserCanView() instead
 		var db = this.db;
 		console.log("starting permission check");
 		this.getComic(creator, comic_uri, function(err, comic) {
 			if (comic && !err) {
 				console.log("checking comic viewlist for permissions...")
 				var viewlist = comic.viewlist;
+				var editlist = comic.editlist;
 				// checks to see if given username is in the editlist
-				if (viewlist.indexOf(username) != -1); {
-					return callback(null, true);
-				}
-				callback(null,false);
+				if (viewlist.indexOf(username) != -1 || editlist.indexOf(username) != -1); {
+					callback(err, true);
+				} 
 			} else {
 				console.log("returning false for permission check")
 				callback(err, null);

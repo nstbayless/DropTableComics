@@ -109,29 +109,32 @@ class DatabaseManager {
 	postViewlist(username: string, comic_uri: string, user:string, callback: any) {
 		var db = this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
-		this.getUser(user, function(err, user) {
-			if (!user || err) {
-				return callback(err, null);
-			}
-		})
-		this.getComic(username, comic_uri, function(err, comic) {
-			if (comic && !err) {
-				var viewlist = comic.viewlist;
-				var comics = db.get('comics');
-				viewlist.push(user);
-				comics.update({
-					"urisan": comic_uri,
-					"creator": username
+		if (user.length < 1) {
+			console.log("ARE YOU GOING THROUGH THIS 1?")
+			callback(new Error("user must be at least 3 letters long"), null);
+		} else {
+			this.getComic(username, comic_uri, function(err, comic) {
+				if (comic && !err) {
+					console.log("got the comic and now am putting into viewlist")
+					var viewlist = comic.viewlist;
+					var comics = db.get('comics');
+					viewlist.push(user);
+					console.log("Pushed viewer into viewlist")
+					comics.update({
+						"urisan": comic_uri,
+						"creator": username
 					},
-					{
-						$set: {
-							"viewlist": viewlist,
+						{
+							$set: {
+								"viewlist": viewlist,
 							}
-						})
-			} else if (!comic || err) {
-				callback(err, null);
+						}); callback(err, viewlist);
+				} else if (!comic || err) {
+					console.log("ARE YOU GOING THROUGH THIS 2?")
+					callback(err, null);
 				}
-		})
+			})
+		}
 	}
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)

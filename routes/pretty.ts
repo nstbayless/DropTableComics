@@ -20,6 +20,7 @@ class SearchResult{
 	href: string;
 }
 
+
 //TODO: these functions should go into RoutePretty as static methods
 
 // Parses comic uri from full uri
@@ -149,6 +150,7 @@ class RoutePretty {
 					return res.render('adminpage', {
 						title: comic.getName(),
 						viewlist: comic.getViewlist(),
+						editlist: comic.getEditlist(),
 						comic_creator: comic_creator,
 						comic_name: comic.getName(),
 						comic_uri: comic_uri,
@@ -164,20 +166,65 @@ class RoutePretty {
 
 			if (!comic_creator || !comic_uri == null)
 				return next();
-			else if (!req.body.username_input) //incorrect POST body
-				res.status(413).send({success:false,msg:'Please provide a username'});
+			else if (!req.body.username) {   //incorrect POST body
+				console.log(req.body.username);
+				console.log("Posting to body is not working, input valid name" );
+				res.status(400).send({success:false, msg:'Please provide a username'});
+			}
 			else {
-				if (!req.user)
+				if (!req.user) // checks to see if user is signed in
 					return res.status(401).send({ success: false, msg: 'Please sign in to add to users to viewlist' })
-				req.dbManager.postViewlist(comic_creator, comic_uri, req.body.username_input, function(err, viewlist) {
-					if (viewlist!=null&&!err) {
-						res.redirect(req.url);
-					} else {
-						res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
+				req.dbManager.getUser(req.body.username, function(err, user) {
+					if (!user || err) { // checks to see if the username inputted is currently a valid user
+						console.log("USER DOES NOT EXIST!!!!!!!!!!!");
+						res.status(400).send({ success:false, msg: 'No username found, please input a valid username'})
+					} else { // should run if there is a valid user with the inputted username
+						req.dbManager.postViewlist(comic_creator, comic_uri, req.body.username, function(err, viewlist) {
+							if (viewlist != null && !err) {
+								console.log("IT WORKED, YOU ADDED IT BOY!");
+								res.redirect('');
+							} else {
+								res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
+							}
+						})
 					}
 				})
 			}
 		})
+
+		// /* POST a user to Comic Viewlist. */
+		// router.post('/adminpage/*', function(req, res, next) {
+		// 	var comic_uri = parseComicURI(req.url);
+		// 	var comic_creator = parseComicCreator(req.url);
+
+		// 	if (!comic_creator || !comic_uri == null)
+		// 		return next();
+		// 	else if (!req.body.username) {   //incorrect POST body
+		// 		console.log(req.body.username);
+		// 		console.log("Posting to body is not working, input valid name");
+		// 		res.status(400).send({ success: false, msg: 'Please provide a username' });
+		// 	}
+		// 	else {
+		// 		if (!req.user) // checks to see if user is signed in
+		// 			return res.status(401).send({ success: false, msg: 'Please sign in to add to users to viewlist' })
+		// 		req.dbManager.getUser(req.body.username, function(err, user) {
+		// 			if (!user || err) { // checks to see if the username inputted is currently a valid user
+		// 				console.log("USER DOES NOT EXIST!!!!!!!!!!!");
+		// 				res.status(400).send({ success: false, msg: 'No username found, please input a valid username' })
+		// 			} else { // should run if there is a valid user with the inputted username
+		// 				req.dbManager.postViewlist(comic_creator, comic_uri, req.body.username, function(err, viewlist) {
+		// 					if (viewlist != null && !err) {
+		// 						console.log("IT WORKED, YOU ADDED IT BOY!");
+		// 						res.status(200).send({ success: true, msg: 'User was added' });
+		// 						res.redirect(req.get('referer'));
+		// 					} else {
+		// 						res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
+		// 					}
+		// 				})
+		// 			}
+		// 		})
+		// 	}
+		// })
 
 		/* GET pretty comic edit page */
 		router.get('/edit/*', function(req,res,next) {

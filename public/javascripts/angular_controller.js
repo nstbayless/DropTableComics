@@ -52,6 +52,46 @@ app.controller('authController', function($scope, $http) {
 				$scope.response = response.data.msg
 	  }) 
 	}
+
+	//user attempts to add user to viewlist
+	$scope.viewlist_add=function() {
+		$scope.response1=""
+		$http.post('', {
+			username: $scope.username_input
+		}).then(function(response1){
+			if (response1.data.success) {//redirect to current page
+				window.location='';
+				console.log("successfully redirected");
+			}
+			else if (response1.data.msg) {
+				$scope.response1 = response1.data.msg
+				console.log("did not redirect");
+			}
+		}, function errorCallback(response1) {
+		if (response1.data.msg)
+				$scope.response1 = response1.data.msg
+		})
+	}
+
+		//user attempts to add user to editlist
+	$scope.editlist_add=function() {
+		$scope.response=""
+		$http.post('/pretty/adminpage', {
+			editor: $scope.editor_input
+		}).then(function(response){
+			if (response.data.success) {//redirect to current page
+				window.location='';
+				console.log("successfully redirected");
+			}
+			else if (response.data.msg) {
+				$scope.response = response.data.msg
+				console.log("did not redirect");
+			}
+		}, function errorCallback(response) {
+		if (response.data.msg)
+				$scope.response = response.data.msg
+		})
+	}
 	
 	//user attempts log-in
 	$scope.login=function(){
@@ -69,6 +109,7 @@ app.controller('authController', function($scope, $http) {
 				$scope.response = response.data.msg
 	  }) 
 	}
+
 	//log user out by deleting credential cookie
 	$scope.logout=function(){
 		$http.get("/auth/logout");

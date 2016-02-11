@@ -145,7 +145,7 @@ class RoutePretty {
 					comic_name: comic.getName(),
 					comic_uri: comic_uri,
 					share_link: req.get('host') + req.url,
-					editable: comic.getUserCanEdit(req.user.getUsername());
+					editable: comic.getUserCanEdit(req.user.getUsername()),
 					panels: comic.getPage(1)
 				})
 			});

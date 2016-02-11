@@ -1,34 +1,38 @@
 extends pretty
 
 block content
-	h1.bannertext= "Permissions Page: " + title
-
+	h1 Permissions Page for "#{title}"
+	hr
+	h2 Viewing Permissions
 	div(id=viewlistdiv1)
 		p Comic viewlist: #{viewlist.length}
-			br
+		p
 			each user, i in viewlist
-				input(type="checkbox" name= user)
-				text #{user}
+				input(type="checkbox" ng-model="vl.#{user}")
+				|  #{user}
 				br
-
-		ul
-			button(id="mybtn", onclick="function()")="Try me out"
+		button(ng-show="evict_list('view').length>0" ng-click="evict_users(evict_list('view'),'view')")
+			| Evict {{evict_list('view').join(', ')}}
 		form
-			p Username:
+			p Invite a new user to view:
 				input(type="text" ng-model="username_input" placeholder="Enter username here")
 			button(ng-click = 'viewlist_add()' ng-show='username_input.length>0') Submit {{username_input}}
 		p
 			font(color="red") {{response1}}
 
+	hr
+	h2 Collaboration Permissions
 	div(id=editlistdiv2) 
 		p Comic editlist: #{editlist.length}
-			br
+		p
 			each user, i in editlist
-				input(type="checkbox" name= user)
-				text #{user}
+				input(type="checkbox" ng-model="el.#{user}")
+				|  #{user}
 				br
+		button(ng-show="evict_list('edit').length>0" ng-click="evict_users(evict_list('edit'),'edit')")
+			| Evict {{evict_list('edit').join(', ')}}
 		form
-			p Username of Collaborator:
+			p Invite a new Artist to collaborate:
 				input(type="text" ng-model="editor_input" placeholder="Enter username here")
 			button(ng-click="editlist_add()" ng-show="editor_input.length>0") Submit {{editor_input}}
 		p

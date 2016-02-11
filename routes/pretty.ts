@@ -199,6 +199,7 @@ class RoutePretty {
 			})
 		});
 
+		//TODO(Edward): we should have a different URI for each permission list
 		/* POST a user to Comic Viewlist. */
 		router.post('/adminpage/*', function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
@@ -207,14 +208,12 @@ class RoutePretty {
 			if (!comic_creator || !comic_uri == null)
 				return next();
 			if (!req.body.username) {   //incorrect POST body
-				console.log(req.body.username);
-				console.log("Posting to body is not working, input valid name");
 				return next();
 			}
 			req.dbManager.getComic(comic_creator,comic_uri,function (err,comic) {
 				//check request user has permission to edit comic:
 				if (err) //send 401 not 404 to prevent information leak:
-					return res.status(401).send(); //TODO: add error message and combine with next check
+					return res.status(401).send(); //TODO(NaOH): add error message and combine with next check
 				if (!comic.getUserCanEdit(req.user.getUsername()))
 					return res.status(401).send();
 				req.dbManager.getUser(req.body.username, function(err, user) {
@@ -254,7 +253,7 @@ class RoutePretty {
 			req.dbManager.getComic(comic_creator,comic_uri,function(err,comic) {
 				//check request user has permission to edit comic:
 				if (err) //send 401 not 404 to prevent information leak:
-					return res.status(401).send(); //TODO: add error message and combine with next check
+					return res.status(401).send(); //TODO(NaOH): add error message and combine with next check
 				if (!comic.getUserCanEdit(req.user.getUsername()))
 					return res.status(401).send();
 				req.dbManager.getUser(req.body.editor, function(err, user) {
@@ -279,6 +278,64 @@ class RoutePretty {
 				})
 			})
 		})
+
+		/* DELETE from permission lists*/
+		//TODO(Edward): check URI for which list to delete from, don't check body
+		router.delete('/adminpage/*', function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			//list of users to delete:
+			var l_users: string[] = req.body.l_users;
+			//relevant list to delete them from. Can be one of 'view' 'edit' or 'admin'
+			var relevant_list = req.body.relevant_list;
+			if (!comic_creator || !comic_uri == null)
+				return next();
+			if (!l_users||!l.users.length) {   //incorrect POST body
+				return res.status(400).send({ success: false, msg: 'Please provide a list of usernames!' });
+			}
+			//make sure user doesn't remove self:
+			if (l_users.indexOf(req.user.getUsername())>=0)
+				return res.status(403).send({success: false, msg: "You cannot remove yourself from the list"})
+			if (!(relevant_list=='admin'||relevant_list=='view'||relevant_list=='edit'))
+				return res.status(400).send({ success: false, msg: 'Unknown list ' + relevant_list })
+			if (l_users.indexOf(comic_creator)>=0)
+				return res.status(403).send({success: false, msg: "You cannot remove the comic creator"})
+			req.dbManager.getComic(comic_creator,comic_uri, function(err,comic) {
+				if (err||!comic)
+					return next();
+				//TODO: change to getUserCanAdmin
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				//TODO: migrate all following deletion code to a dbManager method:
+				var new_list;
+				if (relevant_list=='view')
+					new_list=comic.getViewlist();
+				if (relevant_list=='edit')
+					new_list=comic.getEditlist();
+				//TODO: implement adminList
+				new_list=new_list.slice();//prevent editing original object
+				//remove all users from relevant list:
+				for (var i=0;i<=l_users.length;i++) {
+					var index_in_list = new_list.indexOf(l_users[i])
+					if (index_in_list==-1)
+						return res.status(400).send({success: false, msg: "User not previously in list: " + l_users[i]})
+					else {
+						new_list=new_list.splice(index_in_list,1);
+					}
+				}
+				//update comic's list:
+				var comics = db.get('comics');
+				req.db.get('comics').update({
+					"urisan": Comic.canonicalURI(comic_uri),
+					"creator": comic_creator
+				},{
+					$set: {
+						(relevant_list+"list"):new_list;
+					}
+				})
+				return res.status(200).send({success: true, msg: "Users removed from list."})
+			})
+		}
 
 		/* POST Comic. */
 		//TODO: this is not restful. URI location is /<user-name>/comics/

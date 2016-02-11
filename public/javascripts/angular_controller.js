@@ -7,6 +7,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 	req.open('GET', document.location, false);
 	req.send(null);
 	console.log(req.getAllResponseHeaders());
+	$scope.el = {}; $scope.vl = {}; $scope.al = {};
 
 	//true if logged in
 	$scope.authenticated = req.getResponseHeader("authenticated")=="true"
@@ -91,6 +92,62 @@ app.controller('authController', function($scope, $http, $timeout) {
 		if (response2.data.msg)
 				$scope.response2 = response2.data.msg
 		})
+	}
+
+	//returns list of users to remove from a certain list
+	//list can be one of:
+	// - "edit"
+	// - "view"
+	// - "admin"
+	$scope.evict_list=function(list) {
+		var source_list;
+		if (list=="edit")
+			source_list=$scope.el;
+		else if (list=="view")
+			source_list=$scope.vl;
+		else if (list=="admin")
+			source_list=$scope.al;
+		else
+			throw "Error, no list for " + list;
+		var return_list=[ ];
+		for (var user in source_list)
+			if (source_list[user])
+				return_list.push(user);
+		return return_list;
+	}
+
+	//revokes permissions from selected usernames from the given list
+	// list can be one of:
+	// - "edit"
+	// - "view"
+	// - "admin"
+	$scope.evict_users=function(l_users,list) {
+		if (list=="view") {
+			$scope.response1='';
+		} else if (list=="edit") {
+			$scope.response2='';
+		} else if (list=="admin") {
+			//TODO
+		}
+
+		http.delete('',{
+			l_users: l_users,
+			relevant_list: list
+		}).then(
+			function success(response){
+				$timeout(function(){
+					window.location='/'
+				},200)
+			}, function error(response){
+				if (list=="view") {
+					$scope.response1=response.data.msg;
+				} else if (list=="edit") {
+					$scope.response2=response.data.msg;
+				} else if (list=="admin") {
+					//TODO
+				}
+			}
+		);
 	}
 	
 	//user attempts log-in

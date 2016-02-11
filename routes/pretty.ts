@@ -99,7 +99,6 @@ class RoutePretty {
 			var isartist = req.user.isArtist();  // whether the user is a pleb
 			//TODO: should use a dbManager method here, not dbManager
 			var comics = req.db.get('comics');
-			comics.find({creator:username},{},function(err,comics){
 			comics.find({ creator: username }, {}, function(err, comics) {
 				res.render('dashboard', {
 					title: 'dashboard',
@@ -352,7 +351,7 @@ class RoutePretty {
 					}
 				}); 
 			});
-		};
+		});
 
 		/* GET panel */
 		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/[0-9]+$/, function(req,res,next) {
@@ -382,7 +381,7 @@ class RoutePretty {
 		})
 
 		this.router_ = router;
-}
+	}
 	
 	getRouter(){
 		return this.router_;

@@ -178,7 +178,11 @@ class RoutePretty {
 					if (!user || err) { // checks to see if the username inputted is currently a valid user
 						console.log("USER DOES NOT EXIST!!!!!!!!!!!");
 						res.status(400).send({ success:false, msg: 'No username found, please input a valid username'})
-					} else { // should run if there is a valid user with the inputted username
+					// } else if (req.user.getViewlist().indexOf(user) != -1) {
+					// 	console.log("USER ALREADY IN VIEWLIST");
+					// 	res.status(409).send({ success:false, msg: 'User already in viewlist'})
+					}
+					else { // should run if there is a valid user with the inputted username
 						req.dbManager.postViewlist(comic_creator, comic_uri, req.body.username, function(err, viewlist) {
 							if (viewlist != null && !err) {
 								console.log("IT WORKED, YOU ADDED IT BOY!");
@@ -212,6 +216,9 @@ class RoutePretty {
 					if (!user || err) { // checks to see if the username inputted is currently a valid user
 						console.log("!!!!!!!!!!USER DOES NOT EXIST!!!!!!!!!!!");
 						res.status(400).send({ success: false, msg: 'No username found, please input a valid username' })
+					// } else if (req.user.getEditlist().indexOf(user) != -1) {
+					// 	console.log("USER ALREADY IN EDITLIST");
+					// 	res.status(409).send({ success: false, msg: 'User is already a collaborator' })
 					} else if (user.getType() != "artist") {
 						console.log('USER was not an artist type');
 						res.status(406).send({ success: false, msg: 'User is not an artist' });

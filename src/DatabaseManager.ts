@@ -120,17 +120,24 @@ class DatabaseManager {
 					console.log("got the comic and now am putting into viewlist")
 					var viewlist = comic.viewlist;
 					var comics = db.get('comics');
-					viewlist.push(user);
-					console.log("Pushed viewer into viewlist")
-					comics.update({
-						"urisan": comic_uri,
-						"creator": username
-					},
-						{
-							$set: {
-								"viewlist": viewlist,
-							}
-						}); callback(err, viewlist);
+					console.log(viewlist[0]);
+					console.log(viewlist.indexOf(user) != -1);
+					if (viewlist.indexOf(user) === -1) {
+						viewlist.push(user);
+						console.log("Pushed viewer into viewlist")
+						comics.update({
+							"urisan": comic_uri,
+							"creator": username
+						},
+							{
+								$set: {
+									"viewlist": viewlist,
+								}
+							}); callback(err, viewlist);
+					} else {
+						console.log('USER WAS FOUND IN VIEWLIST')
+						callback(err, null);
+					}
 				} else if (!comic || err) {
 					console.log("ARE YOU GOING THROUGH THIS 2?")
 					callback(err, null);
@@ -144,6 +151,17 @@ class DatabaseManager {
 	postEditlist(username: string, comic_uri: string, user: string, callback: any) {
 		var db = this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
+	// 	this.getUser(user, function(err, artist) {
+	// 		var userEditlist = artist.editlist;
+	// 		var users = db.get('users');
+	// 		if (userEditlist.indexOf(comic_uri) != -1) {
+	// 			console.log('USERS EDITLIST IS BEING UPDATED');
+	// 			userEditlist.push(comic_uri);
+	// 			console.log("Pushed comic into user's editlist");
+	// 			users.update({ "username": user },
+	// 				{ $set: { "editlist": userEditlist, } }
+	// 			});
+	// });
 		if (user.length < 3) {
 			console.log("ARE YOU GOING THROUGH THIS 1?")
 			callback(new Error("user must be at least 3 letters long"), null);
@@ -152,18 +170,26 @@ class DatabaseManager {
 				if (comic && !err) {
 					console.log("got the comic and now am putting into editlist")
 					var editlist = comic.editlist;
+					console.log(editlist[1]);
+					console.log(editlist.indexOf(user) === -1);
 					var comics = db.get('comics');
-					editlist.push(user);
-					console.log("Pushed editor into editlist")
-					comics.update({
-						"urisan": comic_uri,
-						"creator": username
-					},
-						{
-							$set: {
-								"editlist": editlist,
-							}
-						}); callback(err, editlist);
+					if (editlist.indexOf(user) === -1) {
+						console.log('USER WAS NOT IN EDITLIST');
+						editlist.push(user);
+						console.log("Pushed editor into editlist")
+						comics.update({
+							"urisan": comic_uri,
+							"creator": username
+						},
+							{
+								$set: {
+									"editlist": editlist,
+								}
+							}); callback(err, editlist);
+					} else {
+						console.log('USER WAS FOUND IN EDITLIST')
+						callback(err, null);
+					}
 				} else if (!comic || err) {
 					console.log("ARE YOU GOING THROUGH THIS 2?")
 					callback(err, null);

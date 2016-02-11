@@ -15,7 +15,7 @@ class RouteAuth {
 				username: username,
 				password: password,
 			}, {
-				maxAge: 900000,
+				maxAge: 9000000,
 				httpOnly: true,
 				secure: config.https,
 				path: '/'

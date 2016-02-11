@@ -109,10 +109,10 @@ class DatabaseManager {
 	// asynchronously inserts the user into the viewlist
 	// callback: [](err, viewlist)
 	postViewlist(username: string, comic_uri: string, user:string, callback: any) {
+		//TODO(Edward): enforce invariant: user only on one list.
 		var db = this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
 		if (user.length < 3) {
-			console.log("ARE YOU GOING THROUGH THIS 1?")
 			callback(new Error("user must be at least 3 letters long"), null);
 		} else {
 			this.getComic(username, comic_uri, function(err, comic) {
@@ -129,11 +129,12 @@ class DatabaseManager {
 							"urisan": comic_uri,
 							"creator": username
 						},
-							{
-								$set: {
-									"viewlist": viewlist,
-								}
-							}); callback(err, viewlist);
+						{
+							$set: {
+								"viewlist": viewlist,
+							}
+						});
+						callback(err, viewlist);
 					} else {
 						console.log('USER WAS FOUND IN VIEWLIST')
 						callback(err, null);
@@ -200,25 +201,28 @@ class DatabaseManager {
 	}
 
 	//checks permission if user has editing rights to the comic
+	//callback: [](err, bool)
 	checkEditPermission(username:string, creator:string, comic_uri:string, callback:any) {
-		var db = this.db;
 		console.log("starting permission check");
 		this.getComic(creator, comic_uri, function(err,comic) {
 			if (comic && !err) {
 				console.log("checking comic editlist for permissions...")
-				var editlist = comic.editlist;
 				// checks to see if given username is in the editlist
-				if (editlist.indexOf(username) != -1); {
-					callback(err, true);
+				if (comic.getEditlist().indexOf(username) != -1) {
+					return callback(null, true);
 				}
+				if (comic.getAdminlist().indexOf(username) != -1) {
+					return callback(null, true);
+				}
+				callback(err,false);
 			} else {
-				console.log("returning false for permission check")
 				callback(err, null);
 			}
 		})
 	}
 
 	//checks permission if user has editing rights to the comic
+	//callback: [](err, bool)
 	checkViewPermission(username: string, creator: string, comic_uri: string, callback: any) {
 		var db = this.db;
 		console.log("starting permission check");
@@ -228,8 +232,9 @@ class DatabaseManager {
 				var viewlist = comic.viewlist;
 				// checks to see if given username is in the editlist
 				if (viewlist.indexOf(username) != -1); {
-					callback(err, true);
+					return callback(null, true);
 				}
+				callback(null,false);
 			} else {
 				console.log("returning false for permission check")
 				callback(err, null);

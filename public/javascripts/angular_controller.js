@@ -115,7 +115,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 		$http.get("/auth/logout");
 		$timeout(function(){
 			window.location='/';
-		},400)
+		},200)
 	}
 
 	//sanitize uri for comic (Identical to Comic.sanitizeName()):

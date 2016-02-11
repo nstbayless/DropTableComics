@@ -200,14 +200,34 @@ class DatabaseManager {
 	}
 
 	//checks permission if user has editing rights to the comic
-	checkPermission(username:string, creator:string, comic_uri:string, callback:any) {
+	checkEditPermission(username:string, creator:string, comic_uri:string, callback:any) {
 		var db = this.db;
 		console.log("starting permission check");
 		this.getComic(creator, comic_uri, function(err,comic) {
 			if (comic && !err) {
 				console.log("checking comic editlist for permissions...")
 				var editlist = comic.editlist;
+				// checks to see if given username is in the editlist
 				if (editlist.indexOf(username) != -1); {
+					callback(err, true);
+				}
+			} else {
+				console.log("returning false for permission check")
+				callback(err, null);
+			}
+		})
+	}
+
+	//checks permission if user has editing rights to the comic
+	checkViewPermission(username: string, creator: string, comic_uri: string, callback: any) {
+		var db = this.db;
+		console.log("starting permission check");
+		this.getComic(creator, comic_uri, function(err, comic) {
+			if (comic && !err) {
+				console.log("checking comic viewlist for permissions...")
+				var viewlist = comic.viewlist;
+				// checks to see if given username is in the editlist
+				if (viewlist.indexOf(username) != -1); {
 					callback(err, true);
 				}
 			} else {

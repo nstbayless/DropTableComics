@@ -119,21 +119,25 @@ class RoutePretty {
 			var comic_creator = parseComicCreator(req.url);
 			if (!comic_uri || !comic_creator)
 				return next();
-			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
-				req.dbManager.getComic(comic_creator, comic_uri, function(err, comic) {
-					if (err || !comic)
-						return next();
-					//TODO: rename 'newcomic' to 'viewcomic' or something
-					return res.render('newcomic', {
-						title: comic.getName(),
-						comic_creator: comic_creator,
-						comic_name: comic.getName(),
-						comic_uri: comic_uri,
-						share_link: req.get('host') + req.url,
-						panels: comic.getPage(1)
+			req.dbManager.checkViewPermission(comic_creator, req.user.username, comic_uri, function(err, boolean) {
+				// if user was found in viewlist it will proceed to render the comic page
+				if (boolean && !err) {
+					console.log("went through now rendering comic page");
+					req.dbManager.getComic(comic_creator, comic_uri, function(err, comic) {
+						if (err || !comic)
+							return next();
+						//TODO: rename 'newcomic' to 'viewcomic' or something
+						return res.render('newcomic', {
+							title: comic.getName(),
+							comic_creator: comic_creator,
+							comic_name: comic.getName(),
+							comic_uri: comic_uri,
+							share_link: req.get('host') + req.url,
+							panels: comic.getPage(1)
+						})
 					})
-				})
-			} else res.status(401).send("This is not your comic!")
+				} else res.status(401).send("You currently do not have permission to view the comic.")
+			});
 		});
 
 		/* GET pretty adminpage */
@@ -244,8 +248,10 @@ class RoutePretty {
 			console.log(req.user.username);
 			if (!comic_uri || !comic_creator)
 				return next();
-			req.dbManager.checkPermission(comic_creator, req.user.username, comic_uri, function(err, boolean) {
-				if (boolean && !err) {  // TODO: (Edward) Make legit permission check
+			// this checks permission by looking at the comic editlist
+			req.dbManager.checkEditPermission(comic_creator, req.user.username, comic_uri, function(err, boolean) {
+				// if user was found in editlist it will proceed to render the edit page
+				if (boolean && !err) {  
 					console.log("went through now rendering edit page");	
 					req.dbManager.getComic(comic_creator, comic_uri, function(err, comic) {
 						if (err || !comic)
@@ -258,7 +264,8 @@ class RoutePretty {
 							panels: comic.getPage(1)
 						})
 					})
-				} else res.status(401).send("This is not your comic!")
+					// if user was not found, produces a null callback
+				} else res.status(401).send("You currently do not have permission to edit the comic.")
 			})
 		});		
 			

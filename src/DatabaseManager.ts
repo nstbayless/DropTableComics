@@ -151,6 +151,7 @@ class DatabaseManager {
 	postEditlist(username: string, comic_uri: string, user: string, callback: any) {
 		var db = this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
+		// This was working code for inputting comic into users editlist
 	// 	this.getUser(user, function(err, artist) {
 	// 		var userEditlist = artist.editlist;
 	// 		var users = db.get('users');
@@ -196,6 +197,24 @@ class DatabaseManager {
 				}
 			})
 		}
+	}
+
+	//checks permission if user has editing rights to the comic
+	checkPermission(username:string, creator:string, comic_uri:string, callback:any) {
+		var db = this.db;
+		console.log("starting permission check");
+		this.getComic(creator, comic_uri, function(err,comic) {
+			if (comic && !err) {
+				console.log("checking comic editlist for permissions...")
+				var editlist = comic.editlist;
+				if (editlist.indexOf(username) != -1); {
+					callback(err, true);
+				}
+			} else {
+				console.log("returning false for permission check")
+				callback(err, null);
+			}
+		})
 	}
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)

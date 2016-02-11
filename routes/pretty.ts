@@ -290,7 +290,7 @@ class RoutePretty {
 			var relevant_list = req.body.relevant_list;
 			if (!comic_creator || !comic_uri == null)
 				return next();
-			if (!l_users||!l.users.length) {   //incorrect POST body
+			if (!l_users||!l_users.length) {   //incorrect POST body
 				return res.status(400).send({ success: false, msg: 'Please provide a list of usernames!' });
 			}
 			//make sure user doesn't remove self:
@@ -324,18 +324,29 @@ class RoutePretty {
 					}
 				}
 				//update comic's list:
-				var comics = db.get('comics');
+				var comics = req.db.get('comics');
+				var set_db;
+				if (relevant_list=="view")
+					set_db={
+						"viewlist":new_list
+					}
+				if (relevant_list=="edit")
+					set_db={
+						"editlist":new_list
+					}
+				if (relevant_list=="admin")
+					set_db={
+						"adminlist":new_list
+					}
 				req.db.get('comics').update({
 					"urisan": Comic.canonicalURI(comic_uri),
 					"creator": comic_creator
 				},{
-					$set: {
-						(relevant_list+"list"):new_list;
-					}
+					$set: set_db
 				})
 				return res.status(200).send({success: true, msg: "Users removed from list."})
 			})
-		}
+		})
 
 		/* POST Comic. */
 		//TODO: this is not restful. URI location is /<user-name>/comics/

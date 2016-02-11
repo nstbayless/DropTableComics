@@ -130,7 +130,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 			//TODO
 		}
 
-		http.delete('',{
+		$http.delete('',{
 			l_users: l_users,
 			relevant_list: list
 		}).then(

@@ -106,10 +106,12 @@ class DatabaseManager {
 		});
 	}
 
+	// asynchronously inserts the user into the viewlist
+	// callback: [](err, viewlist)
 	postViewlist(username: string, comic_uri: string, user:string, callback: any) {
 		var db = this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
-		if (user.length < 1) {
+		if (user.length < 3) {
 			console.log("ARE YOU GOING THROUGH THIS 1?")
 			callback(new Error("user must be at least 3 letters long"), null);
 		} else {
@@ -136,6 +138,40 @@ class DatabaseManager {
 			})
 		}
 	}
+
+	// asynchronously inserts the user into the editlist
+	// callback: [](err, editlist)
+	postEditlist(username: string, comic_uri: string, user: string, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		if (user.length < 3) {
+			console.log("ARE YOU GOING THROUGH THIS 1?")
+			callback(new Error("user must be at least 3 letters long"), null);
+		} else {
+			this.getComic(username, comic_uri, function(err, comic) {
+				if (comic && !err) {
+					console.log("got the comic and now am putting into editlist")
+					var editlist = comic.editlist;
+					var comics = db.get('comics');
+					editlist.push(user);
+					console.log("Pushed editor into editlist")
+					comics.update({
+						"urisan": comic_uri,
+						"creator": username
+					},
+						{
+							$set: {
+								"editlist": editlist,
+							}
+						}); callback(err, editlist);
+				} else if (!comic || err) {
+					console.log("ARE YOU GOING THROUGH THIS 2?")
+					callback(err, null);
+				}
+			})
+		}
+	}
+
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)
 	// - if no error occurred, err field is null

@@ -60,7 +60,7 @@ app.controller('authController', function($scope, $http) {
 			username: $scope.username_input
 		}).then(function(response1){
 			if (response1.data.success) {//redirect to current page
-				window.location='';
+				window.location.reload();
 				console.log("successfully redirected");
 			}
 			else if (response1.data.msg) {
@@ -73,23 +73,23 @@ app.controller('authController', function($scope, $http) {
 		})
 	}
 
-		//user attempts to add user to editlist
+	//user attempts to add user to editlist
 	$scope.editlist_add=function() {
-		$scope.response=""
-		$http.post('/pretty/adminpage', {
+		$scope.response2=""
+		$http.post('', {
 			editor: $scope.editor_input
-		}).then(function(response){
-			if (response.data.success) {//redirect to current page
-				window.location='';
+		}).then(function(response2){
+			if (response2.data.success) {//redirect to current page
+				window.location.reload();
 				console.log("successfully redirected");
 			}
-			else if (response.data.msg) {
-				$scope.response = response.data.msg
+			else if (response2.data.msg) {
+				$scope.response2 = response2.data.msg
 				console.log("did not redirect");
 			}
-		}, function errorCallback(response) {
-		if (response.data.msg)
-				$scope.response = response.data.msg
+		}, function errorCallback(response2) {
+		if (response2.data.msg)
+				$scope.response2 = response2.data.msg
 		})
 	}
 	

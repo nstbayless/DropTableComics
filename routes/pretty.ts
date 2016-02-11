@@ -169,7 +169,7 @@ class RoutePretty {
 			else if (!req.body.username) {   //incorrect POST body
 				console.log(req.body.username);
 				console.log("Posting to body is not working, input valid name" );
-				res.status(400).send({success:false, msg:'Please provide a username'});
+				return next();
 			}
 			else {
 				if (!req.user) // checks to see if user is signed in
@@ -182,7 +182,8 @@ class RoutePretty {
 						req.dbManager.postViewlist(comic_creator, comic_uri, req.body.username, function(err, viewlist) {
 							if (viewlist != null && !err) {
 								console.log("IT WORKED, YOU ADDED IT BOY!");
-								res.redirect('');
+								res.status(200).send({ success: true });
+
 							} else {
 								res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
 							}
@@ -192,39 +193,42 @@ class RoutePretty {
 			}
 		})
 
-		// /* POST a user to Comic Viewlist. */
-		// router.post('/adminpage/*', function(req, res, next) {
-		// 	var comic_uri = parseComicURI(req.url);
-		// 	var comic_creator = parseComicCreator(req.url);
+		/* POST a user to Comic Editlist. */
+		router.post('/adminpage/*', function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
 
-		// 	if (!comic_creator || !comic_uri == null)
-		// 		return next();
-		// 	else if (!req.body.username) {   //incorrect POST body
-		// 		console.log(req.body.username);
-		// 		console.log("Posting to body is not working, input valid name");
-		// 		res.status(400).send({ success: false, msg: 'Please provide a username' });
-		// 	}
-		// 	else {
-		// 		if (!req.user) // checks to see if user is signed in
-		// 			return res.status(401).send({ success: false, msg: 'Please sign in to add to users to viewlist' })
-		// 		req.dbManager.getUser(req.body.username, function(err, user) {
-		// 			if (!user || err) { // checks to see if the username inputted is currently a valid user
-		// 				console.log("USER DOES NOT EXIST!!!!!!!!!!!");
-		// 				res.status(400).send({ success: false, msg: 'No username found, please input a valid username' })
-		// 			} else { // should run if there is a valid user with the inputted username
-		// 				req.dbManager.postViewlist(comic_creator, comic_uri, req.body.username, function(err, viewlist) {
-		// 					if (viewlist != null && !err) {
-		// 						console.log("IT WORKED, YOU ADDED IT BOY!");
-		// 						res.status(200).send({ success: true, msg: 'User was added' });
-		// 						res.redirect(req.get('referer'));
-		// 					} else {
-		// 						res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
-		// 					}
-		// 				})
-		// 			}
-		// 		})
-		// 	}
-		// })
+			if (!comic_creator || !comic_uri == null)
+				return next();
+			else if (!req.body.editor) {   //incorrect POST body
+				console.log(req.body.editor);
+				console.log("Posting to body is not working, input valid name ARE YOU DOING THIS ONE?");
+				res.status(400).send({ success: false, msg: 'Please provide a username' });
+			}
+			else {
+				if (!req.user) // checks to see if user is signed in
+					return res.status(401).send({ success: false, msg: 'Please sign in to add to users to viewlist' })
+				req.dbManager.getUser(req.body.editor, function(err, user) {
+					if (!user || err) { // checks to see if the username inputted is currently a valid user
+						console.log("!!!!!!!!!!USER DOES NOT EXIST!!!!!!!!!!!");
+						res.status(400).send({ success: false, msg: 'No username found, please input a valid username' })
+					} else if (user.getType() != "artist") {
+						console.log('USER was not an artist type');
+						res.status(406).send({ success: false, msg: 'User is not an artist' });
+					}
+					else { // should run if there is a valid user with the inputted username
+						req.dbManager.postEditlist(comic_creator, comic_uri, req.body.editor, function(err, editlist) {
+							if (editlist != null && !err) {
+								console.log("IT WORKED, YOU ADDED THE EDITOR BOY!");
+								res.status(200).send({ success: true });
+							} else {
+								res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
+							}
+						})
+					}
+				})
+			}
+		})
 
 		/* GET pretty comic edit page */
 		router.get('/edit/*', function(req,res,next) {

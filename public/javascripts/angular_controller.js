@@ -1,7 +1,7 @@
 //handles client-side authentication
 
 var app = angular.module('authentication', [])
-app.controller('authController', function($scope, $http) {
+app.controller('authController', function($scope, $http, $timeout) {
 	//read http headers: 
 	var req = new XMLHttpRequest();
 	req.open('GET', document.location, false);
@@ -41,7 +41,7 @@ app.controller('authController', function($scope, $http) {
 	//user attempts to create a new comic
 	$scope.create_comic=function(){
 		$scope.response=""
-		$http.post("/pretty/comic", {
+		$http.post("/comic", {
 			comic_name: $scope.comic_name,
 			description: $scope.comic_description
 		}).then(function(response){
@@ -113,7 +113,9 @@ app.controller('authController', function($scope, $http) {
 	//log user out by deleting credential cookie
 	$scope.logout=function(){
 		$http.get("/auth/logout");
-		window.location='/';
+		$timeout(function(){
+			window.location='/';
+		},400)
 	}
 
 	//sanitize uri for comic (Identical to Comic.sanitizeName()):

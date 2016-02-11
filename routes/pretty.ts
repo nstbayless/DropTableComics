@@ -4,8 +4,10 @@
 
 //displays dashboard
 
-var express = require('express');
-var config = require('../config');
+var MAX_FILE_SIZE = 2*1000*1000//2 mb
+var MAX_IMAGE_WIDTH=1200;
+var MAX_IMAGE_HEIGHT=800;
+
 import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
@@ -13,13 +15,25 @@ var multer  = require('multer');
 var upload = multer({ dest: './data/images/' });
 var fs = require('fs');
 
+var express = require('express');
+var config = require('../config');
+var fs = require('fs');
+var sizeOf = require('image-size');
+var multer  = require('multer');
+var upload = multer({
+  dest: './data/images/',
+  limits: {
+		fileSize: MAX_FILE_SIZE,
+		files: 1
+	}
+});
+
 //struct for a single result in a list of search results
 class SearchResult{
 	linktext: string;
 	description: string;
 	href: string;
 }
-
 
 //TODO: these functions should go into RoutePretty as static methods
 
@@ -68,9 +82,9 @@ class RoutePretty {
 		for (var i = 0; i < 12; i++) {
 			//make random search results
 			var result: SearchResult = {
-				linktext: "search result " + i,
-				description: "description " + i,
-				href: "/pretty/"
+				linktext:"search result " + i,
+				description:"description " + i,
+				href:"/"
 			}
 			results.push(result);
 		}
@@ -106,7 +120,7 @@ class RoutePretty {
 		
 		/* GET pretty search results */
 		router.get('/search/*', function(req, res, next) {
-			var results = RoutePretty.searchFor(req.url.substring('/pretty/search/'.length))
+			var results = RoutePretty.searchFor(req.url.substring('/search/'.length))
 			res.render('prettysearch', {
 				title: 'pretty search',
 				searchresults: results
@@ -126,7 +140,7 @@ class RoutePretty {
 					req.dbManager.getComic(comic_creator, comic_uri, function(err, comic) {
 						if (err || !comic)
 							return next();
-						//TODO: rename 'newcomic' to 'viewcomic' or something
+						//TODO: rename view 'newcomic' to 'viewcomic' or something
 						return res.render('newcomic', {
 							title: comic.getName(),
 							comic_creator: comic_creator,
@@ -268,14 +282,13 @@ class RoutePretty {
 				} else res.status(401).send("You currently do not have permission to edit the comic.")
 			})
 		});		
-			
 		/* POST Comic. */
 		//TODO: this is not restful. URI location is /<user-name>/comics/
 		router.post('/comic', function(req, res, next) {
 			if (!req.body.comic_name) //incorrect POST body
-			res.status(413).send({success: false, msg: 'Provide comic name'});
+				res.status(401).send({success: false, msg: 'Provide comic name'});
 			else if (!req.user.isArtist) //incorrect account type
-			res.status(413).send({success: false, msg: 'account_type must be"artist"'});
+				res.status(401).send({success: false, msg: 'account_type must be "artist"'});
 			else {
 				// check if user is signed in
 				if (!req.user)
@@ -288,7 +301,7 @@ class RoutePretty {
 					}
 					console.log("Creating comic: "+req.body.comic_name);
 					comic = req.dbManager.createComic(req.body.comic_name,req.user.getUsername(),req.body.description);
-					var url_comic_redirect=("/pretty/see/"+req.user.getUsername()+"/comics/"+comic.getURI());
+					var url_comic_redirect=("/see/"+req.user.getUsername()+"/comics/"+comic.getURI());
 					res.status(200).send({success: true,comic_url:url_comic_redirect})
 				});
 			} 
@@ -302,32 +315,42 @@ class RoutePretty {
 			var comic_uri = parseComicURI(req.url);
 			if (!comic_creator||!comic_uri==null)
 				return next();
+			if (!req.file)
+				return res.status(400).redirect(req.get('referer'));
+			if (!req.file.filename||!req.file.path)
+				return res.status(400).redirect(req.get('referer'));
 			console.log("DETAILS OF FILE UPLOAD!");
 			console.log("path:" + req.file.path);
 			console.log("filename: " + req.file.filename);
 			var path:string = req.file.path;
 			var name:string = req.file.filename;
-			//TODO: check submission is not empty (500 error occurs currently)
-			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic){
-				if (err||!comic){
-					return res.status(404).send('Comic does not exist: '
-						+comic_uri+" (author: " + comic_creator+")");
-				}
-				else {
-					console.log("Inserting image..." + name);
-					req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,panel_id){
-						if (panel_id!=null&&!err) {
-							console.log("Inserted image " + name);
-							//user should refresh:
-							res.redirect(req.get('referer'));
-						} else {
-							console.log("Error inserting panel!");
-							console.log(err);
-							res.status('500').send("Error inserting panel");
-						}
-					});
-				}
-			}); 
+			sizeOf(path,function(err,dimensions){
+				//bound image dimensions:
+				if (dimensions.width>MAX_IMAGE_WIDTH)
+					return res.status(413).send("Error: image width cannot exceed " + MAX_IMAGE_WIDTH);
+				if (dimensions.width>MAX_IMAGE_HEIGHT)
+					return res.status(413).send("Error: image height cannot exceed " + MAX_IMAGE_HEIGHT);
+				req.dbManager.getComic(comic_creator, comic_uri, function(err,comic){
+					if (err||!comic){
+						return res.status(404).send('Comic does not exist: '
+							+comic_uri+" (author: " + comic_creator+")");
+					}
+					else {
+						console.log("Inserting image..." + name);
+						req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,panel_id){
+							if (panel_id!=null&&!err) {
+								console.log("Inserted image " + name);
+								//user should refresh:
+								res.redirect(req.get('referer'));
+							} else {
+								console.log("Error inserting panel!");
+								console.log(err);
+								res.status('500').send("Error inserting panel");
+							}
+						});
+					}
+				}); 
+			});
 		});
 
 		/* GET panel */
@@ -358,7 +381,7 @@ class RoutePretty {
 		})
 
 		this.router_ = router;
-}
+	}
 	
 	getRouter(){
 		return this.router_;

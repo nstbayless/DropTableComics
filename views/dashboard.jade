@@ -5,6 +5,6 @@ block content
 	ul
 		each comic, i in comics
 			li
-				a(href="/pretty/see/" + comic.creator + "/comics/" + comic.uri)= comic.title
+				a(href="/see/" + comic.creator + "/comics/" + comic.uri)= comic.title
 				br
-				a(href="/pretty/adminpage/" + comic.creator + "/comics/" + comic.uri)= "Edit Permisions"
+				a(href="/adminpage/" + comic.creator + "/comics/" + comic.uri)= "Edit Permisions"

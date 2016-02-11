@@ -67,9 +67,7 @@ class Application {
 		app.use('/', routeAuthentication.getRouter())
 
 		//registration-protected routes
-		app.use('/', routeIndex.getRouter());
-		//TODO: pretty and index should be replaced
-		app.use('/pretty', routePretty.getRouter());
+		app.use('/', routePretty.getRouter());
 
 		// catch 404 and forward to error handler
 		app.use(function(req, res, next) {

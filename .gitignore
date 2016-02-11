@@ -10,3 +10,4 @@ routes/*.js
 install/*
 ssl/*
 src/*.js
+uploads/*

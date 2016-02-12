@@ -29,7 +29,9 @@ export class Comic {
 		this.creator = creator;
 		this.description = description;
 		this.image_collection = creator + '_' + uri_sanitized;
-		this.pages=[]
+		this.viewlist = [];
+		this.editlist = [];
+		this.pages = [];
 		this.pages[0]=[];
 		this.panel_map=[];
 	} /** stub */
@@ -72,6 +74,26 @@ export class Comic {
 	}
 	getPanelPath(panel:number){
 		return this.panel_map[panel];
+	}
+
+	/*Predicates*/
+
+	getUserCanView(username: string) {
+		if (this.viewlist.indexOf(username)!=-1)
+			return true;
+		return this.getUserCanEdit(username);
+	}
+
+	getUserCanEdit(username: string) {
+		if (this.editlist.indexOf(username)!=-1)
+			return true;
+		return this.getUserCanAdmin(username);
+	}
+
+	getUserCanAdmin(username: string) {
+		if (this.adminlist.indexOf(username)!=-1)
+			return true;
+		return false;
 	}
 	
 	/* STATIC METHODS */

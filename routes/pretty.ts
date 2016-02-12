@@ -11,6 +11,9 @@ var MAX_IMAGE_HEIGHT=800;
 import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
+var multer  = require('multer');
+var upload = multer({ dest: './data/images/' });
+var fs = require('fs');
 
 var express = require('express');
 var config = require('../config');
@@ -76,7 +79,7 @@ class RoutePretty {
 	router_: any;
 	static searchFor(searchtext: string): SearchResult[] {
 		var results: SearchResult[] = []
-		for (var i=0;i<12;i++) {
+		for (var i = 0; i < 12; i++) {
 			//make random search results
 			var result: SearchResult = {
 				linktext:"search result " + i,
@@ -96,27 +99,27 @@ class RoutePretty {
 			var isartist = req.user.isArtist();  // whether the user is a pleb
 			//TODO: should use a dbManager method here, not dbManager
 			var comics = req.db.get('comics');
-			comics.find({creator:username},{},function(err,comics){
+			comics.find({ creator: username }, {}, function(err, comics) {
 				res.render('dashboard', {
 					title: 'dashboard',
 					comics: comics		// list of comics created by user	
 				});
-			});    
+			});
 		});
 		
 		/* GET create comic page. */
 		router.get('/create', function(req, res, next) {
 			var username = req.user.getUsername();  // artist username
 			var isartist = req.user.isArtist(); // true if user is an artist
-			if (isartist){   
+			if (isartist) {
 				res.render('createcomic', {
 					title: 'Create Comic'
 				});
-			}		
+			}
 		});
 		
 		/* GET pretty search results */
-		router.get('/search/*', function(req,res,next) {
+		router.get('/search/*', function(req, res, next) {
 			var results = RoutePretty.searchFor(req.url.substring('/search/'.length))
 			res.render('prettysearch', {
 				title: 'pretty search',
@@ -125,56 +128,235 @@ class RoutePretty {
 		})
 			
 		/* GET pretty comic page */
-		router.get('/see/*', function(req,res,next) {
+		router.get('/see/*', function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
-			if (!comic_uri||!comic_creator)
+			if (!comic_uri || !comic_creator)
 				return next();
-			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
-				req.dbManager.getComic(comic_creator,comic_uri,function(err,comic){
-					if (err||!comic)
-						return next();
-					//TODO: rename 'newcomic' to 'viewcomic' or something
-					return res.render('newcomic', {	
-						title: comic.getName(),
-						comic_creator: comic_creator,
-						comic_name: comic.getName(),
-						comic_uri: comic_uri,
-						share_link: req.get('host') + req.url,
-						panels: comic.getPage(1)
-					})
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanView(req.user.getUsername()))
+					return next();
+				//TODO: rename view 'newcomic' to 'viewcomic' or something
+				return res.render('newcomic', {
+					title: comic.getName(),
+					comic_creator: comic_creator,
+					comic_name: comic.getName(),
+					comic_uri: comic_uri,
+					share_link: req.get('host') + req.url,
+					editable: comic.getUserCanEdit(req.user.getUsername()),
+					panels: comic.getPage(1)
 				})
-			} else res.status(401).send("This is not your comic!")
+			});
 		});
-		
+
 		/* GET pretty comic edit page */
-		router.get('/edit/*', function(req,res,next) {
+		router.get('/edit/*', function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
-			if (!comic_uri||!comic_creator)
+			console.log(req.user.username);
+			if (!comic_uri || !comic_creator)
 				return next();
-			if (comic_creator == req.user.getUsername()) { // TODO: (Edward) Make legit permission check				
-				req.dbManager.getComic(comic_creator,comic_uri,function(err,comic){
-					if (err||!comic)
-						return next();
-					return res.render('editcomic', { 
-						title: comic.getName(),
-						comic_creator: comic_creator,
-						comic_name: comic.getName(),
-						comic_uri: comic_uri,
-						panels: comic.getPage(1)
-					})
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				return res.render('editcomic', {
+					title: comic.getName(),
+					comic_creator: comic_creator,
+					comic_name: comic.getName(),
+					comic_uri: comic_uri,
+					//TODO: change to getUserCanAdmin()
+					adminable: comic.getUserCanEdit(req.user.getUsername()),
+					panels: comic.getPage(1)
 				})
-			} else res.status(401).send("This is not your comic!")
-		});		
-		
+			})
+		});
+
+		/* GET pretty adminpage */
+		router.get('/adminpage/*', function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			if (!comic_uri || !comic_creator)
+				return next();		
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				//TODO: make this getCanAdmin
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				//TODO: rename 'newcomic' to 'viewcomic' or something
+				return res.render('adminpage', {
+					title: comic.getName(),
+					viewlist: comic.getViewlist(),
+					editlist: comic.getEditlist(),
+					comic_creator: comic_creator,
+					comic_name: comic.getName(),
+					comic_uri: comic_uri,
+				})
+			})
+		});
+
+		//TODO(Edward): we should have a different URI for each permission list
+		/* POST a user to Comic Viewlist. */
+		router.post('/adminpage/*', function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+
+			if (!comic_creator || !comic_uri == null)
+				return next();
+			if (!req.body.username) {   //incorrect POST body
+				return next();
+			}
+			req.dbManager.getComic(comic_creator,comic_uri,function (err,comic) {
+				//check request user has permission to edit comic:
+				if (err) //send 401 not 404 to prevent information leak:
+					return res.status(401).send(); //TODO(NaOH): add error message and combine with next check
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return res.status(401).send();
+				req.dbManager.getUser(req.body.username, function(err, user) {
+					if (!user || err) { // checks to see if the username inputted is currently a valid user
+						console.log("User does not exist!");
+						return res.status(404).send({
+							success: false,
+							msg: 'No username found, please input a valid username'
+						})
+					}
+					else { // should run if there is a valid user with the inputted username
+						req.dbManager.postViewlist(comic_creator, comic_uri, req.body.username, function(err, viewlist) {
+							if (viewlist != null && !err) {
+								console.log("IT WORKED, YOU ADDED IT!");
+								res.status(200).send({ success: true });
+							} else {
+								res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
+							}
+						})
+					}
+				})
+			});
+		})
+
+		/* POST a user to Comic Editlist. */
+		router.post('/adminpage/*', function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+
+			if (!comic_creator || !comic_uri == null)
+				return next();
+			if (!req.body.editor) {   //incorrect POST body
+				console.log(req.body.editor);
+				console.log("Posting to body is not working, input valid name ARE YOU DOING THIS ONE?");
+				return res.status(400).send({ success: false, msg: 'Please provide a username' });
+			}
+			req.dbManager.getComic(comic_creator,comic_uri,function(err,comic) {
+				//check request user has permission to edit comic:
+				if (err) //send 401 not 404 to prevent information leak:
+					return res.status(401).send(); //TODO(NaOH): add error message and combine with next check
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return res.status(401).send();
+				req.dbManager.getUser(req.body.editor, function(err, user) {
+					if (!user || err) { // checks to see if the username inputted is currently a valid user
+						console.log("!!!!!!!!!!USER DOES NOT EXIST!!!!!!!!!!!");
+						res.status(400).send({ success: false, msg: 'No username found, please input a valid username' })
+						//TODO: error message if user already on edit list
+					} else if (user.getType() != "artist") {
+						console.log('USER was not an artist type');
+						res.status(406).send({ success: false, msg: 'User is not an artist' });
+					}
+					else { // should run if there is a valid user with the inputted username
+						req.dbManager.postEditlist(comic_creator, comic_uri, req.body.editor, function(err, editlist) {
+							if (editlist != null && !err) {
+								console.log("IT WORKED, YOU ADDED THE EDITOR!");
+								res.status(200).send({ success: true });
+							} else {
+								res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
+							}
+						})
+					}
+				})
+			})
+		})
+
+		/* EDIT permission lists*/
+		//TODO(Edward): check URI for which list to delete from, don't check body (more RESTful)
+		router.put('/adminpage/*', function(req, res, next) {	
+			//weird thing -- this takes a list of elements to delete, it should take a list of elements to not delete.		
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			//list of users to delete:
+			var l_users: string[] = req.body.l_users
+			//relevant list to delete them from. Can be one of 'view' 'edit' or 'admin'
+			var relevant_list = req.body.relevant_list
+			if (!comic_creator || !comic_uri == null)
+				return next();
+			if (!l_users||!l_users.length) {   //incorrect POST body
+				return res.status(400).send({ success: false, msg: 'Please provide a list of usernames!' });
+			}
+			//make sure user doesn't remove self:
+			if (l_users.indexOf(req.user.getUsername())>=0)
+				return res.status(403).send({success: false, msg: "You cannot remove yourself from the list"})
+			if (!(relevant_list=='admin'||relevant_list=='view'||relevant_list=='edit'))
+				return res.status(400).send({ success: false, msg: 'Unknown list ' + relevant_list })
+			if (l_users.indexOf(comic_creator)>=0)
+				return res.status(403).send({success: false, msg: "You cannot remove the comic creator"})
+			req.dbManager.getComic(comic_creator,comic_uri, function(err,comic: Comic) {
+				if (err||!comic)
+					return next();
+				//TODO: change to getUserCanAdmin
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				//TODO: migrate all following deletion code to a dbManager method:
+				var new_list;
+				if (relevant_list=='view')
+					new_list=comic.getViewlist();
+				if (relevant_list=='edit')
+					new_list=comic.getEditlist();
+				//TODO: implement adminList
+				new_list=new_list.slice();//prevent editing original object
+				//remove all users from relevant list:
+				for (var i=0;i<l_users.length;i++) {
+					var index_in_list = new_list.indexOf(l_users[i])
+					if (index_in_list==-1)
+						return res.status(400).send({success: false, msg: "User not previously in list: " + l_users[i]})
+					else {
+						new_list.splice(index_in_list,1);
+					}
+					console.log(new_list);
+				}
+				//update comic's list:
+				var comics = req.db.get('comics');
+				var set_db;
+				if (relevant_list=="view")
+					set_db={
+						"viewlist":new_list
+					}
+				if (relevant_list=="edit")
+					set_db={
+						"editlist":new_list
+					}
+				if (relevant_list=="admin")
+					set_db={
+						"adminlist":new_list
+					}
+				req.db.get('comics').update({
+					"urisan": Comic.canonicalURI(comic_uri),
+					"creator": comic_creator
+				},{
+					$set: set_db
+				})
+				return res.status(200).send({success: true, msg: "Users removed from list."})
+			})
+		})
+
 		/* POST Comic. */
 		//TODO: this is not restful. URI location is /<user-name>/comics/
 		router.post('/comic', function(req, res, next) {
 			if (!req.body.comic_name) //incorrect POST body
-			res.status(401).send({success: false, msg: 'Provide comic name'});
+				res.status(401).send({success: false, msg: 'Provide comic name'});
 			else if (!req.user.isArtist) //incorrect account type
-			res.status(401).send({success: false, msg: 'account_type must be "artist"'});
+				res.status(401).send({success: false, msg: 'account_type must be "artist"'});
 			else {
 				// check if user is signed in
 				if (!req.user)
@@ -196,8 +378,6 @@ class RoutePretty {
 		/* POST panel */
 		router.post(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/,
       upload.single('image'), function(req, res, next) {
-			//TODO(Edward): check permissions when uploading panel.
-			//TODO: check image valid size
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
 			if (!comic_creator||!comic_uri==null)
@@ -217,12 +397,15 @@ class RoutePretty {
 					return res.status(413).send("Error: image width cannot exceed " + MAX_IMAGE_WIDTH);
 				if (dimensions.width>MAX_IMAGE_HEIGHT)
 					return res.status(413).send("Error: image height cannot exceed " + MAX_IMAGE_HEIGHT);
-				req.dbManager.getComic(comic_creator, comic_uri, function(err,comic){
+				req.dbManager.getComic(comic_creator, comic_uri, function(err,comic: Comic){
 					if (err||!comic){
+						//TODO: combine this check with permissions
 						return res.status(404).send('Comic does not exist: '
 							+comic_uri+" (author: " + comic_creator+")");
-					}
-					else {
+					} else if (!comic.getUserCanEdit(req.user.getUsername())) {
+						//check permissions:
+						return res.status(401).send();
+					}	else {
 						console.log("Inserting image..." + name);
 						req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,panel_id){
 							if (panel_id!=null&&!err) {
@@ -237,12 +420,11 @@ class RoutePretty {
 						});
 					}
 				}); 
-			})
+			});
 		});
 
 		/* GET panel */
 		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/[0-9]+$/, function(req,res,next) {
-			//TODO(Edward): check permissions when getting panel.
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
 			var panel = parsePanelID(req.url);
@@ -252,13 +434,16 @@ class RoutePretty {
 			// TODO(NaOH): retrieving the panels from the database
 			// for _each panel_ seems pretty slow to me.
 			// caching would be helpful here.
-			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic){
+			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic: Comic){
 				if (err||!comic){
+					//TODO: combine this check with permissions
 					return res.status(404).send('Comic does not exist: '
 						+comic_uri+" (author: " + comic_creator+")");
-				}
-				else {
-					var path = comic.getPanelPath(panel);
+				} else if (!comic.getUserCanView(req.user.getUsername())) {
+					//check permissions:
+					return res.status(401).send();
+				} else {
+					var path = comic.getPanelPath(Number(panel));
 					if (!path)
 						return next();
 					path=__dirname.substring(0,__dirname.lastIndexOf('/')+1) + path;
@@ -268,7 +453,7 @@ class RoutePretty {
 		})
 
 		this.router_ = router;
-}
+	}
 	
 	getRouter(){
 		return this.router_;

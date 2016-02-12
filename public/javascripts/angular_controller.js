@@ -36,7 +36,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 		}, function errorCallback(response) {
       if (response.data.msg)
 				$scope.response = response.data.msg
-	  }) 
+	  })
 	}
 	
 	//user attempts to create a new comic
@@ -123,6 +123,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 	// - "admin"
 	$scope.evict_users=function(l_users,list) {
 		if (list=="view") {
+			//TODO: we need a better system for the different responses
 			$scope.response1='';
 		} else if (list=="edit") {
 			$scope.response2='';
@@ -130,13 +131,13 @@ app.controller('authController', function($scope, $http, $timeout) {
 			//TODO
 		}
 
-		$http.delete('',{
-			l_users: l_users,
-			relevant_list: list
-		}).then(
+		$http.put('',{
+				l_users: l_users,
+				relevant_list: list
+			}).then(
 			function success(response){
 				$timeout(function(){
-					window.location='/'
+					window.location.reload();
 				},200)
 			}, function error(response){
 				if (list=="view") {

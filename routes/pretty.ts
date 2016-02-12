@@ -280,15 +280,16 @@ class RoutePretty {
 			})
 		})
 
-		/* DELETE from permission lists*/
-		//TODO(Edward): check URI for which list to delete from, don't check body
-		router.delete('/adminpage/*', function(req, res, next) {
+		/* EDIT permission lists*/
+		//TODO(Edward): check URI for which list to delete from, don't check body (more RESTful)
+		router.put('/adminpage/*', function(req, res, next) {	
+			//weird thing -- this takes a list of elements to delete, it should take a list of elements to not delete.		
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			//list of users to delete:
-			var l_users: string[] = req.body.l_users;
+			var l_users: string[] = req.body.l_users
 			//relevant list to delete them from. Can be one of 'view' 'edit' or 'admin'
-			var relevant_list = req.body.relevant_list;
+			var relevant_list = req.body.relevant_list
 			if (!comic_creator || !comic_uri == null)
 				return next();
 			if (!l_users||!l_users.length) {   //incorrect POST body
@@ -316,13 +317,14 @@ class RoutePretty {
 				//TODO: implement adminList
 				new_list=new_list.slice();//prevent editing original object
 				//remove all users from relevant list:
-				for (var i=0;i<=l_users.length;i++) {
+				for (var i=0;i<l_users.length;i++) {
 					var index_in_list = new_list.indexOf(l_users[i])
 					if (index_in_list==-1)
 						return res.status(400).send({success: false, msg: "User not previously in list: " + l_users[i]})
 					else {
-						new_list=new_list.splice(index_in_list,1);
+						new_list.splice(index_in_list,1);
 					}
+					console.log(new_list);
 				}
 				//update comic's list:
 				var comics = req.db.get('comics');

@@ -141,7 +141,7 @@ class RoutePretty {
 				//TODO: rename view 'newcomic' to 'viewcomic' or something
 				return res.render('newcomic', {
 					title: comic.getName(),
-					description: comic.getDescription();
+					description: comic.getDescription(),
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic_uri,

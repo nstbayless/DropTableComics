@@ -18,7 +18,7 @@ class DatabaseManager {
 	// creates a new Artist and adds it to the database
 	createArtist(username: string, password: string, email: string): User.Artist {
 		var hash = this.computeHash(password);
-		var artist = new User.Artist(username);
+		var artist: Artist = new User.Artist(username);
 		artist.hash=hash;
 		artist.email=email;
 		var users = this.db.get('users');

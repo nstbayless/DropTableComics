@@ -301,7 +301,7 @@ class RoutePretty {
 				return res.status(400).send({ success: false, msg: 'Unknown list ' + relevant_list })
 			if (l_users.indexOf(comic_creator)>=0)
 				return res.status(403).send({success: false, msg: "You cannot remove the comic creator"})
-			req.dbManager.getComic(comic_creator,comic_uri, function(err,comic) {
+			req.dbManager.getComic(comic_creator,comic_uri, function(err,comic: Comic) {
 				if (err||!comic)
 					return next();
 				//TODO: change to getUserCanAdmin

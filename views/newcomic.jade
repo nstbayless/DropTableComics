@@ -15,3 +15,8 @@ block content
 			| share
 		span(ng-show="shlink.length>0")
 			input(readonly="readonly" ng-model="shlink" ng-init="")
+
+	p Collaborators:
+		each user, i in editlist
+			li
+				p #{user}

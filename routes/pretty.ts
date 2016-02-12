@@ -142,6 +142,7 @@ class RoutePretty {
 				return res.render('newcomic', {
 					title: comic.getName(),
 					description: comic.getDescription(),
+					editlist: comic.getEditlist(), 
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic_uri,

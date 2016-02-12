@@ -2,6 +2,9 @@ extends pretty
 
 block content
 	h1.bannertext Edit #{comic_name}
+	if (adminable)
+		p
+			a(href="/adminpage/"+comic_creator+"/comics/"+comic_uri) Admin Options
 	p
 		form(method='post', enctype='multipart/form-data', action= '/' + comic_creator + '/comics/' + comic_uri+"/panels")
 			input(type='file', name='image' id='image_upload')

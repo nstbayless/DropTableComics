@@ -15,7 +15,7 @@ class RouteAuth {
 				username: username,
 				password: password,
 			}, {
-				maxAge: 900000,
+				maxAge: 9000000,
 				httpOnly: true,
 				secure: config.https,
 				path: '/'
@@ -148,9 +148,11 @@ class RouteAuth {
 				//register new user!
 				//check username/password are valid
 				if (req.body.username.length<3)
-				return res.send({success: false, msg: 'Username must be at least 3 characters'})
+					return res.status(400).send({success: false, msg: 'Username must be at least 3 characters'})
+				if (!req.body.username.match(/^[a-zA-Z0-9]+$/g))
+					return res.status(400).send({success: false, msg: 'Username must contain only standard characters'})
 				if (req.body.password.length<4)
-				return res.send({success: false, msg: 'Password must be at least 4 characters'})
+					return res.send({success: false, msg: 'Password must be at least 4 characters'})
 				req.dbManager.getUser(req.body.username, function(err,user){
 					if (user) {
 						res.send({success: false, msg: 'Username already exists!'})

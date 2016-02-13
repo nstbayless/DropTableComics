@@ -2,7 +2,9 @@ extends pretty
 
 block content
 	h1.bannertext=comic_name
-	p Description: <i>#{description}
+	if (description)
+		p
+			i= description
 	if (editable)
 		p
 			a(href="/edit/" + comic_creator + "/comics/" + comic_uri) Edit

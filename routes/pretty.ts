@@ -138,8 +138,7 @@ class RoutePretty {
 					return next();
 				if (!comic.getUserCanView(req.user.getUsername()))
 					return next();
-				//TODO: rename view 'newcomic' to 'viewcomic' or something
-				return res.render('newcomic', {
+				return res.render('viewcomic', {
 					title: comic.getName(),
 					description: comic.getDescription(),
 					editlist: comic.getEditlist(), 

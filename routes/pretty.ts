@@ -353,7 +353,7 @@ class RoutePretty {
 
 		/* POST Comic. */
 		//TODO: this is not restful. URI location is /<user-name>/comics/
-		router.post('/comic', function(req, res, next) {
+		router.post(/^\/[a-zA-Z0-9\-]*\/comics/, function(req, res, next) {
 			if (!req.body.comic_name) //incorrect POST body
 				res.status(401).send({success: false, msg: 'Provide comic name'});
 			else if (!req.user.isArtist) //incorrect account type

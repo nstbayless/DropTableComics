@@ -42,7 +42,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 	//user attempts to create a new comic
 	$scope.create_comic=function(){
 		$scope.response=""
-		$http.post("/comic", {
+		$http.post($scope.username + "/comics", {
 			comic_name: $scope.comic_name,
 			description: $scope.comic_description
 		}).then(function(response){

@@ -7,7 +7,7 @@ block content
 			i= description
 	if (editable)
 		p
-			a(href="/edit/" + comic_creator + "/comics/" + comic_uri) Edit
+			a(href="/" + comic_creator + "/comics/" + comic_uri + "/edit" ) Edit
 	each pic, i in panels
 		p
 			img(src= "/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)

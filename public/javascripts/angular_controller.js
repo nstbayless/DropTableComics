@@ -42,12 +42,12 @@ app.controller('authController', function($scope, $http, $timeout) {
 	//user attempts to create a new comic
 	$scope.create_comic=function(){
 		$scope.response=""
-		$http.post($scope.username + "/comics", {
+		$http.post("/" + $scope.username + "/comics", {
 			comic_name: $scope.comic_name,
 			description: $scope.comic_description
 		}).then(function(response){
 			if (response.data.success)
-				window.location=response.data.comic_url;
+				window.location= "/" + response.data.comic_url;
 		}, function errorCallback(response) {
       if (response.data.msg)
 				$scope.response = response.data.msg

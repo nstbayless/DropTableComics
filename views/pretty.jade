@@ -3,7 +3,7 @@ extends layout
 block content_layout
 	ul.headerbar
 		li.headerlink(ng-show="isartist")
-			a(href="/create") + Create Comic
+			a(href="/"+ "{{username}}" +"/create") + Create Comic
 		li.headerlink
 			a(href="/") My Dashboard
 		ul.headerright

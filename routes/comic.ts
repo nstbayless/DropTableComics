@@ -75,7 +75,7 @@ function parsePanelID(url: string):string {
 	return panel;
 }
 
-class RoutePretty {
+class RouteComic {
 	router_: any;
 	static searchFor(searchtext: string): SearchResult[] {
 		var results: SearchResult[] = []
@@ -93,22 +93,26 @@ class RoutePretty {
 	constructor() {
 		var router = express.Router();
 		
+
+
 		/* GET dashboard page. */
 		router.get('/', function(req, res, next) {
 			var username = req.user.getUsername();  // username
-			var isartist = req.user.isArtist();  // whether the user is a pleb
-			//TODO: should use a dbManager method here, not dbManager
+			
+			//TODO: Render list of comics accessible by user
 			var comics = req.db.get('comics');
-			comics.find({ creator: username }, {}, function(err, comics) {
+			req.dbManager.getComics(username, function(err, comics) {
 				res.render('dashboard', {
 					title: 'dashboard',
-					comics: comics		// list of comics created by user	
+					comics: comics		// Render list of comics created by user	
 				});
 			});
+
 		});
-		
+
+				
 		/* GET create comic page. */
-		router.get('/create', function(req, res, next) {
+		router.get(/^\/[a-zA-Z0-9\-]*\/create$/, function(req, res, next) {
 			var username = req.user.getUsername();  // artist username
 			var isartist = req.user.isArtist(); // true if user is an artist
 			if (isartist) {
@@ -118,17 +122,58 @@ class RoutePretty {
 			}
 		});
 		
-		/* GET pretty search results */
-		router.get('/search/*', function(req, res, next) {
-			var results = RoutePretty.searchFor(req.url.substring('/search/'.length))
-			res.render('prettysearch', {
-				title: 'pretty search',
-				searchresults: results
-			});
-		})
+		/* POST Comic */
+		router.post(/^\/[a-zA-Z0-9\-]*\/comics$/, function(req, res, next) {
+			if (!req.body.comic_name) //incorrect POST body
+				res.status(401).send({success: false, msg: 'Provide comic name'});
+			else if (!req.user.isArtist) //incorrect account type
+				res.status(401).send({success: false, msg: 'account_type must be "artist"'});
+			else {
+				// check if user is signed in
+				if (!req.user)
+					return res.status(401).send({success: false, msg: 'Please sign in to create a comic'})
+				req.dbManager.getComic(req.user.getUsername(),
+					Comic.canonicalURI(req.body.comic_name), function(err,comic){
+					if (comic) {
+						console.log("Comic already exists: " + req.body.comic_name);
+						return res.status(409).send({success:false, msg: 'Comic already exists with that name'});
+					}
+					console.log("Creating comic: "+req.body.comic_name);
+					comic = req.dbManager.createComic(req.body.comic_name,req.user.getUsername(),req.body.description);
+					var url_comic_redirect=(req.user.getUsername()+"/comics/"+comic.getURI());
+					res.status(200).send({success: true,comic_url:url_comic_redirect})
+				});
+			} 
+		});
 			
+
+
+		/* GET pretty comic edit page */
+		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/edit$/, function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			console.log(req.user.username);
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				return res.render('editcomic', {
+					title: comic.getName(),
+					comic_creator: comic_creator,
+					comic_name: comic.getName(),
+					comic_uri: comic_uri,
+					//TODO: change to getUserCanAdmin()
+					adminable: comic.getUserCanEdit(req.user.getUsername()),
+					panels: comic.getPage(1)
+				})
+			})
+		});
+
 		/* GET pretty comic page */
-		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*/, function(req, res, next) {
+		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			if (!comic_uri || !comic_creator)
@@ -150,30 +195,6 @@ class RoutePretty {
 					panels: comic.getPage(1)
 				})
 			});
-		});
-
-		/* GET pretty comic edit page */
-		router.get('/edit/*', function(req, res, next) {
-			var comic_uri = parseComicURI(req.url);
-			var comic_creator = parseComicCreator(req.url);
-			console.log(req.user.username);
-			if (!comic_uri || !comic_creator)
-				return next();
-			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
-				if (err || !comic)
-					return next();
-				if (!comic.getUserCanEdit(req.user.getUsername()))
-					return next();
-				return res.render('editcomic', {
-					title: comic.getName(),
-					comic_creator: comic_creator,
-					comic_name: comic.getName(),
-					comic_uri: comic_uri,
-					//TODO: change to getUserCanAdmin()
-					adminable: comic.getUserCanEdit(req.user.getUsername()),
-					panels: comic.getPage(1)
-				})
-			})
 		});
 
 		/* GET pretty adminpage */
@@ -280,7 +301,7 @@ class RoutePretty {
 			})
 		})
 
-		/* EDIT permission lists*/
+		/* EDIT permission lists */
 		//TODO(Edward): check URI for which list to delete from, don't check body (more RESTful)
 		router.put('/adminpage/*', function(req, res, next) {	
 			//weird thing -- this takes a list of elements to delete, it should take a list of elements to not delete.		
@@ -351,33 +372,8 @@ class RoutePretty {
 			})
 		})
 
-		/* POST Comic. */
-		router.post(/^\/[a-zA-Z0-9\-]*\/comics/, function(req, res, next) {
-			if (!req.body.comic_name) //incorrect POST body
-				res.status(401).send({success: false, msg: 'Provide comic name'});
-			else if (!req.user.isArtist) //incorrect account type
-				res.status(401).send({success: false, msg: 'account_type must be "artist"'});
-			else {
-				// check if user is signed in
-				if (!req.user)
-					return res.status(401).send({success: false, msg: 'Please sign in to create a comic'})
-				req.dbManager.getComic(req.user.getUsername(),
-					Comic.canonicalURI(req.body.comic_name), function(err,comic){
-					if (comic) {
-						console.log("Comic already exists: " + req.body.comic_name);
-						return res.status(409).send({success:false, msg: 'Comic already exists with that name'});
-					}
-					console.log("Creating comic: "+req.body.comic_name);
-					comic = req.dbManager.createComic(req.body.comic_name,req.user.getUsername(),req.body.description);
-					var url_comic_redirect=(req.user.getUsername()+"/comics/"+comic.getURI());
-					res.status(200).send({success: true,comic_url:url_comic_redirect})
-				});
-			} 
-		});
-	
 		/* POST panel */
-		router.post(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/,
-      upload.single('image'), function(req, res, next) {
+		router.post(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/, upload.single('image'), function(req, res, next) {
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
 			if (!comic_creator||!comic_uri==null)
@@ -451,6 +447,19 @@ class RoutePretty {
 				}
 			});
 		})
+		
+		
+
+		/* GET pretty search results */
+		router.get('/search/*', function(req, res, next) {
+			var results = RouteComic.searchFor(req.url.substring('/search/'.length))
+			res.render('prettysearch', {
+				title: 'pretty search',
+				searchresults: results
+			});
+		})
+	
+		
 
 		this.router_ = router;
 	}
@@ -459,4 +468,4 @@ class RoutePretty {
 		return this.router_;
 	}
 }
-module.exports=RoutePretty
+module.exports=RouteComic

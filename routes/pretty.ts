@@ -128,7 +128,7 @@ class RoutePretty {
 		})
 			
 		/* GET pretty comic page */
-		router.get('/see/*', function(req, res, next) {
+		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			if (!comic_uri || !comic_creator)
@@ -352,7 +352,6 @@ class RoutePretty {
 		})
 
 		/* POST Comic. */
-		//TODO: this is not restful. URI location is /<user-name>/comics/
 		router.post(/^\/[a-zA-Z0-9\-]*\/comics/, function(req, res, next) {
 			if (!req.body.comic_name) //incorrect POST body
 				res.status(401).send({success: false, msg: 'Provide comic name'});
@@ -370,7 +369,7 @@ class RoutePretty {
 					}
 					console.log("Creating comic: "+req.body.comic_name);
 					comic = req.dbManager.createComic(req.body.comic_name,req.user.getUsername(),req.body.description);
-					var url_comic_redirect=("/see/"+req.user.getUsername()+"/comics/"+comic.getURI());
+					var url_comic_redirect=(req.user.getUsername()+"/comics/"+comic.getURI());
 					res.status(200).send({success: true,comic_url:url_comic_redirect})
 				});
 			} 

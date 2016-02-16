@@ -6,4 +6,4 @@ block content
 	ul
 		each comic, i in comics
 			li
-				a(href=comic.creator + "/comics/" + comic.uri)= comic.title
+				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title

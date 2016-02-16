@@ -112,7 +112,7 @@ class RouteComic {
 
 				
 		/* GET create comic page. */
-		router.get(/^\/[a-zA-Z0-9\-]*\/create$/, function(req, res, next) {
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/create$/, function(req, res, next) {
 			var username = req.user.getUsername();  // artist username
 			var isartist = req.user.isArtist(); // true if user is an artist
 			if (isartist) {
@@ -123,7 +123,7 @@ class RouteComic {
 		});
 		
 		/* POST Comic */
-		router.post(/^\/[a-zA-Z0-9\-]*\/comics$/, function(req, res, next) {
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics$/, function(req, res, next) {
 			if (!req.body.comic_name) //incorrect POST body
 				res.status(401).send({success: false, msg: 'Provide comic name'});
 			else if (!req.user.isArtist) //incorrect account type
@@ -149,7 +149,7 @@ class RouteComic {
 
 
 		/* GET pretty comic edit page */
-		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/edit$/, function(req, res, next) {
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/edit$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			console.log(req.user.username);
@@ -164,7 +164,7 @@ class RouteComic {
 					title: comic.getName(),
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
-					comic_uri: comic_uri,
+					comic_uri: comic.getURI(),
 					//TODO: change to getUserCanAdmin()
 					adminable: comic.getUserCanEdit(req.user.getUsername()),
 					panels: comic.getPage(1)
@@ -173,7 +173,7 @@ class RouteComic {
 		});
 
 		/* GET pretty comic page */
-		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*$/, function(req, res, next) {
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			if (!comic_uri || !comic_creator)
@@ -189,7 +189,7 @@ class RouteComic {
 					editlist: comic.getEditlist(), 
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
-					comic_uri: comic_uri,
+					comic_uri: comic.getURI(),
 					share_link: req.get('host') + req.url,
 					editable: comic.getUserCanEdit(req.user.getUsername()),
 					panels: comic.getPage(1)
@@ -198,7 +198,7 @@ class RouteComic {
 		});
 
 		/* GET pretty adminpage */
-		router.get('/adminpage/*', function(req, res, next) {
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/admin$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			if (!comic_uri || !comic_creator)
@@ -223,7 +223,7 @@ class RouteComic {
 
 		//TODO(Edward): we should have a different URI for each permission list
 		/* POST a user to Comic Viewlist. */
-		router.post('/adminpage/*', function(req, res, next) {
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/admin$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 
@@ -261,7 +261,7 @@ class RouteComic {
 		})
 
 		/* POST a user to Comic Editlist. */
-		router.post('/adminpage/*', function(req, res, next) {
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/admin$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 
@@ -303,7 +303,7 @@ class RouteComic {
 
 		/* EDIT permission lists */
 		//TODO(Edward): check URI for which list to delete from, don't check body (more RESTful)
-		router.put('/adminpage/*', function(req, res, next) {	
+		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/admin$/, function(req, res, next) {	
 			//weird thing -- this takes a list of elements to delete, it should take a list of elements to not delete.		
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
@@ -373,7 +373,7 @@ class RouteComic {
 		})
 
 		/* POST panel */
-		router.post(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/, upload.single('image'), function(req, res, next) {
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/, upload.single('image'), function(req, res, next) {
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
 			if (!comic_creator||!comic_uri==null)
@@ -420,7 +420,7 @@ class RouteComic {
 		});
 
 		/* GET panel */
-		router.get(/^\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/[0-9]+$/, function(req,res,next) {
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/[0-9]+$/, function(req,res,next) {
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
 			var panel = parsePanelID(req.url);

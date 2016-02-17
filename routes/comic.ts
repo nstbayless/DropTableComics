@@ -449,6 +449,7 @@ class RouteComic {
 		})
 		
 		
+		
 
 		/* GET pretty search results */
 		router.get('/search/*', function(req, res, next) {
@@ -459,7 +460,12 @@ class RouteComic {
 			});
 		})
 	
-		
+		/* POST Subscription */
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/subscribe$/, function(req, res, next) {
+			console.log("User is attempting to subscribe");
+			return res.status(200).send({success: true}); 
+		});
+
 
 		this.router_ = router;
 	}

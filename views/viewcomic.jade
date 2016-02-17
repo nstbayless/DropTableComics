@@ -7,10 +7,10 @@ block content
 			i= description
 	if (editable)
 		p
-			a(href="/edit/" + comic_creator + "/comics/" + comic_uri) Edit
+			a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/edit" ) Edit
 	each pic, i in panels
 		p
-			img(src= "/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+			img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
 	p
 		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
 			img(src="/images/icon_share.png" alt="share")

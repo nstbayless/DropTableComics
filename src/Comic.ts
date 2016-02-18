@@ -103,7 +103,7 @@ export class Comic {
   static sanitizeName(name: string): string{
 		return name
 						.replace(/[ _*&\^@\/\\]+/g,'-') //swap space-like characters for dash
-						.replace(/[^a-zA-Z0-9\-]/,'') //remove bad characters
+						.replace(/[^a-zA-Z0-9\-]/g,'') //remove bad characters
   }
 
 	/* takes a comic URI and converts it into its canonical version*/

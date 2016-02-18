@@ -182,7 +182,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 			return ""
 		return name
 						.replace(/[ _*&\^@\/\\]+/g,'-') //swap space-like characters for dash
-						.replace(/[^a-zA-Z0-9\-]/,'') //remove bad characters
+						.replace(/[^a-zA-Z0-9\-]/g,'') //remove bad characters
   }
 })
 .value('$anchorScroll', angular.noop)

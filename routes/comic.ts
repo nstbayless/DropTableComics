@@ -11,6 +11,7 @@ var MAX_IMAGE_HEIGHT=800;
 import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
+import { NotificationManager } from '../src/NotificationManager';
 var multer  = require('multer');
 var upload = multer({ dest: './data/images/' });
 var fs = require('fs');
@@ -406,8 +407,16 @@ class RouteComic {
 						req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,panel_id){
 							if (panel_id!=null&&!err) {
 								console.log("Inserted image " + name);
-								//user should refresh:
-								res.redirect(req.get('referer'));
+								var n_manager:NotificationManager = req.nManager;
+								n_manager.signalPublish(comic_uri, function(err,event_id){
+									if (err|| !event_id) {
+										console.log("Not Publishing " + comic_uri);
+										res.redirect(req.get('referer')); //user should refresh:
+									} else {
+										console.log("Publishing " + comic_uri);
+										res.redirect(req.get('referer')); //user should refresh:
+									}	
+								});
 							} else {
 								console.log("Error inserting panel!");
 								console.log(err);
@@ -463,7 +472,13 @@ class RouteComic {
 		/* POST Subscription */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/subscribe$/, function(req, res, next) {
 			console.log("User is attempting to subscribe");
-			return res.status(200).send({success: true}); 
+			var comic_uri = parseComicURI(req.url);
+			var n_manager:NotificationManager = req.nManager;
+			n_manager.subscribeComic(comic_uri, req.user.getUsername(), function(err,event_id) {
+				if (err||!event_id)
+					return res.status(400).send({success: false});
+				return res.status(200).send({success: true});
+			}); 
 		});
 
 

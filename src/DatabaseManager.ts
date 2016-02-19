@@ -60,8 +60,8 @@ class DatabaseManager {
 
 	// creates a new comic and adds it to the database
 	createComic(name: string, artist: string, description:string): Comic {
-    var uri = Comic.sanitizeName(name);
-    var uri_sanitized = Comic.canonicalURI(uri)
+    		var uri = Comic.sanitizeName(name);
+   		var uri_sanitized = Comic.canonicalURI(uri);
 		var comic = new Comic(uri_sanitized, artist, description);
 		comic.name=name;
 		comic.uri=uri;
@@ -81,6 +81,48 @@ class DatabaseManager {
 									"pages": comic.pages});
 		return comic;
 	}
+
+	
+	// creates a new subscription to an event by adding it to the database
+	createSubscription(event_id:string, username: string) {
+		console.log("creating event subscription");
+    		var user_list = new Array<string>();
+		var subscriptions = this.db.get('subscriptions');
+		user_list.push(username);
+		subscriptions.insert({"event_id":event_id, "user_list":user_list});
+		return;
+	}
+	// async inserts a Subscriber
+	// callback: [](err, event_id)
+	insertSubscriber(event_id:string, username:string, callback:any){
+		var dbmanager:DatabaseManager = this;
+		var user_list = new Array<string>();
+		var subscriptions = this.db.get('subscriptions');
+		subscriptions.findOne({"event_id":event_id}, function(err, subscription){
+			if (err || !subscription){
+				console.log("Could not find event");
+				dbmanager.createSubscription(event_id, username);
+				return callback(null, event_id);			
+			}
+		console.log("found event");
+		var user_list = subscription.user_list;
+		user_list.push(username);
+		return callback(null, event_id);
+		});
+	}
+
+	// asynchronously retrieves the given user from the database
+	// callback: [](err,subscribers)
+	getSubscribers(event_id: string, callback:any) {
+		var users = this.db.get('subscriptions');
+		users.findOne({"event_id":event_id}, function(err,event){
+			if (err||!event) return callback(err,null);
+			var user_list: string[] = event.user_list;
+			callback(null,user_list);
+		});
+	}
+
+	
 
 	// asynchronously retrieves the given comic from the database
 	// callback: [](err,comic)
@@ -122,7 +164,7 @@ class DatabaseManager {
 					var comics = db.get('comics');
 					console.log(viewlist[0]);
 					console.log(viewlist.indexOf(user) != -1);
-					if (viewlist.indexOf(user) === -1) {
+					if (viewlist.indexOf(user) === -1) { //TODO: IS "===" LEGIT, OR SHOULD IT BE "=="?
 						viewlist.push(user);
 						console.log("Pushed viewer into viewlist")
 						comics.update({

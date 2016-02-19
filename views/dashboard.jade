@@ -7,3 +7,10 @@ block content
 		each comic, i in comics
 			li
 				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+	p Notifications 
+	ul
+		if(typeof(notifications) !== 'undefined')
+			each notification, i in notifications
+				li
+					=notification
+

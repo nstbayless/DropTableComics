@@ -101,11 +101,14 @@ class RouteComic {
 			var username = req.user.getUsername();  // username
 			
 			//TODO: Render list of comics accessible by user
-			var comics = req.db.get('comics');
 			req.dbManager.getComics(username, function(err, comics) {
-				res.render('dashboard', {
-					title: 'dashboard',
-					comics: comics		// Render list of comics created by user	
+				req.nManager.getNotifications(username, function(err, notifications:string[]){
+						console.log("First Notification" + notifications[0]);
+						res.render('dashboard', {
+							"notifications": notifications,
+							title: 'dashboard',
+							comics: comics		// Render list of comics created by user	
+					}); 
 				});
 			});
 

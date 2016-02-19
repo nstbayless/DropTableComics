@@ -21,9 +21,11 @@ class DatabaseManager {
 		var artist = new User.Artist(username);
 		artist.hash=hash;
 		artist.email=email;
+		var notifications = new Array<string>();
+		console.log(notifications.length);
 		var users = this.db.get('users');
 		console.log("creating artist")
-		users.insert({username:username,hash:hash,type:"artist",email:email});
+		users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications});
 		return artist;
 	}
 
@@ -33,8 +35,10 @@ class DatabaseManager {
 		var viewer = new User.Viewer(username);
 		viewer.hash=hash;
 		viewer.email=email;
+		var notifications = new Array<string>();
+		console.log(notifications.length);
 		var users = this.db.get('users');
-		users.insert({username:username,hash:hash,type:"pleb",email:email});
+		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications});
 		return viewer;
 	}
 
@@ -54,6 +58,7 @@ class DatabaseManager {
 			//fill user fields based on canononical version of user...
 			user.hash=user_canon.hash;
 			user.email=user_canon.email;
+			user.notifications=user_canon.notifications;
 			callback(null,user);
 		});
 	}
@@ -111,18 +116,32 @@ class DatabaseManager {
 		});
 	}
 
-	// asynchronously retrieves the given user from the database
+	// asynchronously retrieves the subscribers for an event from the database
 	// callback: [](err,subscribers)
 	getSubscribers(event_id: string, callback:any) {
-		var users = this.db.get('subscriptions');
-		users.findOne({"event_id":event_id}, function(err,event){
+		var subscriptions = this.db.get('subscriptions');
+		subscriptions.findOne({"event_id":event_id}, function(err,event){
 			if (err||!event) return callback(err,null);
 			var user_list: string[] = event.user_list;
 			callback(null,user_list);
 		});
 	}
 
-	
+	// async inserts a Notification message into a user
+	// callback: [](err, message)
+	insertNotification(username:string, message:string, callback:any){
+		var users = this.db.get('users');
+		this.getUser(username, function(err, user) {
+			var notifications:string[] = user.getNotifications();
+			notifications.push(message);	
+				users.update(
+	   				{ username: username },
+	   				{$set: {"notifications": notifications}}
+				);
+		});
+		console.log("Pushed notification");
+		callback(null, message);
+	}
 
 	// asynchronously retrieves the given comic from the database
 	// callback: [](err,comic)
@@ -296,7 +315,6 @@ class DatabaseManager {
 		comics.find({ creator: username }, {}, callback);
 	}
 	
-
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)

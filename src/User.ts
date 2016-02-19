@@ -12,13 +12,15 @@ hash: string;  /** the hash of the user's password */
 email: string; /** the email address of the user */
 description: string; /** A description associated with the user */
 manager:DatabaseManager; /** Database Manager */
-viewlist:string[]; /** A list of all viewable comics */	
+viewlist:string[]; /** A list of all viewable comics */
+notifications:string[]; /** A list of notification messages to display */	
 type:string; /** type of the user, either "pleb" or "artist"*/
 	
 	/** GETTERS */
 	getUsername():string;
 	getHash(): string;
 	getViewlist():string[];
+	getNotifications():string[];
 	getManager():DatabaseManager;
 	getDescription():string;
 	getEmail(): string;
@@ -35,6 +37,7 @@ email: string; /** the email address of the user */
 description: string; /** A description associated with the artist */
 manager:DatabaseManager; /** Database Manager */
 viewlist:string[]; /** A list of all viewable comics */
+notifications:string[]; /** A list of notification messages to display */
 type:string; /** type of the user, either "pleb" or "artist"*/
 	
 	/** CONSTRUCTOR */
@@ -70,6 +73,9 @@ type:string; /** type of the user, either "pleb" or "artist"*/
 	isArtist(): boolean{
 		return false; 
 	}
+	getNotifications():string[]{
+		return this.notifications;
+	}
 }
 
 /** Represents an artist on DropComix */
@@ -84,7 +90,7 @@ viewlist:string[]; /** A list of all viewable comics */
 editlist:string[]; /** A list of all editable comics */
 adminlist:string[]; /** A list of all adminstrated comics */
 	/* INVARIANT:  A comic is on at most one list */
-	
+notifications:string[]; /** A list of notification messages to display */	
 	
 	/** CONSTRUCTOR */
 	/** Initializes Artist username */
@@ -126,5 +132,8 @@ adminlist:string[]; /** A list of all adminstrated comics */
 	}
 	isArtist(): boolean{
 		return true;
+	}
+	getNotifications():string[]{
+		return this.notifications;
 	}
 }

@@ -268,8 +268,6 @@ class RouteComic {
 			if (!comic_creator || !comic_uri == null)
 				return next();
 			if (!req.body.editor) {   //incorrect POST body
-				console.log(req.body.editor);
-				console.log("Posting to body is not working, input valid name ARE YOU DOING THIS ONE?");
 				return res.status(400).send({ success: false, msg: 'Please provide a username' });
 			}
 			req.dbManager.getComic(comic_creator,comic_uri,function(err,comic) {
@@ -280,17 +278,14 @@ class RouteComic {
 					return res.status(401).send();
 				req.dbManager.getUser(req.body.editor, function(err, user) {
 					if (!user || err) { // checks to see if the username inputted is currently a valid user
-						console.log("!!!!!!!!!!USER DOES NOT EXIST!!!!!!!!!!!");
 						res.status(400).send({ success: false, msg: 'No username found, please input a valid username' })
 						//TODO: error message if user already on edit list
 					} else if (user.getType() != "artist") {
-						console.log('USER was not an artist type');
 						res.status(406).send({ success: false, msg: 'User is not an artist' });
 					}
 					else { // should run if there is a valid user with the inputted username
 						req.dbManager.postEditlist(comic_creator, comic_uri, req.body.editor, function(err, editlist) {
 							if (editlist != null && !err) {
-								console.log("IT WORKED, YOU ADDED THE EDITOR!");
 								res.status(200).send({ success: true });
 							} else {
 								res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });

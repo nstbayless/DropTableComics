@@ -3,6 +3,7 @@
 ///<reference path='../types/node/node.d.ts'/>
 ///<reference path='../types/express/express.d.ts'/> 
 import DatabaseManager = require('./DatabaseManager');
+import { Page } from './Page';
 
 export class Comic {
 	
@@ -17,7 +18,7 @@ export class Comic {
 	editlist:string[]; /** A list of all editors of this comic */
 	adminlist:string[]; /** A list of all admins of this comic */ 
 	/* INVARIANT:  A user is on at most one list */
-	pages:number[][]; /** Pages in the comic. //TODO: page should be a class*/
+	pages:Page[]; /** Pages in the comic. //TODO: page should be a class*/
 	image_collection:string;//! TODO: this is sketchy. Use mongodb's hierarchy system
 	panel_map:string[]; /**maps from panel-id to path to image*/
 	manager:DatabaseManager; /** Database Manager */
@@ -32,7 +33,7 @@ export class Comic {
 		this.viewlist = [];
 		this.editlist = [];
 		this.pages = [];
-		this.pages[0]=[];
+		this.pages[0]=new Page();
 		this.panel_map=[];
 	} /** stub */
 	
@@ -58,15 +59,15 @@ export class Comic {
 	getAdminlist():string[] {
 		return this.adminlist;
 	}
-	getPages():number[][] {
+	getPages():Page[] {
 		return this.pages;
 	}
-	getPage(id: number){
+	getPage(id: number):Page{
     if (id<1)
       throw new Error("page id " + id + " invalid; id starts from 1");
 		return this.pages[id-1];
   }
-	getManager():any {
+	getManager():DatabaseManager {
 		return this.manager;
 	}
 	getImageCollection(): string{
@@ -76,7 +77,7 @@ export class Comic {
 		return this.panel_map[panel];
 	}
 
-	/*Predicates*/
+	/* PREDICATES */
 
 	getUserCanView(username: string) {
 		if (this.viewlist.indexOf(username)!=-1)
@@ -104,6 +105,7 @@ export class Comic {
 		return name
 						.replace(/[ _*&\^@\/\\]+/g,'-') //swap space-like characters for dash
 						.replace(/[^a-zA-Z0-9\-]/g,'') //remove bad characters
+						.replace(/\-+/g,'-') //condense multiple dashes into one.
   }
 
 	/* takes a comic URI and converts it into its canonical version*/

@@ -19,15 +19,23 @@ export class Page {
 	
 	/** Ordered list of panels*/
 	panels: Panel[];
+	title: string;
 	
 	/** CONSTRUCTOR */
 	constructor(){
 		this.panels=[];
+		this.title="";
 	}
-	 
+	
+	//constructs from untyped info stored in db
+	construct_from_db(page_canon: any): Page {
+		this.panels=page_canon.panels;
+		this.title=page_canon.title;
+		return this;
+	}
+
 	/** GETTERS */
 	getPanels(): Panel[]{
 		return this.panels;
 	}
-	
 }

@@ -33,7 +33,7 @@ export class Comic {
 		this.viewlist = [];
 		this.editlist = [];
 		this.pages = [];
-		this.pages[0]=new Page();
+		this.pages.push(new Page());
 		this.panel_map=[];
 	} /** stub */
 	
@@ -44,7 +44,7 @@ export class Comic {
 	getURI():string {
 		return this.uri;
 	}
-	getCreator():string{
+	getCreator():string {
 		return this.creator;
 	}
 	getDescription():string{
@@ -63,10 +63,10 @@ export class Comic {
 		return this.pages;
 	}
 	getPage(id: number):Page{
-    if (id<1)
-      throw new Error("page id " + id + " invalid; id starts from 1");
+    	if (id<1)
+    		throw new Error("page id " + id + " invalid; id starts from 1");
 		return this.pages[id-1];
-  }
+	}
 	getManager():DatabaseManager {
 		return this.manager;
 	}

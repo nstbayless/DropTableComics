@@ -4,6 +4,7 @@
 /** Represents a manager of the database, through which Users and Comics access the database*/
 import User = require('./User');
 import { Comic } from './Comic';
+import { Page } from './Page';
 var bcrypt = require('bcrypt');
 
 class DatabaseManager {
@@ -60,8 +61,8 @@ class DatabaseManager {
 
 	// creates a new comic and adds it to the database
 	createComic(name: string, artist: string, description:string): Comic {
-    var uri = Comic.sanitizeName(name);
-    var uri_sanitized = Comic.canonicalURI(uri)
+    	var uri = Comic.sanitizeName(name);
+		var uri_sanitized = Comic.canonicalURI(uri)
 		var comic = new Comic(uri_sanitized, artist, description);
 		comic.name=name;
 		comic.uri=uri;
@@ -99,7 +100,10 @@ class DatabaseManager {
 			comic.viewlist = comic_canon.viewlist;
 			comic.editlist = comic_canon.editlist;
 			comic.adminlist = comic_canon.adminlist;
-			comic.pages = comic_canon.pages;
+			comic.pages = [];
+			for (var i=0;i<comic_canon.pages.length;i++) {
+				comic.pages[i]=(new Page().construct_from_db(comic_canon.pages[i]));
+			}
 			comic.panel_map=comic_canon.panel_map;
 			comic.description = comic_canon.description;
 			callback(null,comic);
@@ -254,8 +258,6 @@ class DatabaseManager {
 		comics.find({ creator: username }, {}, callback);
 	}
 	
-
-
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)
 	// - if no error occurred, err field is null
@@ -272,7 +274,7 @@ class DatabaseManager {
 					var panel_map=comic.panel_map;
 					var new_panel_id=panel_map.length;
 					//add new panel to the page:
-					pages[page-1].push(new_panel_id)
+					pages[pages.length-1].panels.push(new_panel_id);
 					//add new panel to map
 					panel_map.push(path);
 					var comics = db.get('comics');

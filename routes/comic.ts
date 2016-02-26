@@ -11,6 +11,7 @@ var MAX_IMAGE_HEIGHT=800;
 import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
+import { Page, Panel } from '../src/Page';
 var multer  = require('multer');
 var upload = multer({ dest: './data/images/' });
 var fs = require('fs');
@@ -92,8 +93,6 @@ class RouteComic {
 	}
 	constructor() {
 		var router = express.Router();
-		
-
 
 		/* GET dashboard page. */
 		router.get('/', function(req, res, next) {
@@ -145,11 +144,12 @@ class RouteComic {
 				});
 			} 
 		});
-			
-
 
 		/* GET pretty comic edit page */
-		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/edit$/, function(req, res, next) {
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*(\/pages\/[0-9]*)?\/edit\/?$/, function(req, res, next) {
+			var pageid=1;
+			if (req.url.indexOf("/pages/")>-1)
+				pageid=parseInt(req.url.split("/pages/")[1]);
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			console.log(req.user.username);
@@ -160,6 +160,9 @@ class RouteComic {
 					return next();
 				if (!comic.getUserCanEdit(req.user.getUsername()))
 					return next();
+				if (pageid<1||pageid>comic.getPages().length)
+					return next();
+				var page: Page = comic.getPage(pageid);
 				return res.render('editcomic', {
 					title: comic.getName(),
 					comic_creator: comic_creator,
@@ -167,13 +170,18 @@ class RouteComic {
 					comic_uri: comic.getURI(),
 					//TODO: change to getUserCanAdmin()
 					adminable: comic.getUserCanEdit(req.user.getUsername()),
-					panels: comic.getPage(1)
+					pageid: pageid,
+					panels: page.getPanels()
 				})
 			})
 		});
 
 		/* GET pretty comic page */
-		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*$/, function(req, res, next) {
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*(\/(pages\/[0-9]*)?\/?)?$/, function(req, res, next) {
+			var pageid=1;
+			if (req.url.indexOf("/pages/")>-1)
+				pageid=parseInt(req.url.split("/pages/")[1]);
+			console.log(pageid);
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			if (!comic_uri || !comic_creator)
@@ -183,6 +191,10 @@ class RouteComic {
 					return next();
 				if (!comic.getUserCanView(req.user.getUsername()))
 					return next();
+				if (pageid<1||pageid>comic.getPages().length)
+					return next();
+				var page: Page = comic.getPage(pageid);
+				var panels: Panel[] = page.getPanels();
 				return res.render('viewcomic', {
 					title: comic.getName(),
 					description: comic.getDescription(),
@@ -192,7 +204,8 @@ class RouteComic {
 					comic_uri: comic.getURI(),
 					share_link: req.get('host') + req.url,
 					editable: comic.getUserCanEdit(req.user.getUsername()),
-					panels: comic.getPage(1)
+					pageid: pageid,
+					panels: panels
 				})
 			});
 		});

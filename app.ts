@@ -12,7 +12,6 @@ var http = require('http');
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk(config.db);
-var RouteIndex = require('./routes/index');
 var RouteComic = require('./routes/comic');
 var RouteAuthentication = require('./routes/authentication');
 
@@ -37,7 +36,6 @@ class Application {
 	//app stored as public member (type not known)
 	app_: any;
 	constructor() {
-		var routeIndex = new RouteIndex();
 		var routeComic = new RouteComic();
 		var routeAuthentication = new RouteAuthentication();
 

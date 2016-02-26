@@ -1,2 +1,5 @@
-grep -n -A2 "//TODO" */*.ts
-grep -n -A2 "//TODO" *.ts
+#!/bin/bash
+echo "TODOs found:"
+grep -n -B1 -A2 "//TODO" *.ts
+grep -n -B1 -A2 "//TODO" */*.ts
+grep -n -B1 -A2 "//TODO" ./public/javascripts/*

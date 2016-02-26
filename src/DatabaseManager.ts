@@ -246,6 +246,16 @@ class DatabaseManager {
 		})
 	}
 
+	//Returns all comics created by a user with given name asynchronously 
+	// callback: [](err, comics)
+
+	getComics(username:string, callback: any){
+		var comics = this.db.get('comics');
+		comics.find({ creator: username }, {}, callback);
+	}
+	
+
+
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)
 	// - if no error occurred, err field is null

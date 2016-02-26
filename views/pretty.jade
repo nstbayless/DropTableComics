@@ -3,12 +3,12 @@ extends layout
 block content_layout
 	ul.headerbar
 		li.headerlink(ng-show="isartist")
-			a(href="/create") + Create Comic
+			a(href="/accounts/"+ "{{username}}" +"/create") + Create Comic
 		li.headerlink
 			a(href="/") My Dashboard
 		ul.headerright
 			li.headerlink
-				a(href="/") {{username}}
+				a(href="/accounts/") {{username}}
 			li.headerlink
 				a(ng-click="logout()" href="") Sign Out
 			li.headerlink

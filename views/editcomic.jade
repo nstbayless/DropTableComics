@@ -4,11 +4,11 @@ block content
 	h1.bannertext Edit #{comic_name}
 	if (adminable)
 		p
-			a(href="/adminpage/"+comic_creator+"/comics/"+comic_uri) Admin Options
+			a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/admin") Admin Options
 	p
-		form(method='post', enctype='multipart/form-data', action= '/' + comic_creator + '/comics/' + comic_uri+"/panels")
+		form(method='post', enctype='multipart/form-data', action= '/accounts/' + comic_creator + '/comics/' + comic_uri+"/panels")
 			input(type='file', name='image' id='image_upload')
 			input(type='submit')
 	each pic, i in panels
 		p
-			img(src= "/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+			img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)

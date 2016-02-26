@@ -4,6 +4,8 @@
 /** Represents a manager of the database, through which Users and Comics access the database*/
 import User = require('./User');
 import { Comic } from './Comic';
+import { Notification } from './Notification';
+import { EventSignal } from './EventSignal';
 var bcrypt = require('bcrypt');
 
 class DatabaseManager {
@@ -21,7 +23,7 @@ class DatabaseManager {
 		var artist = new User.Artist(username);
 		artist.hash=hash;
 		artist.email=email;
-		var notifications = new Array<string>();
+		var notifications = new Array<Notification>();
 		console.log(notifications.length);
 		var users = this.db.get('users');
 		console.log("creating artist")
@@ -35,7 +37,7 @@ class DatabaseManager {
 		var viewer = new User.Viewer(username);
 		viewer.hash=hash;
 		viewer.email=email;
-		var notifications = new Array<string>();
+		var notifications = new Array<Notification>();
 		console.log(notifications.length);
 		var users = this.db.get('users');
 		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications});
@@ -89,38 +91,38 @@ class DatabaseManager {
 
 	
 	// creates a new subscription to an event by adding it to the database
-	createSubscription(event_id:string, username: string) {
+	createSubscription(event:EventSignal, username: string) {
 		console.log("creating event subscription");
     		var user_list = new Array<string>();
 		var subscriptions = this.db.get('subscriptions');
 		user_list.push(username);
-		subscriptions.insert({"event_id":event_id, "user_list":user_list});
+		subscriptions.insert({"event":event, "user_list":user_list});
 		return;
 	}
 	// async inserts a Subscriber
 	// callback: [](err, event_id)
-	insertSubscriber(event_id:string, username:string, callback:any){
+	insertSubscriber(event:EventSignal, username:string, callback:any){
 		var dbmanager:DatabaseManager = this;
 		var user_list = new Array<string>();
 		var subscriptions = this.db.get('subscriptions');
-		subscriptions.findOne({"event_id":event_id}, function(err, subscription){
+		subscriptions.findOne({"event_id":event}, function(err, subscription){
 			if (err || !subscription){
 				console.log("Could not find event");
-				dbmanager.createSubscription(event_id, username);
-				return callback(null, event_id);			
+				dbmanager.createSubscription(event, username);
+				return callback(null, event);			
 			}
 		console.log("found event");
 		var user_list = subscription.user_list;
 		user_list.push(username);
-		return callback(null, event_id);
+		return callback(null, event);
 		});
 	}
 
 	// asynchronously retrieves the subscribers for an event from the database
 	// callback: [](err,subscribers)
-	getSubscribers(event_id: string, callback:any) {
+	getSubscribers(event: EventSignal, callback:any) {
 		var subscriptions = this.db.get('subscriptions');
-		subscriptions.findOne({"event_id":event_id}, function(err,event){
+		subscriptions.findOne({"event":event}, function(err,event){
 			if (err||!event) return callback(err,null);
 			var user_list: string[] = event.user_list;
 			callback(null,user_list);
@@ -129,18 +131,18 @@ class DatabaseManager {
 
 	// async inserts a Notification message into a user
 	// callback: [](err, message)
-	insertNotification(username:string, message:string, callback:any){
+	insertNotification(username:string, notification:Notification, callback:any){
 		var users = this.db.get('users');
 		this.getUser(username, function(err, user) {
-			var notifications:string[] = user.getNotifications();
-			notifications.push(message);	
+			var notifications:Notification[] = user.getNotifications();
+			notifications.push(notification);	
 				users.update(
 	   				{ username: username },
 	   				{$set: {"notifications": notifications}}
 				);
 		});
 		console.log("Pushed notification");
-		callback(null, message);
+		callback(null, notification);
 	}
 
 	// asynchronously retrieves the given comic from the database

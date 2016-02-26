@@ -12,6 +12,7 @@ import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
 import { NotificationManager } from '../src/NotificationManager';
+import { Notification } from '../src/Notification';
 var multer  = require('multer');
 var upload = multer({ dest: './data/images/' });
 var fs = require('fs');
@@ -102,7 +103,7 @@ class RouteComic {
 			
 			//TODO: Render list of comics accessible by user
 			req.dbManager.getComics(username, function(err, comics) {
-				req.nManager.getNotifications(username, function(err, notifications:string[]){
+				req.nManager.getNotifications(username, function(err, notifications:Notification[]){
 						console.log("First Notification" + notifications[0]);
 						res.render('dashboard', {
 							"notifications": notifications,

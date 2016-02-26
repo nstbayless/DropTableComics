@@ -1,7 +1,9 @@
 ///<reference path='../types/node/node.d.ts'/>  
 ///<reference path='../types/express/express.d.ts'/> 
 
-import DatabaseManager = require("./DatabaseManager")
+import DatabaseManager = require("./DatabaseManager");
+import { Notification } from './Notification';
+
 
 /** Represents a user of DropComix */
 
@@ -13,14 +15,14 @@ email: string; /** the email address of the user */
 description: string; /** A description associated with the user */
 manager:DatabaseManager; /** Database Manager */
 viewlist:string[]; /** A list of all viewable comics */
-notifications:string[]; /** A list of notification messages to display */	
+notifications:Notification[]; /** A list of notification messages to display */	
 type:string; /** type of the user, either "pleb" or "artist"*/
 	
 	/** GETTERS */
 	getUsername():string;
 	getHash(): string;
 	getViewlist():string[];
-	getNotifications():string[];
+	getNotifications():Notification[];
 	getManager():DatabaseManager;
 	getDescription():string;
 	getEmail(): string;
@@ -37,7 +39,7 @@ email: string; /** the email address of the user */
 description: string; /** A description associated with the artist */
 manager:DatabaseManager; /** Database Manager */
 viewlist:string[]; /** A list of all viewable comics */
-notifications:string[]; /** A list of notification messages to display */
+notifications:Notification[]; /** A list of notification messages to display */
 type:string; /** type of the user, either "pleb" or "artist"*/
 	
 	/** CONSTRUCTOR */
@@ -73,7 +75,7 @@ type:string; /** type of the user, either "pleb" or "artist"*/
 	isArtist(): boolean{
 		return false; 
 	}
-	getNotifications():string[]{
+	getNotifications():Notification[]{
 		return this.notifications;
 	}
 }
@@ -90,7 +92,7 @@ viewlist:string[]; /** A list of all viewable comics */
 editlist:string[]; /** A list of all editable comics */
 adminlist:string[]; /** A list of all adminstrated comics */
 	/* INVARIANT:  A comic is on at most one list */
-notifications:string[]; /** A list of notification messages to display */	
+notifications:Notification[]; /** A list of notification messages to display */	
 	
 	/** CONSTRUCTOR */
 	/** Initializes Artist username */
@@ -133,7 +135,7 @@ notifications:string[]; /** A list of notification messages to display */
 	isArtist(): boolean{
 		return true;
 	}
-	getNotifications():string[]{
+	getNotifications():Notification[]{
 		return this.notifications;
 	}
 }

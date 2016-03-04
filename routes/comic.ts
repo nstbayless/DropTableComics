@@ -13,6 +13,8 @@ import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
 import { NotificationManager } from '../src/NotificationManager';
 import { Notification } from '../src/Notification';
+import { EventSignal } from '../src/EventSignal';
+import { EventType } from '../src/EventType';
 var multer  = require('multer');
 var upload = multer({ dest: './data/images/' });
 var fs = require('fs');
@@ -42,7 +44,7 @@ class SearchResult{
 // Parses comic uri from full uri
 function parseComicURI(url: string):string {
 	var res = url.split("/");
-	var id=res.indexOf("comics");
+	var id = res.indexOf("comics");
 	if (!id)
 		return null;
 	if (res.length<=id)
@@ -102,17 +104,31 @@ class RouteComic {
 			var username = req.user.getUsername();  // username
 			
 			//TODO: Render list of comics accessible by user
-			req.dbManager.getComics(username, function(err, comics) {
-				req.nManager.getNotifications(username, function(err, notifications:Notification[]){
-						console.log("First Notification" + notifications[0]);
-						res.render('dashboard', {
-							"notifications": notifications,
+			req.dbManager.getUser(username, function(err,user){
+				if (err||!user) return res.status(401).send({success: false, msg: 'User does not exist'});
+				var isartist = user.isArtist();
+				req.dbManager.getComics(username, function(err, comics) {
+					req.nManager.getNotifications(username, function(err, notifications:Notification[]){
+						var sorted_notifications: Notification[] = notifications.sort((n1,n2) => {
+    							if (n1.timestamp.valueOf() < n2.timestamp.valueOf()) {
+        						return 1;
+    							}
+    							if (n1.timestamp.valueOf() > n2.timestamp.valueOf()) {
+        						return -1;
+    							}
+    							return 0;
+						});
+							res.render('dashboard', {
+							"isartist" : isartist,
+							"notifications": sorted_notifications,
 							title: 'dashboard',
-							comics: comics		// Render list of comics created by user	
-					}); 
+							comics: comics,		// Render list of comics created by user
+							comics_length:comics.length,
+							notifications_length:notifications.length	
+						}); 
+					});
 				});
 			});
-
 		});
 
 				
@@ -129,6 +145,7 @@ class RouteComic {
 		
 		/* POST Comic */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics$/, function(req, res, next) {
+			var username:string = req.user.getUsername(); 
 			if (!req.body.comic_name) //incorrect POST body
 				res.status(401).send({success: false, msg: 'Provide comic name'});
 			else if (!req.user.isArtist) //incorrect account type
@@ -144,7 +161,14 @@ class RouteComic {
 						return res.status(409).send({success:false, msg: 'Comic already exists with that name'});
 					}
 					console.log("Creating comic: "+req.body.comic_name);
-					comic = req.dbManager.createComic(req.body.comic_name,req.user.getUsername(),req.body.description);
+					comic = req.dbManager.createComic(req.body.comic_name,username,req.body.description);
+					req.nManager.subscribeEvent( // subscribes user to comic updates
+						new EventSignal(EventType.Comic_Update, comic.getURI()),
+						 username, 
+						function(err,event_id) {
+							if (err||!event_id)
+								return res.status(400).send({success: false});
+						}); 
 					var url_comic_redirect=(req.user.getUsername()+"/comics/"+comic.getURI());
 					res.status(200).send({success: true,comic_url:url_comic_redirect})
 				});
@@ -298,7 +322,7 @@ class RouteComic {
 								console.log("IT WORKED, YOU ADDED THE EDITOR!");
 								res.status(200).send({ success: true });
 							} else {
-								res.status('500').send({ success: false, msg: "Error inserting user to viewlist" });
+								res.status('500').send({ success: false, msg: "Error inserting user to viewlist"});
 							}
 						})
 					}
@@ -406,20 +430,42 @@ class RouteComic {
 					} else if (!comic.getUserCanEdit(req.user.getUsername())) {
 						//check permissions:
 						return res.status(401).send();
-					}	else {
+					} else {
 						console.log("Inserting image..." + name);
 						req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,panel_id){
 							if (panel_id!=null&&!err) {
 								console.log("Inserted image " + name);
 								var n_manager:NotificationManager = req.nManager;
-								n_manager.signalPublish(comic_uri, function(err,event_id){
+								n_manager.signalUpdate(comic_uri, function(err,event_id) {
 									if (err|| !event_id) {
-										console.log("Not Publishing " + comic_uri);
-										res.redirect(req.get('referer')); //user should refresh:
-									} else {
-										console.log("Publishing " + comic_uri);
-										res.redirect(req.get('referer')); //user should refresh:
-									}	
+										console.log("Not updating " + comic_uri);
+										n_manager.signalPublish(comic_uri, function(err,event_id){ 
+											//signalling publishing
+											if (err|| !event_id) {
+												console.log("Not Publishing " + comic_uri);
+												res.redirect(req.get('referer')); 
+												//user should refresh:
+											} else {
+												console.log("Publishing " + comic_uri);
+												res.redirect(req.get('referer')); 
+												//user should refresh:
+											}
+										});
+									} else { 
+										console.log("updating " + comic_uri);
+										n_manager.signalPublish(comic_uri, function(err,event_id){ 
+										//signalling publishing
+											if (err|| !event_id) {
+												console.log("Not Publishing " + comic_uri);
+												res.redirect(req.get('referer')); 
+												//user should refresh:
+											} else {
+												console.log("Publishing " + comic_uri);
+												res.redirect(req.get('referer')); 
+												//user should refresh:
+											}	
+										}); // end publish
+									}
 								});
 							} else {
 								console.log("Error inserting panel!");

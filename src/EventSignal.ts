@@ -8,12 +8,12 @@ import { EventType } from './EventType';
 export class EventSignal {
 
 	id:string;		// is comic-uri if event type is a comic-related
-	et:EventType;
+	event_type:EventType;
 
 	/*  CONSTRUCTOR */
 	/** Creates EventSignal */
-	constructor(et:any, id:string){
-		this.et = et;
+	constructor(event_type:any, id:string){
+		this.event_type = event_type;
 		this.id = id;
 	}
 

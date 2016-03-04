@@ -9,24 +9,25 @@ import { EventSignal } from './EventSignal';
 //TODO: implement
 export class Notification {
 	
-	date:Date; /** a time in milliseconds according to UCT */
-	m:string; /** message */
+	timestamp:Date; /** a time in milliseconds according to UCT */
+	msg:string; /** message */
 	event:EventSignal; /** The event that occurred */
 	/** CONSTRUCTOR */ 
 	/** creates a notification object */
 	 constructor(event:EventSignal, message:string){
-		this.date = new Date();
+		var date:Date = new Date();
+		this.timestamp = date;
 		this.event = event;
-		this.m = message;
+		this.msg = message;
 	}
 	 
 	/** GETTERS */
-	getDate():Date{
-		return this.date;
+	getTimestamp():Date{
+		return this.timestamp;
 	}
 
 	getMessage():string {
-		return this.m;
+		return this.msg;
 	}
 
 	

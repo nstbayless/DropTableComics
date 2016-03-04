@@ -90,7 +90,7 @@ class DatabaseManager {
 	}
 
 	
-	// creates a new subscription to an event by adding it to the database
+	// creates a new subscription to an event by adding it to the database (should only be used internally)
 	createSubscription(event:EventSignal, username: string) {
 		console.log("creating event subscription");
     		var user_list = new Array<string>();
@@ -99,7 +99,7 @@ class DatabaseManager {
 		subscriptions.insert({"event":event, "user_list":user_list});
 		return;
 	}
-	// async inserts a Subscriber
+	// async inserts a Subscriber (method to call from outside)
 	// callback: [](err, event_id)
 	insertSubscriber(event:EventSignal, username:string, callback:any){
 		var dbmanager:DatabaseManager = this;

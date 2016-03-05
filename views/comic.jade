@@ -1,0 +1,10 @@
+extends pretty
+
+block content
+	block content_comic
+	p
+		a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/")
+			img(src="/images/icon_back.png")
+		|	&nbsp;
+		a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/")
+			img(src="/images/icon_forward.png")

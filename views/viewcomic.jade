@@ -1,6 +1,6 @@
-extends pretty
+extends comic
 
-block content
+block content_comic
 	h1.bannertext=comic_name
 	if (description)
 		p
@@ -22,3 +22,5 @@ block content
 		each user, i in editlist
 			li
 				p #{user}
+
+	

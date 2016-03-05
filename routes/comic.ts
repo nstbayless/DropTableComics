@@ -438,7 +438,7 @@ class RouteComic {
 			// TODO(NaOH): retrieving the panels from the database
 			// for _each panel_ seems pretty slow to me.
 			// caching would be helpful here.
-			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic: Comic){
+			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic: Comic) {
 				if (err||!comic){
 					//TODO: combine this check with permissions
 					return res.status(404).send('Comic does not exist: '
@@ -455,8 +455,6 @@ class RouteComic {
 				}
 			});
 		})
-		
-		
 
 		/* GET pretty search results */
 		router.get('/search/*', function(req, res, next) {
@@ -467,8 +465,6 @@ class RouteComic {
 			});
 		})
 	
-		
-
 		this.router_ = router;
 	}
 	

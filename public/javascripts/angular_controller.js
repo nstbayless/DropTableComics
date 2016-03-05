@@ -1,5 +1,8 @@
 //handles client-side authentication
 
+//milliseconds to wait before redirecting
+var REDIRECT_TIMEOUT=200;
+
 var app = angular.module('authentication', [])
 app.controller('authController', function($scope, $http, $timeout) {
 	//read http headers: 
@@ -30,13 +33,30 @@ app.controller('authController', function($scope, $http, $timeout) {
 			account_type: $scope.auth_usertype
 		}).then(function(response){
 			if (response.data.success) //redirect to dashboard
-				window.location='/';
+				$timeout(function(){window.location='/';},REDIRECT_TIMEOUT)
 			else if (response.data.msg)
 				$scope.response=response.data.msg
 		}, function errorCallback(response) {
       if (response.data.msg)
 				$scope.response = response.data.msg
 	  })
+	}
+
+	//user attempts log-in
+	$scope.login=function(){
+		$scope.response=""
+		$http.post("/auth/login", {
+			username: $scope.auth_username,
+			password: $scope.auth_password
+		}).then(function(response){
+			if (response.data.success) //redirect to dashboard
+				$timeout(function(){window.location='/';},REDIRECT_TIMEOUT)
+			else if (response.data.msg)
+				$scope.response = response.data.msg
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  }) 
 	}
 	
 	//user attempts to create a new comic
@@ -150,30 +170,14 @@ app.controller('authController', function($scope, $http, $timeout) {
 			}
 		);
 	}
-	
-	//user attempts log-in
-	$scope.login=function(){
-		$scope.response=""
-		$http.post("/auth/login", {
-			username: $scope.auth_username,
-			password: $scope.auth_password
-		}).then(function(response){
-			if (response.data.success) //redirect to dashboard
-				window.location='/';
-			else if (response.data.msg)
-				$scope.response = response.data.msg
-		}, function errorCallback(response) {
-      if (response.data.msg)
-				$scope.response = response.data.msg
-	  }) 
-	}
+
 
 	//log user out by deleting credential cookie
 	$scope.logout=function(){
 		$http.get("/auth/logout");
 		$timeout(function(){
 			window.location='/';
-		},200)
+		},REDIRECT_TIMEOUT)
 	}
 
 	//sanitize uri for comic (Identical to Comic.sanitizeName()):

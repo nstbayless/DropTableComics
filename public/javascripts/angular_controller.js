@@ -1,7 +1,7 @@
 //handles client-side authentication
 
 var app = angular.module('authentication', [])
-app.controller('authController', function($scope, $http, $timeout) {
+app.controller('authController', function($location, $scope, $http, $timeout) {
 	//read http headers: 
 	var req = new XMLHttpRequest();
 	req.open('GET', document.location, false);
@@ -48,6 +48,20 @@ app.controller('authController', function($scope, $http, $timeout) {
 		}).then(function(response){
 			if (response.data.success)
 				window.location= "/accounts/" + response.data.comic_url;
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  }) 
+	}
+
+	//user attempts to subscribe
+	$scope.subscribe_comic = function(comic_uri){
+		$scope.response=""
+		debugger;
+		$http.post(comic_uri+"/subscribe", {
+		}).then(function(response){
+			if (response.data.success)
+				window.location= '';
 		}, function errorCallback(response) {
       if (response.data.msg)
 				$scope.response = response.data.msg

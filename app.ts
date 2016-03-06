@@ -16,9 +16,11 @@ var RouteIndex = require('./routes/index');
 var RouteComic = require('./routes/comic');
 var RouteAuthentication = require('./routes/authentication');
 
-import DatabaseManager = require("./src/DatabaseManager")
+import DatabaseManager = require("./src/DatabaseManager");
+import { NotificationManager } from './src/NotificationManager';
 
 var dbManager: DatabaseManager = new DatabaseManager(db);
+var nManager: NotificationManager = new NotificationManager(dbManager);
 
 //fatal error if cannot connect to database:
 try {
@@ -59,6 +61,7 @@ class Application {
 		app.use(express.static(path.join(__dirname, 'public')));
 		app.use(function(req,res,next){
 			req.dbManager = dbManager;
+			req.nManager = nManager;
 			req.db=db;
 			next();
 		});

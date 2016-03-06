@@ -17,7 +17,8 @@ block content
 			| share
 		span(ng-show="shlink.length>0")
 			input(readonly="readonly" ng-model="shlink" ng-init="")
-
+		
+	button(ng-click = "subscribe_comic('#{comic_uri}')" ng-show = "!isartist") Subscribe
 	p Collaborators:
 		each user, i in editlist
 			li

@@ -364,6 +364,37 @@ class DatabaseManager {
 		})
 	}
 
+	/**Asynchronously PUTs the given draft page details into the given draft page.
+	   callback: [](err)
+		 - if no error occurred, err field is null*/
+	putPage(username:string, comic_uri: string, pageid: number, page_details: Page, callback: any) {
+		var db=this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username,comic_uri,function(err,comic){
+			try {
+				if (comic&&!err) {
+					if (pageid<1)
+						throw new Error("page id must be at least 1");
+					comic.draftpages[pageid-1]=page_details;
+					comic.draftpages[pageid-1].edited=true;
+					var comics = db.get('comics');
+					comics.update({
+						"urisan":comic_uri,
+						"creator":username
+					},
+					{
+						$set: {
+							"drafts":comic.draftpages
+						}
+					})
+					callback(null);
+	      }
+			} catch (err) {
+				callback(err);
+			}
+		})
+	}
+
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)
 	// - if no error occurred, err field is null

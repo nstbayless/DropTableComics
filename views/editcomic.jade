@@ -32,7 +32,9 @@ block content_comic
 		svg(width=20000 height=30000 ng-show="mouseover_panel>-1" ng-mouseleave="mouseleave(-1)" ng-mouseover="mouseleave(-1)")
 			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="stroke-width:3;stroke:black;fill:blue;fill-opacity:0.1;" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
 	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_panel>-1")
-		img(src="/images/icon_back.png" ng-click="movepanel(mouseover_panel,0);")
+		img(src="/images/icon_back.png" ng-click="movepanel(mouseover_panel,mouseover_panel-1);")
 		| &nbsp
-		img(src="/images/icon_forward.png")
+		img(src="/images/icon_forward.png" ng-click="movepanel(mouseover_panel,mouseover_panel+1);")
+		| &nbsp
+		img(src="/images/icon_delete.png" ng-click="deletepanel(mouseover_panel);")
 		

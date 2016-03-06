@@ -242,6 +242,33 @@ class RouteComic {
 			})
 		});
 
+		/* PUT draft*/
+		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/draft\/json\/?$/, function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			if (!comic_uri || !comic_creator)
+				return next();
+			var pageid=1;
+			if (req.url.indexOf("/pages/")>-1)
+				pageid=parseInt(req.url.split("/pages/")[1]);
+			else
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				//add page to database
+				req.dbManager.putPage(comic_creator,comic_uri,pageid,req.body.draft,function(err) {
+					//success; inform user of URI of new page
+					if (!err)
+						res.status(200).send();
+					else
+						res.status(500).send({msg: "unknown error occurred putting page"})
+				});
+			});
+		});
+
 		/* POST new page */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/?$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
@@ -336,6 +363,8 @@ class RouteComic {
 			//page to add panel to:
 			var pageid = req.body.page || 1
 			sizeOf(path,function(err,dimensions){
+				if (!dimensions)
+					return res.status(401).send("Malformed request");
 				//bound image dimensions:
 				if (dimensions.width>MAX_IMAGE_WIDTH)
 					return res.status(413).send("Error: image width cannot exceed " + MAX_IMAGE_WIDTH);

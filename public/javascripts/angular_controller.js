@@ -254,6 +254,8 @@ app.controller('authController', function($scope, $http, $timeout) {
 		//Stores information about page for edit mode. (God object.)
 		$scope.draft = {title: "", panels: [], edited: false}
 
+		block_update=false;
+
 		//retrieve draft data from server
 		var reloaddraft = function(){
 			if (!completed_load){
@@ -265,6 +267,10 @@ app.controller('authController', function($scope, $http, $timeout) {
 			$http.get("draft/json").then(
 				function(response) {
 					completed_load=true;
+					if (block_update) {
+						block_update=false;
+						return;
+					}
 					if ($scope.response==LOAD_DRAFT_ERRMSG)
 						$scope.response="";
 					$scope.draft=response.data.draft;
@@ -300,10 +306,41 @@ app.controller('authController', function($scope, $http, $timeout) {
 			}
 		}
 		$scope.movepanel=function(panel, dst){
-			//TODO: move panel
+			if (dst<0)
+				return;
+
+			var panel_move = $scope.draft.panels[panel];
+			$scope.draft.panels.splice(panel,1);
+			$scope.draft.panels.splice(dst,0,panel_move);
+				
+			block_update=true;
+
+			$http.put("draft/json", {
+				draft:$scope.draft
+			}).then(function(response){
+				block_update=true;
+			}, function errorCallback(response) {
+ 	     if (response.data.msg)
+					$scope.response = response.data.msg
+		  })
+
+			$scope.mouseover_panel=-1;
 		}
 		$scope.deletepanel=function(panel){
-			//TODO: move panel
+			$scope.draft.panels.splice(panel,1);
+
+			block_update=true;
+
+			$http.put("draft/json", {
+				draft:$scope.draft
+			}).then(function(response){
+				block_update=true;
+			}, function errorCallback(response) {
+ 	     if (response.data.msg)
+					$scope.response = response.data.msg
+		  })
+
+			$scope.mouseover_panel=-1;
 		}
 	}
 })

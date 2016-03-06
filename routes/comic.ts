@@ -151,7 +151,6 @@ class RouteComic {
 				pageid=parseInt(req.url.split("/pages/")[1]);
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
-			console.log(req.user.username);
 			if (!comic_uri || !comic_creator)
 				return next();
 			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
@@ -225,7 +224,6 @@ class RouteComic {
 				pageid=parseInt(req.url.split("/pages/")[1]);
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
-			console.log(req.user.username);
 			if (!comic_uri || !comic_creator)
 				return next();
 			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {

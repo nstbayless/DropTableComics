@@ -247,7 +247,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 	//  ------------ EDIT MODE FUNCTIONALITY ------------  //
 
 	if ($scope.editmode) {
-		var LOAD_DRAFT_TIMEOUT=800;
+		var LOAD_DRAFT_TIMEOUT=300;
 		var LOAD_DRAFT_ERRMSG = "Error loading draft... slowing load cycle";
 		var completed_load=true;
 

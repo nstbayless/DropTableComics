@@ -13,7 +13,7 @@ block content_comic
 			<input type="hidden" name="page" value="#{pageid}">
 			input(type='submit')
 	center 
-		p(id="page-area" style="width:1000px;border-style: solid;border-color:black;" align="left")
+		p(id="page-area" style="width:1000px;border-style:solid;border-color:black;background-color:#262626;" align="left")
 			span(data-ng-repeat="i in utilrange(0,draft.panels.length)")
 				img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i)" id="panel{{i}}")
 	p(ng-show="response.length>0")

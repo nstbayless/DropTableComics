@@ -12,15 +12,27 @@ block content_comic
 			input(type='file', name='image' id='image_upload')
 			<input type="hidden" name="page" value="#{pageid}">
 			input(type='submit')
-	each pic, i in panels
-		p
-			img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
-	if edited
-		p
-			a(href="" ng-click="publishPage('#{comic_creator}','#{comic_uri}',#{pageid})") Publish page
+	center 
+		p(id="page-area" style="width:1000px;border-style: solid;border-color:black;" align="left")
+			span(data-ng-repeat="i in utilrange(0,draft.panels.length)")
+				img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i)" id="panel{{i}}")
+	p(ng-show="response.length>0")
+		font(color="red") {{response}}
+	p(ng-show="draft.edited")
+		a(href="" ng-click="publishPage('#{comic_creator}','#{comic_uri}',#{pageid})") Publish page
 	p
 		a(href="" ng-click="postPage('#{comic_creator}','#{comic_uri}')") New Page
 	if pageid==maxpageid && pageid>1
 		p
 			a(href="" ng-click="confirmdelete=true;" ng-hide="confirmdelete") Delete this page
 			a(href="" ng-click="deletePage('#{comic_creator}','#{comic_uri}',#{pageid})" ng-show="confirmdelete") Confirm!
+
+	//- dynamic elements
+	div(style="position:fixed;left:0px;top:0px;")
+		svg(width=20000 height=30000 ng-show="mouseover_panel>-1" ng-mouseleave="mouseleave(-1)" ng-mouseover="mouseleave(-1)")
+			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="stroke-width:3;stroke:black;fill:blue;fill-opacity:0.1;" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
+	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_panel>-1")
+		img(src="/images/icon_back.png" ng-click="movepanel(mouseover_panel,0);")
+		| &nbsp
+		img(src="/images/icon_forward.png")
+		

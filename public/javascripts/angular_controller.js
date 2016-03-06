@@ -12,6 +12,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 	console.log(req.getAllResponseHeaders());
 	$scope.confirmdelete=false;
 	$scope.el = {}; $scope.vl = {}; $scope.al = {};
+	$scope.editmode=/edit\/?$/.test(window.location);
 
 	//true if logged in
 	$scope.authenticated = req.getResponseHeader("authenticated")=="true"
@@ -235,6 +236,76 @@ app.controller('authController', function($scope, $http, $timeout) {
 						.replace(/[^a-zA-Z0-9\-]/g,'') //remove bad characters
 						.replace(/\-+/g,'-') //condense multiple dashes into one.
   }
+
+	$scope.utilrange=function(a,b) {
+		r = [];
+		for (var i=a;i<b;i++)
+			r.push(i);
+		return r;
+	}
+
+	//  ------------ EDIT MODE FUNCTIONALITY ------------  //
+
+	if ($scope.editmode) {
+		var LOAD_DRAFT_TIMEOUT=800;
+		var LOAD_DRAFT_ERRMSG = "Error loading draft... slowing load cycle";
+		var completed_load=true;
+
+		//Stores information about page for edit mode. (God object.)
+		$scope.draft = {title: "", panels: [], edited: false}
+
+		//retrieve draft data from server
+		var reloaddraft = function(){
+			if (!completed_load){
+				console.log("error reloading draft");
+				$scope.response=LOAD_DRAFT_ERRMSG;
+				LOAD_DRAFT_TIMEOUT*=1.5;
+			}
+			completed_load=false;
+			$http.get("draft/json").then(
+				function(response) {
+					completed_load=true;
+					if ($scope.response==LOAD_DRAFT_ERRMSG)
+						$scope.response="";
+					$scope.draft=response.data.draft;
+				}, function (reponse) {
+					if (response.msg)
+						$scope.response=response.msg;
+				}
+			)
+			$timeout(reloaddraft,LOAD_DRAFT_TIMEOUT);
+		}
+		reloaddraft();
+
+		$scope.mouseover_panel=-1;
+		//user mouses over panel
+		$scope.mouseover=function(panel){
+			$scope.mouseover_panel=panel;
+		}
+		//user's mouse leaves panel
+		$scope.mouseleave=function(panel){
+			var x=event.x;
+			var y=event.y;
+			var box = $scope.boxgetattr();
+			if ($scope.mouseover_panel==panel || panel==-1)
+				if (x<box.left||y<box.top||x>box.left+box.width||y>box.top+box.height)
+					$scope.mouseover_panel=-1;
+		}
+		$scope.boxgetattr=function(){
+			if ($scope.mouseover_panel==-1)
+				return {width: 0, height: 0, left: 0, top: 0}
+			else {
+				var img_elem = document.getElementById('panel'+$scope.mouseover_panel);
+				return img_elem.getBoundingClientRect();
+			}
+		}
+		$scope.movepanel=function(panel, dst){
+			//TODO: move panel
+		}
+		$scope.deletepanel=function(panel){
+			//TODO: move panel
+		}
+	}
 })
 .value('$anchorScroll', angular.noop)
 .run(['$anchorScroll', function($anchorScroll) {

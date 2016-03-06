@@ -218,6 +218,30 @@ class RouteComic {
 			});
 		});
 
+		/* GET draft comic json object */
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*(\/pages\/[0-9]*)?\/draft\/json?$/, function(req, res, next) {
+			var pageid=1;
+			if (req.url.indexOf("/pages/")>-1)
+				pageid=parseInt(req.url.split("/pages/")[1]);
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			console.log(req.user.username);
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				if (pageid<1)
+					return next();
+				if (!comic.getDraftPage(pageid))
+					return next();
+				var page: Page = comic.getDraftPage(pageid);
+				return res.status(200).send({draft: page});
+			})
+		});
+
 		/* POST new page */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/?$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);

@@ -4,7 +4,7 @@
 var REDIRECT_TIMEOUT=200;
 
 var app = angular.module('authentication', [])
-app.controller('authController', function($scope, $http, $timeout) {
+app.controller('authController', function($location, $scope, $http, $timeout) {
 	//read http headers: 
 	var req = new XMLHttpRequest();
 	req.open('GET', document.location, false);
@@ -119,6 +119,20 @@ app.controller('authController', function($scope, $http, $timeout) {
       if (response.data.msg)
 				$scope.response = response.data.msg
 	  })
+	}
+
+	//user attempts to subscribe
+	$scope.subscribe_comic = function(comic_uri){
+		$scope.response=""
+		debugger;
+		$http.post(comic_uri+"/subscribe", {
+		}).then(function(response){
+			if (response.data.success)
+				window.location= '';
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  }) 
 	}
 
 	//user attempts to add user to viewlist

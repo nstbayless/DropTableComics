@@ -5,6 +5,8 @@
 import { User, Viewer, Artist } from './User';
 import { Comic } from './Comic';
 import { Page } from './Page';
+import { Notification } from './Notification';
+import { EventSignal } from './EventSignal';
 var bcrypt = require('bcrypt');
 
 class DatabaseManager {
@@ -22,9 +24,11 @@ class DatabaseManager {
 		var artist: Artist = new Artist(username);
 		artist.hash=hash;
 		artist.email=email;
+		var notifications = new Array<Notification>();
+		console.log(notifications.length);
 		var users = this.db.get('users');
 		console.log("creating artist")
-		users.insert({username:username,hash:hash,type:"artist",email:email});
+		users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications});
 		return artist;
 	}
 
@@ -34,8 +38,10 @@ class DatabaseManager {
 		var viewer = new Viewer(username);
 		viewer.hash=hash;
 		viewer.email=email;
+		var notifications = new Array<Notification>();
+		console.log(notifications.length);
 		var users = this.db.get('users');
-		users.insert({username:username,hash:hash,type:"pleb",email:email});
+		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications});
 		return viewer;
 	}
 
@@ -55,13 +61,14 @@ class DatabaseManager {
 			//fill user fields based on canononical version of user...
 			user.hash=user_canon.hash;
 			user.email=user_canon.email;
+			user.notifications=user_canon.notifications;
 			callback(null,user);
 		});
 	}
 
 	// creates a new comic and adds it to the database
 	createComic(name: string, artist: string, description:string): Comic {
-    	var uri = Comic.sanitizeName(name);
+		var uri = Comic.sanitizeName(name);
 		var uri_sanitized = Comic.canonicalURI(uri)
 		var comic = new Comic(uri_sanitized, artist, description);
 		comic.name=name;
@@ -82,6 +89,62 @@ class DatabaseManager {
 									"pages": comic.pages,
 									"drafts": comic.draftpages});
 		return comic;
+	}
+
+	
+	// creates a new subscription to an event by adding it to the database (should only be used internally)
+	createSubscription(event:EventSignal, username: string) {
+		console.log("creating event subscription");
+    		var user_list = new Array<string>();
+		var subscriptions = this.db.get('subscriptions');
+		user_list.push(username);
+		subscriptions.insert({"event":event, "user_list":user_list});
+		return;
+	}
+	// async inserts a Subscriber (method to call from outside)
+	// callback: [](err, event_id)
+	insertSubscriber(event:EventSignal, username:string, callback:any){
+		var dbmanager:DatabaseManager = this;
+		var user_list = new Array<string>();
+		var subscriptions = this.db.get('subscriptions');
+		subscriptions.findOne({"event_id":event}, function(err, subscription){
+			if (err || !subscription){
+				console.log("Could not find event");
+				dbmanager.createSubscription(event, username);
+				return callback(null, event);			
+			}
+		console.log("found event");
+		var user_list = subscription.user_list;
+		user_list.push(username);
+		return callback(null, event);
+		});
+	}
+
+	// asynchronously retrieves the subscribers for an event from the database
+	// callback: [](err,subscribers)
+	getSubscribers(event: EventSignal, callback:any) {
+		var subscriptions = this.db.get('subscriptions');
+		subscriptions.findOne({"event":event}, function(err,event){
+			if (err||!event) return callback(err,null);
+			var user_list: string[] = event.user_list;
+			callback(null,user_list);
+		});
+	}
+
+	// async inserts a Notification message into a user
+	// callback: [](err, message)
+	insertNotification(username:string, notification:Notification, callback:any){
+		var users = this.db.get('users');
+		this.getUser(username, function(err, user) {
+			var notifications:Notification[] = user.getNotifications();
+			notifications.push(notification);	
+				users.update(
+	   				{ username: username },
+	   				{$set: {"notifications": notifications}}
+				);
+		});
+		console.log("Pushed notification");
+		callback(null, notification);
 	}
 
 	// asynchronously retrieves the given comic from the database
@@ -134,7 +197,7 @@ class DatabaseManager {
 					var comics = db.get('comics');
 					console.log(viewlist[0]);
 					console.log(viewlist.indexOf(user) != -1);
-					if (viewlist.indexOf(user) === -1) {
+					if (viewlist.indexOf(user) === -1) { //TODO: IS "===" LEGIT, OR SHOULD IT BE "=="?
 						viewlist.push(user);
 						console.log("Pushed viewer into viewlist")
 						comics.update({

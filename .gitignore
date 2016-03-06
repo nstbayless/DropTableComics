@@ -5,6 +5,7 @@ types/*
 types
 app.js
 www.js
+config.js
 routes/*.js
 *.log
 install/*

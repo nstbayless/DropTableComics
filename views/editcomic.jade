@@ -1,14 +1,42 @@
-extends pretty
+extends comic
 
-block content
+block content_comic
 	h1.bannertext Edit #{comic_name}
 	if (adminable)
 		p
-			a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/admin") Admin Options
+			a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/admin") Admin options
+	p
+		a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/pages/#{pageid}") View page
 	p
 		form(method='post', enctype='multipart/form-data', action= '/accounts/' + comic_creator + '/comics/' + comic_uri+"/panels")
 			input(type='file', name='image' id='image_upload')
+			<input type="hidden" name="page" value="#{pageid}">
 			input(type='submit')
-	each pic, i in panels
+	center 
+		p(id="page-area" style="width:1000px;border-style:solid;border-color:black;background-color:#262626;" align="left")
+			span(data-ng-repeat="i in utilrange(0,draft.panels.length)")
+				img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i,$event)" id="panel{{i}}")
+	p(ng-show="response.length>0")
+		font(color="red") {{response}}
+	p(ng-show="draft.edited")
+		a(href="" ng-click="publishPage('#{comic_creator}','#{comic_uri}',#{pageid})") Publish page
+		|  | 
+		a(href="" ng-click="revertPage()") Revert page
+	p
+		a(href="" ng-click="postPage('#{comic_creator}','#{comic_uri}')") New Page
+	if pageid==maxpageid && pageid>1
 		p
-			img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+			a(href="" ng-click="confirmdelete=true;" ng-hide="confirmdelete") Delete this page
+			a(href="" ng-click="deletePage('#{comic_creator}','#{comic_uri}',#{pageid})" ng-show="confirmdelete") Confirm!
+
+	//- dynamic elements
+	div(style="position:fixed;left:0px;top:0px;")
+		svg(width=20000 height=30000 ng-show="mouseover_panel>-1" ng-mouseleave="mouseleave(-1,$event)" ng-mouseover="mouseleave(-1,$event)")
+			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="stroke-width:3;stroke:black;fill:blue;fill-opacity:0.1;" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
+	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_panel>-1")
+		img(src="/images/icon_back.png" ng-click="movepanel(mouseover_panel,mouseover_panel-1);")
+		| &nbsp
+		img(src="/images/icon_forward.png" ng-click="movepanel(mouseover_panel,mouseover_panel+1);")
+		| &nbsp
+		img(src="/images/icon_delete.png" ng-click="deletepanel(mouseover_panel);")
+		

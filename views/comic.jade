@@ -1,0 +1,19 @@
+extends pretty
+
+block content
+	block content_comic
+	center
+		p
+			if pageid>1
+				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/1#{url_append}")
+					img(src="/images/icon_first.png")
+				| &nbsp;
+				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{pageid-1}#{url_append}")
+					img(src="/images/icon_back.png")
+			|	&nbsp;
+			if pageid<maxpageid
+				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{pageid+1}#{url_append}")
+					img(src="/images/icon_forward.png")
+				| &nbsp;
+				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{maxpageid}#{url_append}")
+					img(src="/images/icon_last.png")

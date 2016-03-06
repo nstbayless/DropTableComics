@@ -1,31 +1,48 @@
 /** Represents a page */
 
 ///<reference path='../types/node/node.d.ts'/>
-///<reference path='../types/express/express.d.ts'/>
- 
+///<reference path='../types/express/express.d.ts'/> 
+
 import { Comic } from './Comic';
-//TODO: use this class
-class Page {
+
+
+/** Represents a panel in a comic*/
+export class Panel {
+	/** id of the panel for this comic,
+	such that the following GET request returns the panel image data:
+	GET /accounts/<account-name>/comics/<comic-name>/panels/<id>*/
+	panelID: number;
+}
+
+export class Page {	
 	
-	pageno:number; /** A page number */
-	comic:Comic; /** Comic that holds this page */
+	/** Ordered list of panels*/
+	panels: Panel[];
+	title: string;
+	/** indicates page has been edited since last publishing*/
+	edited: boolean;
 	
+	/** CONSTRUCTOR */
+	constructor(){
+		this.panels=[];
+		this.title="";
+		this.edited=false;
+	}
 	
-	/** CONSTRUCTOR */ 
-	/** Looks up page from database by pageno and comic */
-	/** NOTE: Should only be called in Comic class */
-	 constructor(pageno:string, comic:Comic){} /** stub */
-	 
+	//constructs from untyped info stored in db
+	construct_from_db(page_canon: any): Page {
+		this.panels=page_canon.panels;
+		this.title=page_canon.title;
+		this.edited=(!!page_canon.edited);
+		return this;
+	}
+
 	/** GETTERS */
-	getComic():Comic{
-		return this.comic;
+	getPanels(): Panel[]{
+		return this.panels;
 	}
 
-	getPageno():number {
-		return this.pageno;
+	getTitle(): string{
+		return this.title;
 	}
-
-	
-	
-	
 }

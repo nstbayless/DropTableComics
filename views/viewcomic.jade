@@ -1,16 +1,19 @@
-extends pretty
+extends comic
 
-block content
+block content_comic
 	h1.bannertext=comic_name
 	if (description)
 		p
 			i= description
+	if (pagename)
+		h2.bannertext= pagename
 	if (editable)
 		p
-			a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/edit" ) Edit
-	each pic, i in panels
-		p
-			img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+			a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + pageid + "/edit" ) Edit page
+	center
+		p(id="page-area" style="width:1000px;border-style: solid;border-color:black;background-color:#262626;" align="left")
+			each pic, i in panels 
+				img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
 	p
 		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
 			img(src="/images/icon_share.png" alt="share")

@@ -105,6 +105,21 @@ app.controller('authController', function($scope, $http, $timeout) {
 	  })
 	}
 
+	//publish draft:
+	$scope.publishPage=function(comic_creator,comic_uri,page) {
+		$scope.response=""
+		$http.post("/accounts/" + comic_creator + "/comics/"+comic_uri+"/pages/"+page+"/publish", {
+		}).then(function(response){
+			$timeout(function(){
+					window.location="/accounts/"+comic_creator+"/comics/"
+					                +comic_uri+"/pages/"+(page);
+				},REDIRECT_TIMEOUT)
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  })
+	}
+
 	//user attempts to add user to viewlist
 	$scope.viewlist_add=function() {
 		$scope.response1=""

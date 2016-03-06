@@ -18,7 +18,8 @@ export class Comic {
 	editlist:string[]; /** A list of all editors of this comic */
 	adminlist:string[]; /** A list of all admins of this comic */ 
 	/* INVARIANT:  A user is on at most one list */
-	pages:Page[]; /** Pages in the comic. //TODO: page should be a class*/
+	pages:Page[]; /** Pages in the comic.*/
+	draftpages:Page[] /** Draft pages; only visible from edit screen*/
 	image_collection:string;//! TODO: this is sketchy. Use mongodb's hierarchy system
 	panel_map:string[]; /**maps from panel-id to path to image*/
 	manager:DatabaseManager; /** Database Manager */
@@ -34,6 +35,8 @@ export class Comic {
 		this.editlist = [];
 		this.pages = [];
 		this.pages.push(new Page());
+		this.draftpages = [];
+		this.draftpages.push(new Page());
 		this.panel_map=[];
 	} /** stub */
 	
@@ -66,6 +69,14 @@ export class Comic {
     	if (id<1)
     		throw new Error("page id " + id + " invalid; id starts from 1");
 		return this.pages[id-1];
+	}
+	getDraftPages():Page[] {
+		return this.draftpages;
+	}
+	getDraftPage(id: number):Page{
+    	if (id<1)
+    		throw new Error("page id " + id + " invalid; id starts from 1");
+		return this.draftpages[id-1];
 	}
 	getManager():DatabaseManager {
 		return this.manager;

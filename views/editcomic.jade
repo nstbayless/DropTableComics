@@ -4,7 +4,9 @@ block content_comic
 	h1.bannertext Edit #{comic_name}
 	if (adminable)
 		p
-			a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/admin") Admin Options
+			a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/admin") Admin options
+	p
+		a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/pages/#{pageid}") View page
 	p
 		form(method='post', enctype='multipart/form-data', action= '/accounts/' + comic_creator + '/comics/' + comic_uri+"/panels")
 			input(type='file', name='image' id='image_upload')
@@ -13,7 +15,9 @@ block content_comic
 	each pic, i in panels
 		p
 			img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
-
+	if edited
+		p
+			a(href="" ng-click="publishPage('#{comic_creator}','#{comic_uri}',#{pageid})") Publish page
 	p
 		a(href="" ng-click="postPage('#{comic_creator}','#{comic_uri}')") New Page
 	if pageid==maxpageid && pageid>1

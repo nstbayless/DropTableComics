@@ -5,9 +5,11 @@ block content_comic
 	if (description)
 		p
 			i= description
+	if (pagename)
+		h2.bannertext= pagename
 	if (editable)
 		p
-			a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + pageid + "/edit" ) Edit
+			a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + pageid + "/edit" ) Edit page
 	each pic, i in panels
 		p 
 			img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)

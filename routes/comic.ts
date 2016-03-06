@@ -161,9 +161,9 @@ class RouteComic {
 					return next();
 				if (pageid<1)
 					return next();
-				if (!comic.getPage(pageid))
+				if (!comic.getDraftPage(pageid))
 					return next();
-				var page: Page = comic.getPage(pageid);
+				var page: Page = comic.getDraftPage(pageid);
 				return res.render('editcomic', {
 					title: comic.getName(),
 					comic_creator: comic_creator,
@@ -172,8 +172,9 @@ class RouteComic {
 					//TODO: change to getUserCanAdmin()
 					adminable: comic.getUserCanEdit(req.user.getUsername()),
 					pageid: pageid,
-					maxpageid: comic.getPages().length,
+					maxpageid: comic.getDraftPages().length,
 					panels: page.getPanels(),
+					edited: page.edited,
 					url_append: "/edit"
 				})
 			})
@@ -211,6 +212,7 @@ class RouteComic {
 					pageid: pageid,
 					maxpageid: comic.getPages().length,
 					panels: panels,
+					pagename: page.getTitle(),
 					url_append: "/"
 				})
 			});
@@ -256,6 +258,33 @@ class RouteComic {
 					return next();
 				//add page to database
 				req.dbManager.deletePage(comic_creator,comic_uri,pageid,function(err) {
+					//success; inform user of URI of new page
+					if (!err)
+						res.status(200).send();
+					else
+						res.status(err.getCode() | 500).send(err)
+				});
+			});
+		});
+
+		/* POST job: publish page */
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/publish\/?$/, function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			var pageid=1;
+			if (req.url.indexOf("/pages/")>-1)
+				pageid=parseInt(req.url.split("/pages/")[1]);
+			else
+				return next();
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				//add page to database
+				req.dbManager.publishPage(comic_creator,comic_uri,pageid,function(err) {
 					//success; inform user of URI of new page
 					if (!err)
 						res.status(200).send();

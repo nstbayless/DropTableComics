@@ -79,7 +79,8 @@ class DatabaseManager {
 									"description":description,
 									"image_collection":comic.getImageCollection(),
 									"panel_map":comic.panel_map,
-									"pages": comic.pages});
+									"pages": comic.pages,
+									"drafts": comic.draftpages});
 		return comic;
 	}
 
@@ -103,6 +104,13 @@ class DatabaseManager {
 			comic.pages = [];
 			for (var i=0;i<comic_canon.pages.length;i++) {
 				comic.pages[i]=(new Page().construct_from_db(comic_canon.pages[i]));
+			}
+			comic.draftpages = [];
+			var drafts_src = comic_canon.drafts;
+			if (!comic_canon.drafts) //old db; no drafts
+				drafts_src = comic_canon.pages;
+			for (var i=0;i<drafts_src.length;i++) {
+				comic.draftpages[i]=(new Page().construct_from_db(drafts_src[i]));
 			}
 			comic.panel_map=comic_canon.panel_map;
 			comic.description = comic_canon.description;
@@ -270,6 +278,7 @@ class DatabaseManager {
 				if (comic&&!err) {
 					var pages=comic.pages;
 					pages.push(new Page());
+					comic.draftpages.push(new Page());
 					var new_page_id=pages.length;
 					var comics = db.get('comics');
 					comics.update({
@@ -279,6 +288,7 @@ class DatabaseManager {
 					{
 						$set: {
 							"pages":pages,
+							"drafts":comic.draftpages
 						}
 					})
 					callback(null,new_page_id);
@@ -290,9 +300,8 @@ class DatabaseManager {
 	}
 
 /**Asynchronously deletes the given page from the given comic.
-	   callback: [](err, new_page_id)
-		 - if no error occurred, err field is null
-	   - otherwise, new_page_id is the id of the new page*/
+	   callback: [](err)
+		 - if no error occurred, err field is null*/
 	deletePage(username:string, comic_uri: string, page: number, callback: any) {
 		var db=this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
@@ -300,9 +309,10 @@ class DatabaseManager {
 			try {
 				if (comic&&!err) {
 					var pages=comic.pages;
-					if (page==0 && pages.length==1)
+					if (page==1 && pages.length==1)
 						throw new Error("Cannot remove only page from comic!");
 					pages.splice(page-1,1);
+					comic.draftpages.splice(page-1,1);
 					var comics = db.get('comics');
 					comics.update({
 						"urisan":comic_uri,
@@ -311,6 +321,39 @@ class DatabaseManager {
 					{
 						$set: {
 							"pages":pages,
+							"drafts":comic.draftpages
+						}
+					})
+					callback(null);
+	      }
+			} catch (err) {
+				callback(err);
+			}
+		})
+	}
+	
+	/**Asynchronously publishes the given draft page in the comic.
+	   callback: [](err)
+		 - if no error occurred, err field is null*/
+	publishPage(username:string, comic_uri: string, page: number, callback: any) {
+		var db=this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username,comic_uri,function(err,comic){
+			try {
+				if (comic&&!err) {
+					if (page<1)
+						throw new Error("page id must be at least 1");
+					comic.draftpages[page-1].edited=false;
+					comic.pages[page-1]=comic.draftpages[page-1];
+					var comics = db.get('comics');
+					comics.update({
+						"urisan":comic_uri,
+						"creator":username
+					},
+					{
+						$set: {
+							"pages":comic.pages,
+							"drafts":comic.draftpages
 						}
 					})
 					callback(null);
@@ -333,12 +376,13 @@ class DatabaseManager {
 		this.getComic(username,comic_uri,function(err,comic){
 			try {
 				if (comic&&!err) {
-					var pages=comic.pages;
+					var pages=comic.draftpages;
 					//TODO: check page less than maximum page count
 					var panel_map=comic.panel_map;
 					var new_panel_id=panel_map.length;
 					//add new panel to the page:
 					pages[page-1].panels.push(new_panel_id);
+					pages[page-1].edited=true;
 					//add new panel to map
 					panel_map.push(path);
 					var comics = db.get('comics');
@@ -348,7 +392,7 @@ class DatabaseManager {
 					},
 					{
 						$set: {
-							"pages":pages,
+							"drafts":pages,
 							"panel_map":panel_map
 						}
 					})

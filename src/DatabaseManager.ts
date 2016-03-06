@@ -2,7 +2,7 @@
 ///<reference path='../types/express/express.d.ts'/> 
 
 /** Represents a manager of the database, through which Users and Comics access the database*/
-import User = require('./User');
+import { User, Viewer, Artist } from './User';
 import { Comic } from './Comic';
 import { Page } from './Page';
 var bcrypt = require('bcrypt');
@@ -17,9 +17,9 @@ class DatabaseManager {
 	}
 
 	// creates a new Artist and adds it to the database
-	createArtist(username: string, password: string, email: string): User.Artist {
+	createArtist(username: string, password: string, email: string): Artist {
 		var hash = this.computeHash(password);
-		var artist = new User.Artist(username);
+		var artist: Artist = new Artist(username);
 		artist.hash=hash;
 		artist.email=email;
 		var users = this.db.get('users');
@@ -29,9 +29,9 @@ class DatabaseManager {
 	}
 
 	// creates a new Viewer and adds it to the database
-	createViewer(username: string, password: string, email: string): User.Viewer {
+	createViewer(username: string, password: string, email: string): Viewer {
 		var hash = this.computeHash(password);
-		var viewer = new User.Viewer(username);
+		var viewer = new Viewer(username);
 		viewer.hash=hash;
 		viewer.email=email;
 		var users = this.db.get('users');
@@ -45,11 +45,11 @@ class DatabaseManager {
 		var users = this.db.get('users');
 		users.findOne({username:username}, function(err,user_canon){
 			if (err||!user_canon) return callback(err,null);
-			var user: User.User;
+			var user: User;
 			if (user_canon.type=="artist")
-			user = new User.Artist(user_canon.username);
+			user = new Artist(user_canon.username);
 			else if (user_canon.type=="pleb")
-			user = new User.Viewer(user_canon.username);
+			user = new Viewer(user_canon.username);
 			else
 				throw new Error("Corrupted database: user.type == '" + user_canon.type + "'")
 			//fill user fields based on canononical version of user...

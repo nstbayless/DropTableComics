@@ -218,7 +218,6 @@ app.controller('authController', function($scope, $http, $timeout) {
 		);
 	}
 
-
 	//log user out by deleting credential cookie
 	$scope.logout=function(){
 		$http.get("/auth/logout");
@@ -316,6 +315,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 			var panel_move = $scope.draft.panels[panel];
 			$scope.draft.panels.splice(panel,1);
 			$scope.draft.panels.splice(dst,0,panel_move);
+			$scope.draft.edited=true;
 				
 			block_update=true;
 
@@ -332,6 +332,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 		}
 		$scope.deletepanel=function(panel){
 			$scope.draft.panels.splice(panel,1);
+			$scope.draft.edited=true;
 
 			block_update=true;
 
@@ -345,6 +346,16 @@ app.controller('authController', function($scope, $http, $timeout) {
 		  })
 
 			$scope.mouseover_panel=-1;
+		}
+		$scope.revertPage=function(){
+			$http.delete("draft", {
+				draft:$scope.draft
+			}).then(function(response){
+				$timeout(function(){window.location.reload();},REDIRECT_TIMEOUT)
+			}, function errorCallback(response) {
+ 	     if (response.data.msg)
+					$scope.response = response.data.msg
+		  })
 		}
 	}
 })

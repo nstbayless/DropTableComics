@@ -20,6 +20,8 @@ block content_comic
 		font(color="red") {{response}}
 	p(ng-show="draft.edited")
 		a(href="" ng-click="publishPage('#{comic_creator}','#{comic_uri}',#{pageid})") Publish page
+		|  | 
+		a(href="" ng-click="revertPage()") Revert page
 	p
 		a(href="" ng-click="postPage('#{comic_creator}','#{comic_uri}')") New Page
 	if pageid==maxpageid && pageid>1

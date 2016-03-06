@@ -217,6 +217,36 @@ class RouteComic {
 			});
 		});
 
+		/* DELETE draft (reverts to published version of page) */
+		router.delete(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*(\/pages\/[0-9]*)?\/draft\/?$/, function(req, res, next) {
+			var pageid=1;
+			if (req.url.indexOf("/pages/")>-1)
+				pageid=parseInt(req.url.split("/pages/")[1]);
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				if (pageid<1)
+					return next();
+				if (!comic.getDraftPage(pageid))
+					return next();
+				var page: Page = comic.getPage(pageid);
+				//paste over draft page to database
+				req.dbManager.putDraft(comic_creator,comic_uri,pageid,page,function(err) {
+					//success; inform user of URI of new page
+					if (!err)
+						res.status(200).send();					
+					else
+						res.status(500).send({msg: "unknown error occurred putting page"})
+				});
+			})
+		});
+
 		/* GET draft comic json object */
 		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*(\/pages\/[0-9]*)?\/draft\/json?$/, function(req, res, next) {
 			var pageid=1;
@@ -257,7 +287,8 @@ class RouteComic {
 				if (!comic.getUserCanEdit(req.user.getUsername()))
 					return next();
 				//add page to database
-				req.dbManager.putPage(comic_creator,comic_uri,pageid,req.body.draft,function(err) {
+				req.body.draft.edited=true;
+				req.dbManager.putDraft(comic_creator,comic_uri,pageid,req.body.draft,function(err) {
 					//success; inform user of URI of new page
 					if (!err)
 						res.status(200).send();

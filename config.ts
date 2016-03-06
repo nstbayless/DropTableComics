@@ -9,7 +9,7 @@ var config = {
                      //Should come up with a more secure handler for this...
 
   db:        'localhost:27018/cpsc310', //path to database
-  port:      '3000',     //port to serve on
+  port:      '8877',     //port to serve on
   porthttps: '3001',     //port to serve on for https
   https:      false      //use https instead of http; run https-genkey before 
 };

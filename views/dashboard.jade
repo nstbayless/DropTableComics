@@ -4,15 +4,15 @@ extends pretty
 block content
 	form(ng-init="comics=#{comics_js}")
 	h1.bannertext= Dashboard
-	if(isartist == true && notification_length != 0)
+	if(isartist == true && comics_length != 0)
 		p Created Comics
-	if(isartist == false && notification_length != 0)
+	if(isartist == false && comics_length != 0)
 		p My Comics
 	ul
 		each comic, i in comics
 			li
 				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
-	if(typeof(notifications) !== 'undefined' && notification_length != 0)
+	if(typeof(notifications) !== 'undefined' && notifications_length != 0)
 		p Notifications
 		ul
 			each notification, i in notifications

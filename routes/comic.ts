@@ -270,9 +270,12 @@ class RouteComic {
 				//paste over draft page to database
 				req.dbManager.putDraft(comic_creator,comic_uri,pageid,page,function(err) {
 					//success; inform user of URI of new page
-					if (!err)
-						res.status(200).send();					
-					else
+					if (!err){
+						req.nManager.signalUpdate(comic_uri, function(err, notification) {
+							if (!err) { res.status(200).send(); }
+							else res.status(400).send({msg: "error signalling update"});
+						}); 				
+					} else
 						res.status(500).send({msg: "unknown error occurred putting page"})
 				});
 			})
@@ -321,8 +324,12 @@ class RouteComic {
 				req.body.draft.edited=true;
 				req.dbManager.putDraft(comic_creator,comic_uri,pageid,req.body.draft,function(err) {
 					//success; inform user of URI of new page
-					if (!err)
-						res.status(200).send();
+				
+					if (!err){
+						req.nManager.signalUpdate(comic_uri, function(err, notification) {
+						if (!err) { res.status(200).send(); }
+						else res.status(400).send({msg: "error signalling update"});
+						});}
 					else
 						res.status(500).send({msg: "unknown error occurred putting page"})
 				});
@@ -343,8 +350,12 @@ class RouteComic {
 				//add page to database
 				req.dbManager.postPage(comic_creator,comic_uri,function(err,new_page_id) {
 					//success; inform user of URI of new page
-					if (!err)
-						res.status(200).send({new_page_id:new_page_id});
+					if (!err){
+						req.nManager.signalUpdate(comic_uri, function(err, notification) {
+						if (!err) {res.status(200).send({new_page_id:new_page_id}); }
+						else res.status(400).send({msg: "error signalling update"});
+						});}
+
 					else
 						res.status(500).send({msg: "unknown error occurred posting page"})
 				});
@@ -370,8 +381,11 @@ class RouteComic {
 				//delete page in database
 				req.dbManager.deletePage(comic_creator,comic_uri,pageid,function(err) {
 					//success; inform user of URI of new page
-					if (!err)
-						res.status(200).send();
+					if (!err){
+						req.nManager.signalUpdate(comic_uri, function(err, notification) {
+						if (!err) { res.status(200).send(); }
+						else res.status(400).send({msg: "error signalling update"});
+						});}
 					else
 						res.status(err.getCode() | 500).send(err)
 				});
@@ -396,9 +410,13 @@ class RouteComic {
 					return next();
 				//add page to database
 				req.dbManager.publishPage(comic_creator,comic_uri,pageid,function(err) {
+					
 					//success; inform user of URI of new page
-					if (!err)
-						res.status(200).send();
+					if (!err){
+						req.nManager.signalPublish(comic_uri, function(err, notification) {
+						if (!err) { res.status(200).send(); }
+						else res.status(400).send({msg: "error signalling update"});
+						});}
 					else
 						res.status(err.getCode() | 500).send(err)
 				});
@@ -444,39 +462,13 @@ class RouteComic {
 						console.log("Inserting image..." + name);
 						req.dbManager.postPanel(comic_creator,comic_uri,pageid,path,function(err,panel_id){
 							if (panel_id!=null&&!err) {
-								console.log("Inserted image " + name);
-								var n_manager:NotificationManager = req.nManager;
-								n_manager.signalUpdate(comic_uri, function(err,event_id) {
-									if (err|| !event_id) {
-										console.log("Not updating " + comic_uri);
-										n_manager.signalPublish(comic_uri, function(err,event_id){ 
-											//signalling publishing
-											if (err|| !event_id) {
-												console.log("Not Publishing " + comic_uri);
-												res.redirect(req.get('referer')); 
-												//user should refresh:
-											} else {
-												console.log("Publishing " + comic_uri);
-												res.redirect(req.get('referer')); 
-												//user should refresh:
-											}
-										});
-									} else { 
-										console.log("updating " + comic_uri);
-										n_manager.signalPublish(comic_uri, function(err,event_id){ 
-										//signalling publishing
-											if (err|| !event_id) {
-												console.log("Not Publishing " + comic_uri);
-												res.redirect(req.get('referer')); 
-												//user should refresh:
-											} else {
-												console.log("Publishing " + comic_uri);
-												res.redirect(req.get('referer')); 
-												//user should refresh:
-											}	
-										}); // end publish
-									}
+								req.nManager.signalUpdate(comic_uri, function(err, notification) {
+									if (!err) {
+										console.log("Inserted image " + name);
+										res.redirect(req.get('referer'));  //user should refresh: 
+									} else res.status(400).send({msg: "error signalling update"});
 								});
+									
 							} else {
 								console.log("Error inserting panel!");
 								console.log(err);

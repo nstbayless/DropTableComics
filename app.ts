@@ -12,8 +12,9 @@ var http = require('http');
 var mongo = require('mongodb');
 var monk = require('monk');
 var db = monk(config.db);
-var RouteComic = require('./routes/comic');
 var RouteAuthentication = require('./routes/authentication');
+var RouteComic = require('./routes/comic');
+var RouteAdminPage = require('./routes/adminpage');
 
 import DatabaseManager = require("./src/DatabaseManager")
 
@@ -38,6 +39,7 @@ class Application {
 	constructor() {
 		var routeComic = new RouteComic();
 		var routeAuthentication = new RouteAuthentication();
+		var routeAdminPage = new RouteAdminPage();
 
 		var app = express();
 
@@ -66,6 +68,7 @@ class Application {
 
 		//registration-protected routes
 		app.use('/', routeComic.getRouter());
+		app.use('/', routeAdminPage.getRouter());
 
 		// catch 404 and forward to error handler
 		app.use(function(req, res, next) {

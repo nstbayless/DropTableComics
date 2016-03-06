@@ -10,6 +10,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 	req.open('GET', document.location, false);
 	req.send(null);
 	console.log(req.getAllResponseHeaders());
+	$scope.confirmdelete=false;
 	$scope.el = {}; $scope.vl = {}; $scope.al = {};
 
 	//true if logged in
@@ -72,6 +73,36 @@ app.controller('authController', function($scope, $http, $timeout) {
       if (response.data.msg)
 				$scope.response = response.data.msg
 	  }) 
+	}
+
+	//post page to comic:
+	$scope.postPage=function(comic_creator,comic_uri) {
+		$scope.response=""
+		$http.post("/accounts/" + comic_creator + "/comics/"+comic_uri+"/pages", {
+		}).then(function(response){
+			$timeout(function(){
+					window.location="/accounts/"+comic_creator+"/comics/"
+					                +comic_uri+"/pages/"+response.data.new_page_id+"/edit";
+				},REDIRECT_TIMEOUT)
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  })
+	}
+
+	//delete page from comic:
+	$scope.deletePage=function(comic_creator,comic_uri,page) {
+		$scope.response=""
+		$http.delete("/accounts/" + comic_creator + "/comics/"+comic_uri+"/pages/"+page, {
+		}).then(function(response){
+			$timeout(function(){
+					window.location="/accounts/"+comic_creator+"/comics/"
+					                +comic_uri+"/pages/"+(page-1)+"/edit";
+				},REDIRECT_TIMEOUT)
+		}, function errorCallback(response) {
+      if (response.data.msg)
+				$scope.response = response.data.msg
+	  })
 	}
 
 	//user attempts to add user to viewlist
@@ -158,7 +189,7 @@ app.controller('authController', function($scope, $http, $timeout) {
 			function success(response){
 				$timeout(function(){
 					window.location.reload();
-				},200)
+				},REDIRECT_TIMEOUT)
 			}, function error(response){
 				if (list=="view") {
 					$scope.response1=response.data.msg;

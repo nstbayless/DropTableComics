@@ -258,6 +258,69 @@ class DatabaseManager {
 		comics.find({ creator: username }, {}, callback);
 	}
 	
+	/**Asynchronously adds a new page to the given comic.
+	   callback: [](err, new_page_id)
+		 - if no error occurred, err field is null
+	   - otherwise, new_page_id is the id of the new page*/
+	postPage(username:string, comic_uri: string, callback: any) {
+		var db=this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username,comic_uri,function(err,comic){
+			try {
+				if (comic&&!err) {
+					var pages=comic.pages;
+					pages.push(new Page());
+					var new_page_id=pages.length;
+					var comics = db.get('comics');
+					comics.update({
+						"urisan":comic_uri,
+						"creator":username
+					},
+					{
+						$set: {
+							"pages":pages,
+						}
+					})
+					callback(null,new_page_id);
+	      }
+			} catch (err) {
+				callback(err,null);
+			}
+		})
+	}
+
+/**Asynchronously deletes the given page from the given comic.
+	   callback: [](err, new_page_id)
+		 - if no error occurred, err field is null
+	   - otherwise, new_page_id is the id of the new page*/
+	deletePage(username:string, comic_uri: string, page: number, callback: any) {
+		var db=this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username,comic_uri,function(err,comic){
+			try {
+				if (comic&&!err) {
+					var pages=comic.pages;
+					if (page==0 && pages.length==1)
+						throw new Error("Cannot remove only page from comic!");
+					pages.splice(page-1,1);
+					var comics = db.get('comics');
+					comics.update({
+						"urisan":comic_uri,
+						"creator":username
+					},
+					{
+						$set: {
+							"pages":pages,
+						}
+					})
+					callback(null);
+	      }
+			} catch (err) {
+				callback(err);
+			}
+		})
+	}
+
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)
 	// - if no error occurred, err field is null
@@ -271,10 +334,11 @@ class DatabaseManager {
 			try {
 				if (comic&&!err) {
 					var pages=comic.pages;
+					//TODO: check page less than maximum page count
 					var panel_map=comic.panel_map;
 					var new_panel_id=panel_map.length;
 					//add new panel to the page:
-					pages[pages.length-1].panels.push(new_panel_id);
+					pages[page-1].panels.push(new_panel_id);
 					//add new panel to map
 					panel_map.push(path);
 					var comics = db.get('comics');

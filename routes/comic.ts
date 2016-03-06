@@ -108,7 +108,6 @@ class RouteComic {
 			});
 
 		});
-
 				
 		/* GET create comic page. */
 		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/create$/, function(req, res, next) {
@@ -160,7 +159,9 @@ class RouteComic {
 					return next();
 				if (!comic.getUserCanEdit(req.user.getUsername()))
 					return next();
-				if (pageid<1||pageid>comic.getPages().length)
+				if (pageid<1)
+					return next();
+				if (!comic.getPage(pageid))
 					return next();
 				var page: Page = comic.getPage(pageid);
 				return res.render('editcomic', {
@@ -171,7 +172,9 @@ class RouteComic {
 					//TODO: change to getUserCanAdmin()
 					adminable: comic.getUserCanEdit(req.user.getUsername()),
 					pageid: pageid,
-					panels: page.getPanels()
+					maxpageid: comic.getPages().length,
+					panels: page.getPanels(),
+					url_append: "/edit"
 				})
 			})
 		});
@@ -181,7 +184,6 @@ class RouteComic {
 			var pageid=1;
 			if (req.url.indexOf("/pages/")>-1)
 				pageid=parseInt(req.url.split("/pages/")[1]);
-			console.log(pageid);
 			var comic_uri = parseComicURI(req.url);
 			var comic_creator = parseComicCreator(req.url);
 			if (!comic_uri || !comic_creator)
@@ -191,7 +193,9 @@ class RouteComic {
 					return next();
 				if (!comic.getUserCanView(req.user.getUsername()))
 					return next();
-				if (pageid<1||pageid>comic.getPages().length)
+				if (pageid<1)
+					return next();
+				if (!comic.getPage(pageid))
 					return next();
 				var page: Page = comic.getPage(pageid);
 				var panels: Panel[] = page.getPanels();
@@ -205,11 +209,63 @@ class RouteComic {
 					share_link: req.get('host') + req.url,
 					editable: comic.getUserCanEdit(req.user.getUsername()),
 					pageid: pageid,
-					panels: panels
+					maxpageid: comic.getPages().length,
+					panels: panels,
+					url_append: "/"
 				})
 			});
 		});
 
+		/* POST new page */
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/?$/, function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				//add page to database
+				req.dbManager.postPage(comic_creator,comic_uri,function(err,new_page_id) {
+					//success; inform user of URI of new page
+					if (!err)
+						res.status(200).send({new_page_id:new_page_id});
+					else
+						res.status(500).send({msg: "unknown error occurred posting page"})
+				});
+			});
+		});
+
+		/* DELETE page */
+		router.delete(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/?$/, function(req, res, next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			var pageid=1;
+			if (req.url.indexOf("/pages/")>-1)
+				pageid=parseInt(req.url.split("/pages/")[1]);
+			else
+				return next();
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				if (!comic.getUserCanEdit(req.user.getUsername()))
+					return next();
+				//add page to database
+				req.dbManager.deletePage(comic_creator,comic_uri,pageid,function(err) {
+					//success; inform user of URI of new page
+					if (!err)
+						res.status(200).send();
+					else
+						res.status(err.getCode() | 500).send(err)
+				});
+			});
+		});
+
+		//TODO: move adminpage stuff to separate router
 		/* GET pretty adminpage */
 		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/admin$/, function(req, res, next) {
 			var comic_uri = parseComicURI(req.url);
@@ -395,6 +451,8 @@ class RouteComic {
 			console.log("filename: " + req.file.filename);
 			var path:string = req.file.path;
 			var name:string = req.file.filename;
+			//page to add panel to:
+			var pageid = req.body.page || 1
 			sizeOf(path,function(err,dimensions){
 				//bound image dimensions:
 				if (dimensions.width>MAX_IMAGE_WIDTH)
@@ -409,9 +467,11 @@ class RouteComic {
 					} else if (!comic.getUserCanEdit(req.user.getUsername())) {
 						//check permissions:
 						return res.status(401).send();
-					}	else {
+					}	else if (pageid<1||pageid>comic.getPages().length) {
+						return res.status(404).send("unknown page no. " + pageid);
+					} else {
 						console.log("Inserting image..." + name);
-						req.dbManager.postPanel(comic_creator,comic_uri,1,path,function(err,panel_id){
+						req.dbManager.postPanel(comic_creator,comic_uri,pageid,path,function(err,panel_id){
 							if (panel_id!=null&&!err) {
 								console.log("Inserted image " + name);
 								//user should refresh:

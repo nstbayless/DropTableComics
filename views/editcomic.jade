@@ -8,7 +8,15 @@ block content_comic
 	p
 		form(method='post', enctype='multipart/form-data', action= '/accounts/' + comic_creator + '/comics/' + comic_uri+"/panels")
 			input(type='file', name='image' id='image_upload')
+			<input type="hidden" name="page" value="#{pageid}">
 			input(type='submit')
 	each pic, i in panels
 		p
 			img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+
+	p
+		a(href="" ng-click="postPage('#{comic_creator}','#{comic_uri}')") New Page
+	if pageid==maxpageid && pageid>1
+		p
+			a(href="" ng-click="confirmdelete=true;" ng-hide="confirmdelete") Delete this page
+			a(href="" ng-click="deletePage('#{comic_creator}','#{comic_uri}',#{pageid})" ng-show="confirmdelete") Confirm!

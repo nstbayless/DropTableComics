@@ -5,7 +5,7 @@ var config = {
     secret: "badsecret",
     //Should come up with a more secure handler for this...
     db: 'localhost:27018/cpsc310',
-    port: '3000',
+    port: '8877',
     porthttps: '3001',
     https: false //use https instead of http; run https-genkey before 
 };

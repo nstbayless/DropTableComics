@@ -289,9 +289,13 @@ app.controller('authController', function($scope, $http, $timeout) {
 			$scope.mouseover_panel=panel;
 		}
 		//user's mouse leaves panel
-		$scope.mouseleave=function(panel){
-			var x=event.x;
-			var y=event.y;
+		$scope.mouseleave=function(panel,e){
+			var target = e.target || e.srcElement;
+			var rect = target.getBoundingClientRect();
+			var x=e.x || (e.offsetX+rect.left);
+			var y=e.y || (e.offsetY+rect.top);
+			if (x==0&&y==0) //required for firefox compatibility
+				return;
 			var box = $scope.boxgetattr();
 			if ($scope.mouseover_panel==panel || panel==-1)
 				if (x<box.left||y<box.top||x>box.left+box.width||y>box.top+box.height)

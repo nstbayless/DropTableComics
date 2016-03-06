@@ -15,7 +15,7 @@ block content_comic
 	center 
 		p(id="page-area" style="width:1000px;border-style:solid;border-color:black;background-color:#262626;" align="left")
 			span(data-ng-repeat="i in utilrange(0,draft.panels.length)")
-				img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i)" id="panel{{i}}")
+				img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i,$event)" id="panel{{i}}")
 	p(ng-show="response.length>0")
 		font(color="red") {{response}}
 	p(ng-show="draft.edited")
@@ -29,7 +29,7 @@ block content_comic
 
 	//- dynamic elements
 	div(style="position:fixed;left:0px;top:0px;")
-		svg(width=20000 height=30000 ng-show="mouseover_panel>-1" ng-mouseleave="mouseleave(-1)" ng-mouseover="mouseleave(-1)")
+		svg(width=20000 height=30000 ng-show="mouseover_panel>-1" ng-mouseleave="mouseleave(-1,$event)" ng-mouseover="mouseleave(-1,$event)")
 			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="stroke-width:3;stroke:black;fill:blue;fill-opacity:0.1;" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
 	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_panel>-1")
 		img(src="/images/icon_back.png" ng-click="movepanel(mouseover_panel,mouseover_panel-1);")

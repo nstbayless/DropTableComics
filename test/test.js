@@ -1,7 +1,9 @@
+//TO RUN: "npm install -g mocha; mocha"
+
 require('should');
 var assert = require('assert');
 var monk = require('monk');
-DB_PORT=27022;
+DB_PORT=27023;
 DB_PATH='./data-test'
 
 //start mongod:
@@ -31,7 +33,8 @@ describe('Database Test', function() {
 	
 	after(function(){
 		db.close();
-		child.kill();
+		child.kill('SIGSEGV');
+		require('child_process').exec("rm -rf " + DB_PATH);
 	})
 
   describe('(test db connection)', function() {

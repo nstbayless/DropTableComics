@@ -20,9 +20,22 @@ block content_comic
 			| share
 		span(ng-show="shlink.length>0")
 			input(readonly="readonly" ng-model="shlink" ng-init="")
-		
 	button(ng-click = "subscribe_comic('#{comic_uri}')" ng-show = "!isartist") Subscribe
 	p Collaborators:
 		each user, i in editlist
 			li
 				p #{user}
+block content_comment
+	div(class="commentcontainer")
+		form
+			p COMMENT:
+			p
+				textarea(id="commenttextarea" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150" rows=10 cols=100)
+				button(ng-click = "submit_comment('#{comic_creator}', '#{comic_uri}', '#{pageid}')" ng-show='comment_input.length>0') Submit 
+			p
+				font(color="red") {{response3}}
+			each comment, i in comments
+				p(class="comment") 
+					|#{comment.username}: 
+					|#{comment.description}  <br />
+					p(style="font-size:10px")|#{comment.postDate}				

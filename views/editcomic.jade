@@ -39,4 +39,18 @@ block content_comic
 		img(src="/images/icon_forward.png" ng-click="movepanel(mouseover_panel,mouseover_panel+1);")
 		| &nbsp
 		img(src="/images/icon_delete.png" ng-click="deletepanel(mouseover_panel);")
-		
+
+block content_comment
+	div(class="commentcontainer")
+		form
+			p COMMENT:
+			p
+				textarea(id="commenttextarea" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150" rows=10 cols=100)
+				button(ng-click = "submit_editcomment('#{comic_creator}', '#{comic_uri}', '#{pageid}')" ng-show='comment_input.length>0') Submit 
+			p
+				font(color="red") {{response3}}
+			each comment, i in editcomments
+				p(class="comment")
+					|#{comment.username}:
+					|#{comment.description}  <br />
+					p(style="font-size:10px")|#{comment.postDate}

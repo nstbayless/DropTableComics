@@ -4,7 +4,7 @@
 /** Represents a manager of the database, through which Users and Comics access the database*/
 import { User, Viewer, Artist } from './User';
 import { Comic } from './Comic';
-import { Page } from './Page';
+import { Comment, Page } from './Page';
 import { Notification } from './Notification';
 import { EventSignal } from './EventSignal';
 var bcrypt = require('bcrypt');
@@ -311,7 +311,7 @@ class DatabaseManager {
 				var viewlist = comic.viewlist;
 				var editlist = comic.editlist;
 				// checks to see if given username is in the editlist
-				if (viewlist.indexOf(username) != -1 || editlist.indexOf(username) != -1); {
+				if (viewlist.indexOf(username) != -1 || editlist.indexOf(username) != -1) {
 					callback(err, true);
 				} 
 			} else {
@@ -358,6 +358,87 @@ class DatabaseManager {
 	      }
 			} catch (err) {
 				callback(err,null);
+			}
+		})
+	}
+
+	/* Gets the page from the comic. 
+		callback: [](err, page)*/
+	getPage(username:string, comic_uri: string, pageID: number, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username,comic_uri,function(err,comic){
+			if (comic&&!err) {
+					console.log("getting the page...")
+					var page = comic.getPage(pageID);
+				callback(null, page);
+			} else {
+				console.log("was not able to retrieve a page...")
+				callback(err, null);
+			}
+
+		})
+	}
+
+	// **** Asynchronously GETS THEM COMMENTS ***** 
+	getComments(username:string, comic_uri: string, pageID: number, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getPage(username,comic_uri,pageID,function(err,page){
+			try {
+				if (page&&!err) {
+					var comments; 
+					for (var i = 0; i < page.getComments().length; i++) {
+						comments[i] = page.getComments()[i]; 
+					}
+				} callback(null, comments);
+			} catch (err) {
+				callback(err, null); 
+			}
+		})
+	}
+
+	// Asynchronously creates a comment and updates the page
+	postComment(username: string, comic_uri: string, pageID: number, current_user: string, description: string, is_editpage: number, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username, comic_uri, function(err,comic) {
+			try {
+				if (comic&&!err) {
+					var comment = new Comment();
+					comment.description = description;
+					comment.username = current_user;
+					comment.postDate = Date();
+					if (is_editpage === 0) {
+						comic.getPage(pageID).comments.unshift(comment);
+						var pages = comic.pages;
+						var comics = db.get('comics');
+						comics.update({
+							"urisan": comic_uri,
+							"creator": username,
+						}, {
+								$set: {
+									"pages": pages
+								}
+							})
+					} else if (is_editpage ===1) {
+						console.log("attempting to update a comment on editpage");
+						comic.getDraftPage(pageID).comments.unshift(comment);
+						var draftpages = comic.draftpages;
+						var comics = db.get('comics');
+						comics.update({
+							"urisan": comic_uri,
+							"creator": username,
+						}, {
+								$set: {
+									"drafts": draftpages
+								}
+						})
+					}
+					callback(null);
+				}
+			} catch (err) {
+				callback(err);
 			}
 		})
 	}

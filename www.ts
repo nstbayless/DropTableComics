@@ -6,8 +6,8 @@
 /**
  * Module dependencies.
  */
-declare var require: any;
-declare var process: any;
+// declare var require: any;
+// declare var process: any;
 
 var config = require('./config')
 var Application = require('./app')

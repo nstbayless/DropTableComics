@@ -11,7 +11,7 @@ var MAX_IMAGE_HEIGHT=800;
 import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
-import { Page, Panel } from '../src/Page';
+import { Comment, Page, Panel } from '../src/Page';
 import { NotificationManager } from '../src/NotificationManager';
 import { Notification } from '../src/Notification';
 import { EventSignal } from '../src/EventSignal';
@@ -78,6 +78,19 @@ function parsePanelID(url: string):string {
 	var panel = res[id+1];
   //  TODO: Add dash/space checking parseComicCreator
 	return panel;
+}
+
+// Prases page # from uri
+function parsePageID(url: string):string {
+	var res = url.split("/");
+	var id = res.indexOf("pages");
+	if (!id)
+		return null;
+	if (res.length <= id)
+		return null;
+	var page = res[id + 1];
+	return page; 
+
 }
 
 class RouteComic {
@@ -194,8 +207,10 @@ class RouteComic {
 				if (!comic.getDraftPage(pageid))
 					return next();
 				var page: Page = comic.getDraftPage(pageid);
+				var comments: Comment[] = page.getComments();
 				return res.render('editcomic', {
 					title: comic.getName(),
+					editcomments: comments,
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic.getURI(),
@@ -230,10 +245,12 @@ class RouteComic {
 					return next();
 				var page: Page = comic.getPage(pageid);
 				var panels: Panel[] = page.getPanels();
+				var comments: Comment[] = page.getComments();
 				return res.render('viewcomic', {
 					title: comic.getName(),
 					description: comic.getDescription(),
 					editlist: comic.getEditlist(), 
+					comments: comments,
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic.getURI(),
@@ -507,6 +524,53 @@ class RouteComic {
 					res.sendFile(path);
 				}
 			});
+		})
+
+
+		/* POST Comment on viewpage */
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/comment$/, function(req, res, next) {
+			console.log("ARE YOU REACHING ME? @?>@@>?>@@!@>!@>!@>>12345")
+			var username = req.user.getUsername();
+			var comic_creator = parseComicCreator(req.url);
+			var comic_uri = parseComicURI(req.url);
+			console.log("parsing the page id is the problem")
+			console.log(req.url);
+			var pageid = pageid = parseInt(req.url.split("/pages/")[1].split("/comment")[0]);
+			console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
+			if (!req.body.comment) {
+				return next();
+			} else {
+				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 0, function(err){
+					if (err) {
+						res.status(500).send({success: false, msg: "Posting Comment Error"})
+					} else (
+						res.status(200).send({ success: true })
+						)
+				})
+			}
+		})
+
+		/* POST Comment on editpage*/
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/edit\/comment$/, function(req, res, next) {
+			console.log("attempting got post comment on editpage...")
+			var username = req.user.getUsername();
+			var comic_creator = parseComicCreator(req.url);
+			var comic_uri = parseComicURI(req.url);
+			console.log("parsing the page id is the problem")
+			console.log(req.url);
+			var pageid = pageid = parseInt(req.url.split("/pages/")[1].split("/edit/")[0]);
+			console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
+			if (!req.body.comment) {
+				return next();
+			} else {
+				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 1, function(err) {
+					if (err) {
+						res.status(500).send({ success: false, msg: "Posting Comment Error" })
+					} else (
+						res.status(200).send({ success: true })
+					)
+				})
+			}
 		})
 
 		/* GET pretty search results */

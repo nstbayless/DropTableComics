@@ -4,6 +4,7 @@ require('should');
 var assert = require('assert');
 var monk = require('monk');
 var MongoClient = require('mongodb').MongoClient
+var ProgressBar = require('progress');
 DB_PORT=27023;
 DB_PATH='./data-test'
 
@@ -32,19 +33,30 @@ describe('Database Test', function() {
 	})
 
 	before(function(done) {
+		var TIME_WAIT = 800;
+		var TICK_MAX = 75;
+		var bar = new ProgressBar(':bar', {
+			total: TICK_MAX,
+			clear:true,
+			callback: function(){
+				console.log("   done (hopefully)");
+				done();
+				clearInterval(timer);
+			}
+		});
+		var timer = setInterval(function () {
+		  bar.tick();
+		}, TIME_WAIT/TICK_MAX);
 		//start new db
 		this.timeout(4000);
 		child=child.spawn(cmd,args);
 		console.log("   starting db (2 seconds):")
-		setTimeout(function() {
-			console.log("   done (hopefully)")
-			done();
-		}, 700);
 	})
 	
 	after(function(){
-		db.close();
-		child.kill('SIGSEGV');
+		try {
+			child.kill('SIGSEGV');
+		} catch (err){/*suppress*/ }
 		require('child_process').exec("rm -rf " + DB_PATH);
 	})
 

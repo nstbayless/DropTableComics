@@ -25,9 +25,7 @@ class DatabaseManager {
 		artist.hash=hash;
 		artist.email=email;
 		var notifications = new Array<Notification>();
-		console.log(notifications.length);
 		var users = this.db.get('users');
-		console.log("creating artist")
 		users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications});
 		return artist;
 	}

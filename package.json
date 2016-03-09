@@ -23,6 +23,7 @@
     "monk": "~1.0.1",
     "morgan": "~1.6.1",
     "multer": "^1.1.0",
+    "progress": "^1.1.8",
     "serve-favicon": "~2.3.0",
     "should": "^8.2.2"
   }

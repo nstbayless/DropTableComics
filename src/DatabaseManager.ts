@@ -7,6 +7,7 @@ import { Comic } from './Comic';
 import { Page } from './Page';
 import { Notification } from './Notification';
 import { EventSignal } from './EventSignal';
+import { EventType } from './EventType';
 var bcrypt = require('bcrypt');
 
 class DatabaseManager {
@@ -124,12 +125,28 @@ class DatabaseManager {
 	// callback: [](err,subscribers)
 	getSubscribers(event: EventSignal, callback:any) {
 		var subscriptions = this.db.get('subscriptions');
-		subscriptions.findOne({"event":event}, function(err,event){
+		subscriptions.findOne({"event":event}, function(err,event){ // the event here is actually a subscription object
 			if (err||!event) return callback(err,null);
 			var user_list: string[] = event.user_list;
 			callback(null,user_list);
 		});
 	}
+	// asynchronously retrieves the subscriptions for a viewer from the database
+	// callback: [](err,subscribers)
+	getSubscriptions(username:string, callback:any){
+		var subscriptions = this.db.get('subscriptions');	
+		var comic_ids;
+		subscriptions.find( { user_list: { $in: [ username ] } }, function(err,events){ // the event here is actually a sub object
+		 	if (err||!events) return callback(err, null);
+			for (var i = 0; i < events.length; i++) {
+				if (events[i].event.event_type == EventType.Comic_Publish)
+					console.log(events[i].event.id);
+			}
+		//	var user_list:string[] = event.user_list;
+		//	callback(null, user_list);
+		});
+	}
+
 
 	// async inserts a Notification message into a user
 	// callback: [](err, message)
@@ -328,6 +345,7 @@ class DatabaseManager {
 		var comics = this.db.get('comics');
 		comics.find({ creator: username }, {}, callback);
 	}
+
 	
 	/**Asynchronously adds a new page to the given comic.
 	   callback: [](err, new_page_id)

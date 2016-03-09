@@ -101,7 +101,7 @@ class RouteComic {
 		/* GET dashboard page. */
 		router.get('/', function(req, res, next) {
 			var username = req.user.getUsername();  // username
-			
+			req.dbManager.getSubscriptions(username, null);
 			//TODO: Render list of comics accessible by user
 			req.dbManager.getUser(username, function(err,user){
 				if (err||!user) return res.status(401).send({success: false, msg: 'User does not exist'});
@@ -517,6 +517,8 @@ class RouteComic {
 				searchresults: results
 			});
 		})
+
+		
 	
 		/* POST Subscription */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/subscribe$/, function(req, res, next) {

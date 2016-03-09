@@ -399,17 +399,24 @@ class DatabaseManager {
 	}
 
 	// Asynchronously creates a comment and updates the page
-	postComment(username: string, comic_uri: string, pageID: number, current_user: string, description: string, is_editpage: number, adminlevel: number, callback: any) {
+	postComment(username: string, comic_uri: string, pageID: number, current_user: string, description: string, is_editpage: number, callback: any) {
 		var db = this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
 		this.getComic(username, comic_uri, function(err,comic) {
 			try {
 				if (comic&&!err) {
+					var adminlevel = 0; 
+					if (username == current_user) {
+						adminlevel = 2; 
+					} else if (comic.getUserCanEdit(current_user)) {
+						adminlevel = 1; 
+					}
 					var comment = new Comment();
 					comment.description = description;
 					comment.username = current_user;
 					comment.postDate = Date();
 					comment.adminlevel = adminlevel;
+					console.log("made the comment, now must add to comments")
 					if (is_editpage === 0) {
 						console.log("attempting to update a comment on viewpage...")
 						comic.getPage(pageID).comments.unshift(comment);

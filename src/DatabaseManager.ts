@@ -28,7 +28,15 @@ class DatabaseManager {
 		console.log(notifications.length);
 		var users = this.db.get('users');
 		console.log("creating artist")
-		users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications});
+		users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications, 
+			"avatar":"",
+			"name": "",
+			"description": "",
+			"location": "",
+			"timezone": "",
+			"link": "",
+			"subscription": "show"
+	});
 		return artist;
 	}
 
@@ -41,7 +49,7 @@ class DatabaseManager {
 		var notifications = new Array<Notification>();
 		console.log(notifications.length);
 		var users = this.db.get('users');
-		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications});
+		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications, "avatar":""});
 		return viewer;
 	}
 
@@ -62,6 +70,13 @@ class DatabaseManager {
 			user.hash=user_canon.hash;
 			user.email=user_canon.email;
 			user.notifications=user_canon.notifications;
+			user.subscription = user_canon.subscription;
+			user.avatar = user_canon.avatar;
+			user.name = user_canon.name;
+			user.description = user_canon.description;
+			user.location = user_canon.location;
+			user.timezone = user_canon.timezone;
+			user.link = user_canon.link;
 			callback(null,user);
 		});
 	}
@@ -455,6 +470,67 @@ class DatabaseManager {
 				callback(err);
 			}
 		})
+	}
+
+	postAvatar(username:string, path:string, body: any, callback: any){
+		var db = this.db;
+		var users = db.get('users');
+		this.getUser(username, function(err, user) {
+			if (path == "") {
+				path = user.getAvatar();
+			}
+			var name: string = body.name;
+			if (body.name == "") {
+				name = user.getName();
+			}
+			var email: string = body.email;
+			if (body.email == "") {
+				email = user.getEmail();
+			}
+			var hash: string = bcrypt.hashSync(body.password, bcrypt.genSaltSync(3));
+			if (body.password == "") {
+				hash = user.getHash();
+			}
+			var description: string = body.description;
+			if (body.description == "") {
+				description = user.getDescription();
+			}
+			var location: string = body.location;
+			if (body.location == "") {
+				location = user.getLocation();
+			}
+			var timezone: string = body.timezone;
+			if (body.timezone == "") {
+				timezone = user.getTimeZone();
+			}
+			var link: string = body.link;
+			if (body.link == "") {
+				link = user.getLink();
+			}
+			var subscription: string = body.description;
+			if (body.subscription == "") {
+				subscription = user.subscriptionChoice();
+			}
+			users.update({
+				"username": username
+			}, {
+					$set: {
+						"avatar": path,
+						"name": name,
+						"email": email,
+						"hash": hash,
+						"description": description,
+						"location": location,
+						"timezone": timezone,
+						"link": link,
+						"subscription": subscription
+
+					}
+				}, {
+					upsert: true
+				})
+			console.log(user);
+		});
 	}
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)

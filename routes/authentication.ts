@@ -1,6 +1,6 @@
 ///<reference path='../types/node/node.d.ts'/>
 
-///<reference path='../types/express/express.d.ts'/> 
+///<reference path='../types/express/express.d.ts'/>
 
 var express = require('express');
 var config = require('../config');
@@ -23,7 +23,7 @@ class RouteAuth {
 		}
 	}
 
-	//asynchronously attempts to validate user credentials. 
+	//asynchronously attempts to validate user credentials.
 	//attaches user object to request if valid
 	//attaches user info to the headers for the next http data sent
 	//callback [](authenticated):
@@ -45,11 +45,12 @@ class RouteAuth {
 		}
 
 		req.dbManager.getUser(username, function(err,user) {
+			console.log(user)
 			if (user&&!err) {
 				if (req.dbManager.checkHash(password,user.getHash())) {
 					//user is valid!
 					req.user = user
-					
+
 					//tell client about client-specific information in all future responses
 					var isartist = req.user.isArtist();
 					res.append('isartist',isartist);
@@ -110,7 +111,7 @@ class RouteAuth {
 				});
 			}
 		});
-		
+
 		/* GET logout (this just deletes the credentials cookie in the broswer). */
 		router.get('/auth/logout', function(req, res, next) {
 			//overwrite old cookie, just to be sure
@@ -130,7 +131,7 @@ class RouteAuth {
 			});
 			res.send({success: false, msg: 'Clearing cookies'})
 		});
-		
+
 		/* POST registration. */
 		router.post('/auth/accounts', function(req, res, next) {
 			if (req.user)//user already registered:

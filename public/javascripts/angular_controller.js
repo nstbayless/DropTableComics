@@ -5,7 +5,7 @@ var REDIRECT_TIMEOUT=200;
 
 var app = angular.module('authentication', [])
 app.controller('authController', function($location, $scope, $http, $timeout) {
-	//read http headers: 
+	//read http headers:
 	var req = new XMLHttpRequest();
 	req.open('GET', document.location, false);
 	req.send(null);
@@ -58,9 +58,9 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		}, function errorCallback(response) {
       if (response.data.msg)
 				$scope.response = response.data.msg
-	  }) 
+	  })
 	}
-	
+
 	//user attempts to create a new comic
 	$scope.create_comic=function(){
 		$scope.response=""
@@ -73,7 +73,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		}, function errorCallback(response) {
       if (response.data.msg)
 				$scope.response = response.data.msg
-	  }) 
+	  })
 	}
 
 	//post page to comic:
@@ -132,7 +132,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		}, function errorCallback(response) {
       if (response.data.msg)
 				$scope.response = response.data.msg
-	  }) 
+	  })
 	}
 
 	//user attempts to add user to viewlist
@@ -330,7 +330,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			$scope.draft.panels.splice(panel,1);
 			$scope.draft.panels.splice(dst,0,panel_move);
 			$scope.draft.edited=true;
-				
+
 			block_update=true;
 
 			$http.put("draft/json", {

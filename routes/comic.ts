@@ -101,7 +101,7 @@ class RouteComic {
 		/* GET dashboard page. */
 		router.get('/', function(req, res, next) {
 			var username = req.user.getUsername();  // username
-			
+
 			//TODO: Render list of comics accessible by user
 			req.dbManager.getUser(username, function(err,user){
 				if (err||!user) return res.status(401).send({success: false, msg: 'User does not exist'});

@@ -37,7 +37,6 @@ class DatabaseManager {
 		viewer.hash=hash;
 		viewer.email=email;
 		var notifications = new Array<Notification>();
-		console.log(notifications.length);
 		var users = this.db.get('users');
 		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications});
 		return viewer;

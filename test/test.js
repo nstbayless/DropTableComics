@@ -5,8 +5,11 @@ var assert = require('assert');
 var monk = require('monk');
 var MongoClient = require('mongodb').MongoClient
 var ProgressBar = require('progress');
-DB_PORT=27023;
+var config = require('../config');
+DB_PORT=27024;
 DB_PATH='./data-test'
+config.db='localhost:'+DB_PORT;
+config.securecookie=false;
 
 //start mongod:
 var child = require('child_process');
@@ -73,5 +76,9 @@ describe('Database Test', function() {
 
 	describe('DatabaseManager',function () {
 		require('./dbm-test')(db,cleardb);
+	})
+
+	describe('RESTful API', function(){
+		require('./api-test')(db,cleardb);
 	})
 });

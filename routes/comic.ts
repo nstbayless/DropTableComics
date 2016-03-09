@@ -131,6 +131,21 @@ class RouteComic {
 				});
 			});
 		});
+		
+		/* GET search results */
+		router.get(/^\/comics\/search\=[a-zA-Z0-9\-]*/, function(req, res, next) {
+			var username:string = req.user.getUsername();
+			var list = req.url.split("=");
+			var query = list[1];
+			console.log(query);
+			req.dbManager.searchFor(username, query, function(err, results) { // results are comics
+				console.log(results);				
+				res.render('searchresults', {
+					title: 'search',
+					comics: results
+				});
+			});
+		})
 				
 		/* GET create comic page. */
 		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/create$/, function(req, res, next) {
@@ -517,7 +532,6 @@ class RouteComic {
 				searchresults: results
 			});
 		})
-
 		
 	
 		/* POST Subscription */

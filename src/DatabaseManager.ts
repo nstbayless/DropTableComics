@@ -451,7 +451,7 @@ class DatabaseManager {
 	putDraft(username:string, comic_uri: string, pageid: number, page_details: Page, callback: any) {
 		var db=this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
-		this.getComic(username,comic_uri,function(err,comic){
+		this.getComic(username,comic_uri, function(err, comic) {
 			try {
 				if (comic&&!err) {
 					if (pageid<1)
@@ -513,6 +513,21 @@ class DatabaseManager {
 				callback(err,null);
 			}
 		})
+	}
+	
+	// Basic Search
+	searchFor(username:string, query:string, callback:any){
+		var comics = this.db.get('comics');
+		console.log("SEARCHING FOR: " + query);
+		comics.ensureIndex(
+				{ "$**": "text" }, 
+                           	{ name: "TextIndex" });
+		comics.find( { $text: { $search: query } }, function(err,comics){
+			if (err) return callback(err, null);
+			return callback(null, comics);
+		 });
+
+				
 	}
 		
 	// creates a hash for the given password

@@ -119,7 +119,17 @@ class RouteComic {
     							}
     							return 0;
 						});
+						console.log(req.user.getAvatar());
 						res.render('dashboard', {
+							"avatar": req.user.getAvatar(),
+							"name": req.user.getName(),
+							"description": req.user.getDescription(),
+							"email": req.user.getEmail(),
+							"location": req.user.getLocation(),
+							"timezone": req.user.getTimeZone(),
+							"link": req.user.getLink(),
+							"subscription": req.user.subscriptionChoice(),
+							
 							"isartist" : isartist,
 							"notifications": sorted_notifications,
 							title: 'dashboard',
@@ -421,6 +431,48 @@ class RouteComic {
 						res.status(err.getCode() | 500).send(err)
 				});
 			});
+		});
+
+		router.get('/editdashboard', function(req, res, next) {
+			res.render('editdashboard');
+		});
+
+		router.post('/editdashboard', upload.single('image'), function(req, res, next) {
+			var username: string = req.user.getUsername();
+			var path:string = "";
+			if(req.file)
+				path = req.file.filename;
+			req.dbManager.postAvatar(username, path, req.body, function(err, avatar) {
+				console.log(err);
+			});
+			res.redirect('/');
+		});
+
+		router.get('/profile/*', function(req,res,next) {
+			var url = req.url;
+			var urlSplit = url.split("/");
+			var username = urlSplit[2];
+			console.log(urlSplit[2]);
+
+			req.dbManager.getUser(username, function(err, user) {
+				console.log("this is the one", user);
+				res.render('profile', {
+					"avatar": user.getAvatar(),
+					"username": user.getUsername(),
+					"name": user.getName(),
+					"description": user.getDescription(),
+					"email": user.getEmail(),
+					"location": user.getLocation(),
+					"timezone": user.getTimeZone(),
+					"link": user.getLink(),
+					"subscription": user.subscriptionChoice(),
+					title: 'profile'
+				// TODO: Render list of comics created by user viewable by visitor 
+			
+				});
+
+			})
+
 		});
 
 		/* POST panel */

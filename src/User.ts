@@ -17,6 +17,12 @@ manager:DatabaseManager; /** Database Manager */
 viewlist:string[]; /** A list of all viewable comics */
 notifications:Notification[]; /** A list of notification messages to display */	
 type:string; /** type of the user, either "pleb" or "artist"*/
+subscription: string; /** the sub. choice of the user */
+avatar: string;
+name: string;
+location: string;
+timezone: string;
+link: string;
 	
 	/** GETTERS */
 	getUsername():string;
@@ -28,6 +34,12 @@ type:string; /** type of the user, either "pleb" or "artist"*/
 	getEmail(): string;
 	getType(): string;
 	isArtist(): boolean;
+	subscriptionChoice(): string;
+	getAvatar(): string;
+	getName(): string;
+	getLocation(): string;
+	getTimeZone(): string;
+	getLink(): string;
 }
 
 /** Represents a viewer of DropComix */
@@ -41,7 +53,13 @@ manager:DatabaseManager; /** Database Manager */
 viewlist:string[]; /** A list of all viewable comics */
 notifications:Notification[]; /** A list of notification messages to display */
 type:string; /** type of the user, either "pleb" or "artist"*/
-	
+subscription: string; 
+avatar: string;
+name: string;
+location: string;
+timezone: string;
+link: string;
+
 	/** CONSTRUCTOR */
 	/** Not to be called outside DBManager */
 	constructor(username: string){
@@ -78,6 +96,24 @@ type:string; /** type of the user, either "pleb" or "artist"*/
 	getNotifications():Notification[]{
 		return this.notifications;
 	}
+	subscriptionChoice(): string{
+		return this.subscription;
+	}
+	getAvatar(): string{
+		return this.avatar;
+	}
+	getName(): string{
+		return this.name;
+	}
+	getLocation(): string{
+		return this.location;
+	}
+	getTimeZone(): string{
+		return this.timezone;
+	}
+	getLink(): string{
+		return this.link; 
+	}
 }
 
 /** Represents an artist on DropComix */
@@ -93,7 +129,13 @@ editlist:string[]; /** A list of all editable comics */
 adminlist:string[]; /** A list of all adminstrated comics */
 	/* INVARIANT:  A comic is on at most one list */
 notifications:Notification[]; /** A list of notification messages to display */	
-	
+subscription: string;
+avatar: string;
+name: string;
+location: string;
+timezone: string;
+link: string; 
+
 	/** CONSTRUCTOR */
 	/** Initializes Artist username */
 	/** Not to be called outside DBManager */
@@ -138,4 +180,22 @@ notifications:Notification[]; /** A list of notification messages to display */
 	getNotifications():Notification[]{
 		return this.notifications;
 	}
+	subscriptionChoice(): string {
+		return this.subscription;
+	}
+	getAvatar(): string {
+		return this.avatar;
+	}
+	getName(): string {
+		return this.name;
+	}
+	getLocation(): string {
+		return this.location;
+	}
+	getTimeZone(): string {
+		return this.timezone;
+	}
+	getLink(): string {
+		return this.link;
+	}s
 }

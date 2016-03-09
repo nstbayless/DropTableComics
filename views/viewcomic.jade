@@ -11,9 +11,10 @@ block content_comic
 		p
 			a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + pageid + "/edit" ) Edit page
 	center
-		p(id="page-area" style="width:1000px;border-style: solid;border-color:black;background-color:#262626;" align="left")
-			each pic, i in panels 
-				img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+		div(class="comicpage" style="width:1000px")
+			span(id="page-area" contenteditable="true")
+				each pic, i in panels 
+					img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
 	p
 		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
 			img(src="/images/icon_share.png" alt="share")

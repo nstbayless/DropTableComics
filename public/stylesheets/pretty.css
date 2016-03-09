@@ -56,6 +56,15 @@ a.share {
   size: 2;
 }
 
+#page-area{
+  border-style:solid;
+  border-color:black;
+  background-color:#262626;
+  height:auto;
+  align:left;
+  display:inline-block;
+}
+
 .commentcontainer {
   padding:0.01em 16px;
   border:1px solid black;

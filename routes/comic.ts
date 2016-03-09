@@ -530,6 +530,7 @@ class RouteComic {
 		/* POST Comment on viewpage */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/comment$/, function(req, res, next) {
 			console.log("ARE YOU REACHING ME? @?>@@>?>@@!@>!@>!@>>12345")
+			var adminlevel: number = 0; 
 			var username = req.user.getUsername();
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
@@ -540,7 +541,14 @@ class RouteComic {
 			if (!req.body.comment) {
 				return next();
 			} else {
-				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 0, function(err){
+				console.log("checking adminlevel...");
+				if (username == comic_creator) {
+					adminlevel = 2;
+				} else if (req.user.isArtist()) {
+					console.log("reached isartist point!!!!");
+					adminlevel = 1;
+				}
+				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 0, adminlevel, function(err){
 					if (err) {
 						res.status(500).send({success: false, msg: "Posting Comment Error"})
 					} else (
@@ -553,6 +561,7 @@ class RouteComic {
 		/* POST Comment on editpage*/
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/edit\/comment$/, function(req, res, next) {
 			console.log("attempting got post comment on editpage...")
+			var adminlevel: number = 0;
 			var username = req.user.getUsername();
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
@@ -563,7 +572,14 @@ class RouteComic {
 			if (!req.body.comment) {
 				return next();
 			} else {
-				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 1, function(err) {
+				console.log("checking adminlevel...");
+				if (username == comic_creator) {
+					adminlevel = 2;
+				} else if (req.user.isArtist()) {
+					console.log("reached isartist point!!!!");
+					adminlevel = 1;
+				}
+				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 1, adminlevel, function(err) {
 					if (err) {
 						res.status(500).send({ success: false, msg: "Posting Comment Error" })
 					} else (

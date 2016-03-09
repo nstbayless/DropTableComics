@@ -15,9 +15,26 @@ export class Panel {
 }
 
 export class Comment {
+	adminlevel: number;
 	username: string;
 	postDate: string;
 	description: string;
+
+	getAdminLevel(): number{
+		return this.adminlevel;
+	}
+
+	getUsername(): string{
+		return this.username;
+	}
+
+	getPostDate(): string{
+		return this.postDate;
+	}
+
+	getDescription(): string{
+		return this.description;
+	}
 }
 
 export class Page {	

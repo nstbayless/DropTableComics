@@ -79,6 +79,17 @@ a.share {
   border-bottom: 1px solid black;
   margin: auto;
 }
+.purplelevel{
+  color: rgb(255, 0, 255); 
+}
+
+.bluelevel{
+  color: blue;
+}
+
+.pleblevel{
+  color: green;
+}
 
 /* Style The Dropdown Button */
 .dropbtn {

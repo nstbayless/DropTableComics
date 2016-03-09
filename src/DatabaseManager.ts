@@ -399,7 +399,7 @@ class DatabaseManager {
 	}
 
 	// Asynchronously creates a comment and updates the page
-	postComment(username: string, comic_uri: string, pageID: number, current_user: string, description: string, is_editpage: number, callback: any) {
+	postComment(username: string, comic_uri: string, pageID: number, current_user: string, description: string, is_editpage: number, adminlevel: number, callback: any) {
 		var db = this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
 		this.getComic(username, comic_uri, function(err,comic) {
@@ -409,7 +409,9 @@ class DatabaseManager {
 					comment.description = description;
 					comment.username = current_user;
 					comment.postDate = Date();
+					comment.adminlevel = adminlevel;
 					if (is_editpage === 0) {
+						console.log("attempting to update a comment on viewpage...")
 						comic.getPage(pageID).comments.unshift(comment);
 						var pages = comic.pages;
 						var comics = db.get('comics');
@@ -422,7 +424,7 @@ class DatabaseManager {
 								}
 							})
 					} else if (is_editpage ===1) {
-						console.log("attempting to update a comment on editpage");
+						console.log("attempting to update a comment on editpage...");
 						comic.getDraftPage(pageID).comments.unshift(comment);
 						var draftpages = comic.draftpages;
 						var comics = db.get('comics');

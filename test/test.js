@@ -3,6 +3,7 @@
 require('should');
 var assert = require('assert');
 var monk = require('monk');
+var MongoClient = require('mongodb').MongoClient
 DB_PORT=27023;
 DB_PATH='./data-test'
 
@@ -12,6 +13,17 @@ var db;
 
 var cmd = 'mongod', args = ('--port '+DB_PORT+' --dbpath '+DB_PATH).split(' ');
 console.log("beginning test of backend (src/)")
+
+var cleardb = function(cb) {
+	MongoClient.connect('mongodb://localhost:'+DB_PORT, function(err,db2) {
+			if (err)
+				throw err;
+			db2.dropDatabase();
+			cb();
+	})
+}
+
+db = monk('localhost:'+DB_PORT);
 
 describe('Database Test', function() {
 	before(function() {
@@ -23,7 +35,6 @@ describe('Database Test', function() {
 		//start new db
 		this.timeout(4000);
 		child=child.spawn(cmd,args);
-		db = monk('localhost:'+DB_PORT);
 		console.log("   starting db (2 seconds):")
 		setTimeout(function() {
 			console.log("   done (hopefully)")
@@ -49,6 +60,6 @@ describe('Database Test', function() {
   });
 
 	describe('DatabaseManager',function () {
-		require('./dbm-test')(db);
+		require('./dbm-test')(db,cleardb);
 	})
 });

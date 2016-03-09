@@ -39,14 +39,14 @@ block content_comment
 					p(class="comment; purplelevel") 
 						|#{comment.username}: 
 						|#{comment.description}  <br />
-						p(style="font-size:10px")|#{comment.postDate}	
+						p(class="timestamp")|#{comment.postDate}	
 				else if comment.adminlevel == 1
 					p(class="comment; bluelevel")
 						|#{comment.username}: 
 						|#{comment.description}  <br />
-						p(style="font-size:10px")|#{comment.postDate}	
+						p(class="timestamp")|#{comment.postDate}	
 				else
 					p(class="comment; pleblevel")
 						|#{comment.username}: 
 						|#{comment.description}  <br />
-						p(style="font-size:10px")|#{comment.postDate}				
+						p(class="timestamp")|#{comment.postDate}				

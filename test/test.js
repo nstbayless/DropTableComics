@@ -6,8 +6,14 @@ var monk = require('monk');
 var MongoClient = require('mongodb').MongoClient
 var ProgressBar = require('progress');
 var config = require('../config');
+
+//db configuration constants
 DB_PORT=27024;
 DB_PATH='./data-test'
+
+//if the test suite cannot connect to the db, try increasing TIME_WAIT
+var TIME_WAIT = 1800;
+var TICK_MAX = 75;
 config.db='localhost:'+DB_PORT;
 config.securecookie=false;
 
@@ -36,8 +42,6 @@ describe('Database Test', function() {
 	})
 
 	before(function(done) {
-		var TIME_WAIT = 800;
-		var TICK_MAX = 75;
 		var bar = new ProgressBar(':bar', {
 			total: TICK_MAX,
 			clear:true,

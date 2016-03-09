@@ -11,6 +11,20 @@ var persist_db = function (){
 	_POSTPONE_CLEAR = true;
 }
 
+var throw_err = function(done,msg){
+	return function(err){
+		if (err) throw msg | err;
+		done();
+	}
+}
+
+var throw_not_err = function(done,msg){
+	return function(err){
+		if (!err) throw msg | "expected error";
+		done();
+	}
+}
+
 module.exports = function(db_v,cleardb) {
 	before( function() {
 		db=db_v
@@ -53,12 +67,13 @@ module.exports = function(db_v,cleardb) {
 
 		var artist_names = ['shyguy', 'NaOH', 'NAAh5005']
 		for (var i=0;i<12;i++) artist_names.push('artist'+i);
-		it('must be able to store some artists', function() {
+		it('must be able to store some artists', function(done) {
 			for (var i=0;i<artist_names.length;i++) {
 				dbManager.createArtist(artist_names[i],
 						artist_names[i]+"_123456",
-						artist_names[i]+"@somewebsite.com");
+						artist_names[i]+"@somewebsite.com", function(err){if (err) throw err;});
 			}
+			setTimeout(function(){done();},500)
 			persist_db()
 		});
 
@@ -86,11 +101,13 @@ module.exports = function(db_v,cleardb) {
 			});
 		});
 		
-		it('must reject if artist already exists', function(){
+		it('must reject if artist already exists', function(done){
+			var j=0;
+			d=function(){if (++j>=artist_names.length) done()}
 			for (var i=0;i<artist_names.length;i++) {
-				assert.throws(dbManager.createArtist(artist_names[i],
+				dbManager.createArtist(artist_names[i],
 						artist_names[i]+"@somewebsite.com",
-						artist_names[i]+"_123456"));
+						artist_names[i]+"_123456", throw_not_err(d,"did not reject"));
 			}
 		})
 
@@ -99,76 +116,19 @@ module.exports = function(db_v,cleardb) {
 			for (var i=0;i<256;i++){
 				badcharacters += String.fromCharCode( i );
 			}
-			badcharacters.replace(/[a-z][A-Z][0-9]~/g,'')
+			badcharacters.replace(/[a-zA-Z0-9~]/g,'')
+			var j=0;
+			d=function(){if (++j>artist_names.length) done()}
 			for (var i=0;i<badcharacters.length;i++) {
-				assert.throws(()=>{dbManager.createArtist("artist"+badcharacters.charAt(i),"a@b.c","abcd")},
-						"accepted invalid character in artist name")
+				dbManager.createArtist("artist"+badcharacters.charAt(i),"a@b.c","abcd",
+					throw_err(d,"accepted artist with invalid character in name"))
 			}
+			dbManager.createArtist("jo","a@b.c","abcd",
+				throw_err(d,"accepted artist with very short name"))
 		})
 		
 		it('must reject invalid email addresses', function(){
-			assert.throws(()=>{dbManager.createArtist("artistname","notanaddress...","password123")})
-		})
-	})
-
-	describe('#createViewer #getUser', function(){
-		var viewer_names = ['shyguy', 'NaOH', 'NAAh5005']
-		for (var i=0;i<12;i++) viewer_names.push('viewer'+i);
-		it('must be able to store some viewers', function() {
-			for (var i=0;i<viewer_names.length;i++) {
-				dbManager.createViewer(viewer_names[i],
-						viewer_names[i]+"_123456",
-						viewer_names[i]+"@somewebsite.com");
-			}
-			persist_db()
-		});
-
-		it('must be able to retrieve those viewers', function(done) {
-			var calls=[];
-			var j = 0;
-			for (var i=0;i<viewer_names.length;i++) {
-				calls.push(function(callback){
-					var name=viewer_names[j++];
-					dbManager.getUser(name,function(err,user){
-						if (err) throw err;
-						assert.ok(user,'user not retrieved');
-						assert.equal(name,user.getUsername(name),'username mutated');
-						assert.equal(name+"@somewebsite.com",user.getEmail(name),'email mutated');
-						//cannot test if password is equal b/c password not stored.
-						assert.notEqual(name+"_123456",user.getHash(name),'password not hashed!')
-						assert(dbManager.checkHash(name+"_123456",user.getHash(name)),'password hash mutated')
-						callback();
-					});
-				});
-			}
-			async.parallel(calls,function(){
-				persist_db();
-				done();
-			});
-		});
-		
-		it('must reject if viewer already exists', function(){
-			for (var i=0;i<viewer_names.length;i++) {
-				assert.throws(dbManager.createViewer(viewer_names[i],
-						viewer_names[i]+"@somewebsite.com",
-						viewer_names[i]+"_123456"));
-			}
-		})
-
-		it('must reject viewers with weird names', function(){
-			var badcharacters = "";
-			for (var i=0;i<256;i++){
-				badcharacters += String.fromCharCode( i );
-			}
-			badcharacters.replace(/[a-z][A-Z][0-9]~/g,'')
-			for (var i=0;i<badcharacters.length;i++) {
-				assert.throws(()=>{dbManager.createViewer("viewer"+badcharacters.charAt(i),"a@b.c","abcd")},
-						"accepted invalid character in viewer name")
-			}
-		})
-		
-		it('must reject invalid email addresses', function(){
-			assert.throws(()=>{dbManager.createViewer("viewername","notanaddress..@.","password123")})
+			dbManager.createArtist("artistname","notanaddress...","password123"),throw_err(d,"accepted invalid email address")
 		})
 	})
 }

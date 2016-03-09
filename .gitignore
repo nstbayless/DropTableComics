@@ -13,3 +13,7 @@ ssl/*
 src/*.js
 uploads/*
 *~
+awscli-bundle.zip
+awscli-bundle/*
+routes/.DS_Store
+views/.DS_Store

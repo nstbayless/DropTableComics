@@ -33,7 +33,7 @@ export class NotificationManager {
 			smtpTransport.sendMail({  //email options
    				from: '"DropComix 👥" <dropcomixupdates@gmail.com>', 
 				// sender address.  Must be the same as authenticated user if using GMail.
-   				to: 'arman.raina@yahoo.com', // receiver
+   				to: user.getEmail(), // receiver
    				subject: "DropComix", // subject
    				text: notification.getMessage() // body
 			}, function(error, response){  //callback

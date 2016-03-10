@@ -111,21 +111,23 @@ module.exports = function(db_v,cleardb) {
 			}
 		})
 
-		it('must reject artists with weird names', function(){
+		it('must reject artists with weird names', function(done){
 			var badcharacters = "";
 			for (var i=0;i<256;i++){
 				badcharacters += String.fromCharCode( i );
 			}
 			badcharacters.replace(/[a-zA-Z0-9~]/g,'')
 			var j=0;
-			d=function(){if (++j>artist_names.length) done()}
+			d=function(){if (++j>badcharacters.length) done();}
 			for (var i=0;i<badcharacters.length;i++) {
 				dbManager.createArtist("artist"+badcharacters.charAt(i),"a@b.c","abcd",
-					throw_err(d,"accepted artist with invalid character in name"))
+					throw_not_err(d,"accepted artist with invalid character in name"))
 			}
 			dbManager.createArtist("jo","a@b.c","abcd",
-				throw_err(d,"accepted artist with very short name"))
+				throw_not_err(d,"accepted artist with very short name"))
 		})
+
+		return;
 		
 		it('must reject invalid email addresses', function(){
 			dbManager.createArtist("artistname","notanaddress...","password123"),throw_err(d,"accepted invalid email address")

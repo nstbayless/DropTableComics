@@ -23,14 +23,14 @@ class DatabaseManager {
 	createArtist(username: string, password: string, email: string, callback: any) {
 		var dbm = this;
 		if (!callback) callback=function(){}
+		if (!username.match(/^[a-zA-Z0-9~]+$/) || username.length<3)
+			return callback("Error: username invalid: "+username)
+		if (!email.match(/^.+@.+\..+$/))
+			return callback("Error: email invalid: "+email)
 		this.getUser(username, function(err,user) {
-			if (err) return err;
+			if (err) return callback(err);
 			if (user)
 				return callback("Error: user already exists",user);
-			if (!username.match(/^[a-zA-Z0-9~]+$/) || username.length<3)
-				return callback("Error: username invalid: "+username)
-			if (!email.match(/^.+@.+\..+$/))
-				return callback("Error: email invalid: "+email)
 			var hash = dbm.computeHash(password);
 			var artist: Artist = new Artist(username);
 			artist.hash=hash;

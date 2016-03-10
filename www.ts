@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 ///<reference path='types/node/node.d.ts'/>
 ///<reference path='types/express/express.d.ts'/> 
 

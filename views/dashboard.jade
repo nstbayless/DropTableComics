@@ -3,7 +3,7 @@ extends pretty
 
 block content
 	form(ng-init="comics=#{comics_js}")
-	h1.bannertext= Dashboard
+	h1.bannertext Dashboard
 	
 	h2= username
 	p
@@ -15,7 +15,10 @@ block content
 	p Location: #{location}
 	p Time Zone: #{timezone}
 	p Subscriptions: #{subscriptions}
+	
+	a(href="/editdashboard") Edit Information
 
+	h2 Comics
 	if(isartist == true && comics_length != 0)
 		p Created Comics
 	if(isartist == false && comics_length != 0)
@@ -25,11 +28,9 @@ block content
 			li
 				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
 	if(typeof(notifications) !== 'undefined' && notifications_length != 0)
-		p Notifications
+		h2 Notifications
 		ul
 			each notification, i in notifications
 				li
 					= notification.timestamp+ ": " + notification.event.id + " (" + notification.msg + ")"
-
-	a(href="/editdashboard") Edit Information
 	

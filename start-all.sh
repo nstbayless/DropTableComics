@@ -7,6 +7,8 @@ echo "npm install -g express-generator"
 sudo npm install -g express-generator
 echo "sudo npm install -g typescript"
 sudo npm install -g typescript
+echo "sudo npm install -g mocha"
+sudo npm install -g mocha
 echo "modules installed."
 
 ./install_type.sh

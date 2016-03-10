@@ -20,29 +20,39 @@ class DatabaseManager {
 	}
 
 	// creates a new Artist and adds it to the database
-	createArtist(username: string, password: string, email: string): Artist {
-		var hash = this.computeHash(password);
-		var artist: Artist = new Artist(username);
-		artist.hash=hash;
-		artist.email=email;
-		var notifications = new Array<Notification>();
-		console.log(notifications.length);
-		var users = this.db.get('users');
-		console.log("creating artist")
-		users.insert({username:username,
-			hash:hash,
-			type:"artist",
-			email:email, 
-			"notifications":notifications, 
-			"avatar":"",
-			"name": "",
-			"description": "",
-			"location": "",
-			"timezone": "",
-			"link": "",
-			"subscription": true
-	});
-		return artist;
+	// callback: [](err,user)
+	createArtist(username: string, password: string, email: string, callback: any) {
+		var dbm = this;
+		if (!callback) callback=function(){}
+		if (!username.match(/^[a-zA-Z0-9~]+$/) || username.length<3)
+			return callback("Error: username invalid: "+username)
+		if (!email.match(/^.+@.+\..+$/))
+			return callback("Error: email invalid: "+email)
+		this.getUser(username, function(err,user) {
+			if (err) return callback(err);
+			if (user)
+				return callback("Error: user already exists",user);
+			var hash = dbm.computeHash(password);
+			var artist: Artist = new Artist(username);
+			artist.hash=hash;
+			artist.email=email;
+			var notifications = new Array<Notification>();
+			var users = dbm.db.get('users');
+			users.insert({
+				username:username,
+				hash:hash,
+				type:"artist",
+				email:email, 
+				"notifications":notifications, 
+				"avatar":"",
+				"name": "",
+				"description": "",
+				"location": "",
+				"timezone": "",
+				"link": "",
+				"subscription": true
+			});
+		});
 	}
 
 	// creates a new Viewer and adds it to the database
@@ -52,7 +62,6 @@ class DatabaseManager {
 		viewer.hash=hash;
 		viewer.email=email;
 		var notifications = new Array<Notification>();
-		console.log(notifications.length);
 		var users = this.db.get('users');
 		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications, "avatar":""});
 		return viewer;
@@ -148,7 +157,7 @@ class DatabaseManager {
 	// callback: [](err,subscribers)
 	getSubscribers(event: EventSignal, callback:any) {
 		var subscriptions = this.db.get('subscriptions');
-		subscriptions.findOne({"event":event}, function(err,event){
+		subscriptions.findOne({"event":event}, function(err,event){ // the event here is actually a subscription object
 			if (err||!event) return callback(err,null);
 			var user_list: string[] = event.user_list;
 			callback(null,user_list);
@@ -157,6 +166,7 @@ class DatabaseManager {
 
 	// asynchronously retrieves the subscriptions for a viewer from the database
 	// callback: [](err,subscribers)
+	//TODO: is this asynchronous or not??
 	getSubscriptions(username: string, callback: any) {
 		var subscriptions = this.db.get('subscriptions');
 		var comic_ids;
@@ -369,6 +379,7 @@ class DatabaseManager {
 		var comics = this.db.get('comics');
 		comics.find({ creator: username }, {}, callback);
 	}
+
 	
 	/**Asynchronously adds a new page to the given comic.
 	   callback: [](err, new_page_id)
@@ -474,7 +485,7 @@ class DatabaseManager {
 	putDraft(username:string, comic_uri: string, pageid: number, page_details: Page, callback: any) {
 		var db=this.db;
 		comic_uri = Comic.canonicalURI(comic_uri);
-		this.getComic(username,comic_uri,function(err,comic){
+		this.getComic(username,comic_uri, function(err, comic) {
 			try {
 				if (comic&&!err) {
 					if (pageid<1)
@@ -596,6 +607,29 @@ class DatabaseManager {
 				callback(err,null);
 			}
 		})
+	}
+	
+	// Basic Search
+	searchFor(username:string, query:string, callback:any){
+		var comics = this.db.get('comics');
+		console.log("SEARCHING FOR: " + query);
+		comics.ensureIndex(  // makes every field of each comic a searchable string
+				{ "$**": "text" }, 
+                           	{ name: "TextIndex" }); 
+		comics.find( { $text: { $search: query } }, function(err,comics){ // finds results
+			if (err) return callback(err, null);
+			var viewable_comics = new Array<Object>();
+			for (var i = 0; i < comics.length; i++) {
+			console.log(comics[i]);
+			if (	comics[i].viewlist.indexOf(username) > -1 
+				||comics[i].editlist.indexOf(username) > -1 
+				|| comics[i].adminlist.indexOf(username) > -1) // checks if comic is viewable
+				viewable_comics.push(comics[i]);
+			}
+			return callback(null, viewable_comics);
+		 });
+
+				
 	}
 		
 	// creates a hash for the given password

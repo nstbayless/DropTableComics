@@ -1,6 +1,6 @@
 function searchSubmit(){
   var text = document.getElementById("search").value;
-  window.location.href="/pretty/search/"+text;
+  window.location.href="/comics\/search="+text;
 }
 
 //called when the search form gets a keypress

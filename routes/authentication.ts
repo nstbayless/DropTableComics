@@ -16,7 +16,7 @@ class RouteAuth {
 				password: password,
 			}, {
 				maxAge: 9000000,
-				httpOnly: true,
+				httpOnly: config.securecookie,
 				secure: config.https,
 				path: '/'
 			});
@@ -37,8 +37,10 @@ class RouteAuth {
 			password=req.body.password;
 		} else if (req.cookies.credentials) {
 			var creds = req.cookies.credentials;
+			if (typeof creds=='string')
+				creds = JSON.parse(creds);
 			//creds included in cookies
-			if (creds.username && creds.password) {
+			if ((!!creds.username) && (!!creds.password)) {
 				username = creds.username;
 				password = creds.password;
 			}
@@ -105,7 +107,7 @@ class RouteAuth {
 						RouteAuth.setAuthenticationCookie(req,res,req.body.username,req.body.password);
 						res.status(200).send({success: true, msg: 'Valid Credentials!'})
 					} else {
-						res.send({success: false, msg: 'Incorrect username or password'})
+						res.status(404).send({success: false, msg: 'Incorrect username or password'})
 					}
 				});
 			}
@@ -137,13 +139,13 @@ class RouteAuth {
 			res.send({success: false,
 				msg: 'Registration not necessary. Credentials already validated'})
 			else if (!req.body.username || !req.body.password) //incorrect POST body
-			res.send({success: false, msg: 'Provide username and password'});
+			res.status(400).send({success: false, msg: 'Provide username and password'});
 			else if (!req.body.email) //incorrect POST body
-			res.send({success: false, msg: 'Provide email address'});
+			res.status(400).send({success: false, msg: 'Provide email address'});
 			else if (!req.body.email.match(/\S+@\S+\.\S+/)) //email address of wrong form
-			res.send({success: false, msg: 'Provide email address of the form *@*.*'});// no account type specified
+			res.status(400).send({success: false, msg: 'Provide email address of the form *@*.*'});// no account type specified
 			else if (req.body.account_type!="pleb"&&req.body.account_type!="artist")
-			res.send({success: false, msg: 'account_type must be one of "pleb" or "artist"'});
+			res.status(400).send({success: false, msg: 'account_type must be one of "pleb" or "artist"'});
 			else {
 				//register new user!
 				//check username/password are valid

@@ -14,7 +14,9 @@ block content
 	p Email: #{email}
 	p Location: #{location}
 	p Time Zone: #{timezone}
-	p Subscriptions: #{subscriptions}
+	
+	if(isartist == false)
+		p Subscriptions: #{subscriptions}
 	
 	a(href="/editdashboard") Edit Information
 

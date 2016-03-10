@@ -114,41 +114,43 @@ class RouteComic {
 		/* GET dashboard page. */
 		router.get('/', function(req, res, next) {
 			var username = req.user.getUsername();  // username
-			var subscriptions = req.dbManager.getSubscriptions(username, null);
 			//TODO: Render list of comics accessible by user
-			req.dbManager.getUser(username, function(err,user){
-				if (err||!user) return res.status(401).send({success: false, msg: 'User does not exist'});
-				var isartist = user.isArtist();
-				req.dbManager.getComics(username, function(err, comics) {
-					req.nManager.getNotifications(username, function(err, notifications:Notification[]){
-						if (err||!notifications)
-							return res.status(500).send("Error: notifications not found")
-						var sorted_notifications: Notification[] = notifications.sort((n1,n2) => {
-    							if (n1.timestamp.valueOf() < n2.timestamp.valueOf()) {
-        						return 1;
-    							}
-    							if (n1.timestamp.valueOf() > n2.timestamp.valueOf()) {
-        						return -1;
-    							}
-    							return 0;
+			req.dbManager.getSubscriptions(username, function(err, comic_ids) {
+				req.dbManager.getUser(username, function(err, user) {
+					if (err || !user) return res.status(401).send({ success: false, msg: 'User does not exist' });
+					var isartist = user.isArtist();
+					req.dbManager.getComics(username, function(err, comics) {
+						req.nManager.getNotifications(username, function(err, notifications: Notification[]) {
+							if (err || !notifications)
+								return res.status(500).send("Error: notifications not found")
+							var sorted_notifications: Notification[] = notifications.sort((n1, n2) => {
+								if (n1.timestamp.valueOf() < n2.timestamp.valueOf()) {
+									return 1;
+								}
+								if (n1.timestamp.valueOf() > n2.timestamp.valueOf()) {
+									return -1;
+								}
+								return 0;
+							});
+							res.render('dashboard', {
+								"username": req.user.getUsername(),
+								"name": req.user.getName(),
+								"description": req.user.getDescription(),
+								"email": req.user.getEmail(),
+								"location": req.user.getLocation(),
+								"timezone": req.user.getTimeZone(),
+								"link": req.user.getLink(),
+								"shouldShowSubscription": req.user.subscriptionChoice(),
+								"subscriptions": comic_ids,
+								"isartist": isartist,
+								"notifications": sorted_notifications,
+								title: 'dashboard',
+								comics: comics,		// Render list of comics created by user
+								comics_length: comics.length,
+								notifications_length: notifications.length
+							});
+
 						});
-						res.render('dashboard', {
-							"username": req.user.getUsername(),
-							"name": req.user.getName(),
-							"description": req.user.getDescription(),
-							"email": req.user.getEmail(),
-							"location": req.user.getLocation(),
-							"timezone": req.user.getTimeZone(),
-							"link": req.user.getLink(),
-							"shouldShowSubscription": req.user.subscriptionChoice(),
-							"subscriptions": subscriptions,
-							"isartist" : isartist,
-							"notifications": sorted_notifications,
-							title: 'dashboard',
-							comics: comics,		// Render list of comics created by user
-							comics_length:comics.length,
-							notifications_length:notifications.length	
-						}); 
 					});
 				});
 			});

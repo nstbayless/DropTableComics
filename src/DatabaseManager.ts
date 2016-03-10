@@ -169,14 +169,18 @@ class DatabaseManager {
 	//TODO: is this asynchronous or not??
 	getSubscriptions(username: string, callback: any) {
 		var subscriptions = this.db.get('subscriptions');
-		var comic_ids;
-		subscriptions.find({ user_list: { $in: [username] } }, function(err, events) { // the event here is actually a sub object
-			if (err || !events) return callback(err, null);
-			for (var i = 0; i < events.length; i++) {
-				if (events[i].event.event_type == EventType.Comic_Publish)
-				console.log(events[i].event.id);
+		var comic_ids = new Array<String>();
+		subscriptions.find({ user_list: { $in: [username] } }, function(err, subs) { // the event here is actually a sub object
+			if (err || !subs) return callback(err, null);
+			for (var i = 0; i < subs.length; i++) {
+				if (subs[i].event.event_type == EventType.Comic_Publish){
+					comic_ids.push(subs[i].event.id);
+					console.log("get Subscrption:");
+					console.log(subs[i].event.id);
+				}
 			}
-			//	var user_li st:string[] = event.ser_list;
+			return callback(null, comic_ids)
+			// var user_li st:string[] = event.ser_list;
 			// callback(null, user_list);
 		});
 	}

@@ -5,15 +5,16 @@ block content
 	form(ng-init="comics=#{comics_js}")
 	h1.bannertext= Dashboard
 	
-	img(src=avatar)
+	h2= username
+	p
+		img(src='/accounts/#{username}/avatar' width=96 border=2)
 	
 	p Description: #{description}
 	p Name: #{name}
 	p Email: #{email}
 	p Location: #{location}
 	p Time Zone: #{timezone}
-	if (shouldShowSubscription == true) 
-		p Subscriptions: #{subscriptions}
+	p Subscriptions: #{subscriptions}
 
 	if(isartist == true && comics_length != 0)
 		p Created Comics

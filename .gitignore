@@ -13,3 +13,4 @@ ssl/*
 src/*.js
 uploads/*
 *~s
+.DS_STORE

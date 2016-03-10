@@ -102,6 +102,7 @@ class RouteComic {
 		router.get('/', function(req, res, next) {
 			var username = req.user.getUsername();  // username
 			
+			var subscriptions = req.dbManager.getSubscriptions(username, null);
 			//TODO: Render list of comics accessible by user
 			req.dbManager.getUser(username, function(err,user){
 				if (err||!user) return res.status(401).send({success: false, msg: 'User does not exist'});
@@ -128,7 +129,8 @@ class RouteComic {
 							"location": req.user.getLocation(),
 							"timezone": req.user.getTimeZone(),
 							"link": req.user.getLink(),
-							"subscription": req.user.subscriptionChoice(),
+							"shouldShowSubscription": req.user.subscriptionChoice(),
+							"subscriptions": subscriptions,
 							
 							"isartist" : isartist,
 							"notifications": sorted_notifications,
@@ -448,25 +450,24 @@ class RouteComic {
 			res.redirect('/');
 		});
 
-		router.get('/profile/*', function(req,res,next) {
-			var url = req.url;
-			var urlSplit = url.split("/");
-			var username = urlSplit[2];
-			console.log(urlSplit[2]);
+		router.get('/profile/:username', function(req,res,next) {
+			var url = req.params;
+			console.log("logging urlSplit");
+			console.log(url);
+			var username = req.params.username;
 
 			req.dbManager.getUser(username, function(err, user) {
+
 				console.log("this is the one", user);
-				res.render('profile', {
-					"avatar": user.getAvatar(),
+				 res.render('profile', {
 					"username": user.getUsername(),
+					"avatar": user.getAvatar(),
 					"name": user.getName(),
 					"description": user.getDescription(),
 					"email": user.getEmail(),
-					"location": user.getLocation(),
-					"timezone": user.getTimeZone(),
 					"link": user.getLink(),
-					"subscription": user.subscriptionChoice(),
 					title: 'profile'
+				
 				// TODO: Render list of comics created by user viewable by visitor 
 			
 				});

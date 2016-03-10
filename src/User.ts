@@ -17,7 +17,7 @@ manager:DatabaseManager; /** Database Manager */
 viewlist:string[]; /** A list of all viewable comics */
 notifications:Notification[]; /** A list of notification messages to display */	
 type:string; /** type of the user, either "pleb" or "artist"*/
-subscription: string; /** the sub. choice of the user */
+shouldShowSubscription: boolean; /** the sub. choice of the user */
 avatar: string;
 name: string;
 location: string;
@@ -34,7 +34,7 @@ link: string;
 	getEmail(): string;
 	getType(): string;
 	isArtist(): boolean;
-	subscriptionChoice(): string;
+	subscriptionChoice(): boolean;
 	getAvatar(): string;
 	getName(): string;
 	getLocation(): string;
@@ -53,7 +53,7 @@ manager:DatabaseManager; /** Database Manager */
 viewlist:string[]; /** A list of all viewable comics */
 notifications:Notification[]; /** A list of notification messages to display */
 type:string; /** type of the user, either "pleb" or "artist"*/
-subscription: string; 
+shouldShowSubscription: boolean; 
 avatar: string;
 name: string;
 location: string;
@@ -96,8 +96,8 @@ link: string;
 	getNotifications():Notification[]{
 		return this.notifications;
 	}
-	subscriptionChoice(): string{
-		return this.subscription;
+	subscriptionChoice(): boolean{
+		return this.shouldShowSubscription;
 	}
 	getAvatar(): string{
 		return this.avatar;
@@ -129,7 +129,7 @@ editlist:string[]; /** A list of all editable comics */
 adminlist:string[]; /** A list of all adminstrated comics */
 	/* INVARIANT:  A comic is on at most one list */
 notifications:Notification[]; /** A list of notification messages to display */	
-subscription: string;
+shouldShowSubscription: boolean;
 avatar: string;
 name: string;
 location: string;
@@ -180,8 +180,8 @@ link: string;
 	getNotifications():Notification[]{
 		return this.notifications;
 	}
-	subscriptionChoice(): string {
-		return this.subscription;
+	subscriptionChoice(): boolean {
+		return this.shouldShowSubscription;
 	}
 	getAvatar(): string {
 		return this.avatar;

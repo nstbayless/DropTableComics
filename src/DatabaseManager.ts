@@ -20,17 +20,26 @@ class DatabaseManager {
 	}
 
 	// creates a new Artist and adds it to the database
-	createArtist(username: string, password: string, email: string): Artist {
-		var hash = this.computeHash(password);
-		var artist: Artist = new Artist(username);
-		artist.hash=hash;
-		artist.email=email;
-		var notifications = new Array<Notification>();
-		console.log(notifications.length);
-		var users = this.db.get('users');
-		console.log("creating artist")
-		users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications});
-		return artist;
+	// callback: [](err,user)
+	createArtist(username: string, password: string, email: string, callback: any) {
+		var dbm = this;
+		if (!callback) callback=function(){}
+		if (!username.match(/^[a-zA-Z0-9~]+$/) || username.length<3)
+			return callback("Error: username invalid: "+username)
+		if (!email.match(/^.+@.+\..+$/))
+			return callback("Error: email invalid: "+email)
+		this.getUser(username, function(err,user) {
+			if (err) return callback(err);
+			if (user)
+				return callback("Error: user already exists",user);
+			var hash = dbm.computeHash(password);
+			var artist: Artist = new Artist(username);
+			artist.hash=hash;
+			artist.email=email;
+			var notifications = new Array<Notification>();
+			var users = dbm.db.get('users');
+			users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications});
+		});
 	}
 
 	// creates a new Viewer and adds it to the database
@@ -40,7 +49,6 @@ class DatabaseManager {
 		viewer.hash=hash;
 		viewer.email=email;
 		var notifications = new Array<Notification>();
-		console.log(notifications.length);
 		var users = this.db.get('users');
 		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications});
 		return viewer;

@@ -30,7 +30,7 @@ export class NotificationManager {
 	/* Async subscribes viewer to a given comic */
 	/* callback:[](err, event) */
 	subscribeComic(comic_uri:string, username:string, callback:any){
-		this.subscribeEvent(new EventSignal(EventType.Comic_Publish, comic_uri), username, callback);	
+		this.subscribeEvent(new EventSignal(EventType.Comic_Publish, comic_uri), username, callback);
 	}
 
 	/* Async subscribes viewer to a given comic */

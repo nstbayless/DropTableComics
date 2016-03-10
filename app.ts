@@ -11,16 +11,15 @@ var bodyParser = require('body-parser');
 var http = require('http');
 var mongo = require('mongodb');
 var monk = require('monk');
-var db = monk(config.db);
 var RouteAuthentication = require('./routes/authentication');
 var RouteComic = require('./routes/comic');
 var RouteAdminPage = require('./routes/adminpage');
 
 import DatabaseManager = require("./src/DatabaseManager");
 import { NotificationManager } from './src/NotificationManager';
-
-var dbManager: DatabaseManager = new DatabaseManager(db);
-var nManager: NotificationManager = new NotificationManager(dbManager);
+var db;
+var dbManager: DatabaseManager;
+var nManager: NotificationManager;
 
 //fatal error if cannot connect to database:
 try {
@@ -38,7 +37,13 @@ interface Error {
 class Application {
 	//app stored as public member (type not known)
 	app_: any;
-	constructor() {
+	constructor(altdb: any) {
+		db = altdb;
+		if (!db) {
+			db = monk(config.db);
+		}
+		dbManager = new DatabaseManager(db);
+		nManager = new NotificationManager(dbManager);
 		var routeComic = new RouteComic();
 		var routeAuthentication = new RouteAuthentication();
 		var routeAdminPage = new RouteAdminPage();
@@ -59,6 +64,7 @@ class Application {
 		app.use(bodyParser.urlencoded({ extended: false }));
 		app.use(cookieParser());
 		app.use(express.static(path.join(__dirname, 'public')));
+		app.use(express.static(path.join(__dirname, 'data/images')));
 		app.use(function(req,res,next){
 			req.dbManager = dbManager;
 			req.nManager = nManager;
@@ -104,7 +110,6 @@ class Application {
 			});
 		});
 		this.app_=app
-		//console.log("serving at "+app.address())
 	}
 	//called after www start script
 	onStart(port) {

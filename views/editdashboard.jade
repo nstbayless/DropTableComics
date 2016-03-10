@@ -1,0 +1,30 @@
+extends pretty
+- var comics_js = JSON.stringify(comics)
+
+block content
+	form(ng-init="comics=#{comics_js}")
+	h1.bannertext= Dashboard
+	form(method='post', enctype='multipart/form-data', action= '/editdashboard')
+		p Avatar 
+		input(type='file', name='image' id='image_upload')
+		p Description
+		input(type='text', name='description' placeholder="Enter Description..")
+		p Name
+		input(type="text" name="name" placeholder="Enter Name...")
+		p Password
+		input(type="password" name="password" placeholder="Enter New Password...")
+		p Email
+		input(type="email" name="email" placeholder="Change Email...")
+		p Location
+		input(type="text" name="location" placeholder="Enter Location...")
+		p Time Zone
+		input(type="text" name="timezone" placeholder="Enter TimeZone...")
+		p Add Link to Other Sites
+		input(type="text" name="link" placeholder="Enter Link...")
+		p Subscription List
+		input(type="radio" name="shouldShowSubscription" value=true)
+		b Show
+		input(type="radio" name="shouldShowSubscription" value=false)
+		b Hide
+		p
+			input(type='submit')

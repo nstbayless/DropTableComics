@@ -1,6 +1,6 @@
 ///<reference path='../types/node/node.d.ts'/>
 
-///<reference path='../types/express/express.d.ts'/> 
+///<reference path='../types/express/express.d.ts'/>
 
 var express = require('express');
 var config = require('../config');
@@ -16,14 +16,14 @@ class RouteAuth {
 				password: password,
 			}, {
 				maxAge: 9000000,
-				httpOnly: true,
+				httpOnly: config.securecookie,
 				secure: config.https,
 				path: '/'
 			});
 		}
 	}
 
-	//asynchronously attempts to validate user credentials. 
+	//asynchronously attempts to validate user credentials.
 	//attaches user object to request if valid
 	//attaches user info to the headers for the next http data sent
 	//callback [](authenticated):
@@ -37,8 +37,10 @@ class RouteAuth {
 			password=req.body.password;
 		} else if (req.cookies.credentials) {
 			var creds = req.cookies.credentials;
+			if (typeof creds=='string')
+				creds = JSON.parse(creds);
 			//creds included in cookies
-			if (creds.username && creds.password) {
+			if ((!!creds.username) && (!!creds.password)) {
 				username = creds.username;
 				password = creds.password;
 			}
@@ -49,7 +51,7 @@ class RouteAuth {
 				if (req.dbManager.checkHash(password,user.getHash())) {
 					//user is valid!
 					req.user = user
-					
+
 					//tell client about client-specific information in all future responses
 					var isartist = req.user.isArtist();
 					res.append('isartist',isartist);
@@ -105,12 +107,12 @@ class RouteAuth {
 						RouteAuth.setAuthenticationCookie(req,res,req.body.username,req.body.password);
 						res.status(200).send({success: true, msg: 'Valid Credentials!'})
 					} else {
-						res.send({success: false, msg: 'Incorrect username or password'})
+						res.status(404).send({success: false, msg: 'Incorrect username or password'})
 					}
 				});
 			}
 		});
-		
+
 		/* GET logout (this just deletes the credentials cookie in the broswer). */
 		router.get('/auth/logout', function(req, res, next) {
 			//overwrite old cookie, just to be sure
@@ -130,20 +132,20 @@ class RouteAuth {
 			});
 			res.send({success: false, msg: 'Clearing cookies'})
 		});
-		
+
 		/* POST registration. */
 		router.post('/auth/accounts', function(req, res, next) {
 			if (req.user)//user already registered:
 			res.send({success: false,
 				msg: 'Registration not necessary. Credentials already validated'})
 			else if (!req.body.username || !req.body.password) //incorrect POST body
-			res.send({success: false, msg: 'Provide username and password'});
+			res.status(400).send({success: false, msg: 'Provide username and password'});
 			else if (!req.body.email) //incorrect POST body
-			res.send({success: false, msg: 'Provide email address'});
+			res.status(400).send({success: false, msg: 'Provide email address'});
 			else if (!req.body.email.match(/\S+@\S+\.\S+/)) //email address of wrong form
-			res.send({success: false, msg: 'Provide email address of the form *@*.*'});// no account type specified
+			res.status(400).send({success: false, msg: 'Provide email address of the form *@*.*'});// no account type specified
 			else if (req.body.account_type!="pleb"&&req.body.account_type!="artist")
-			res.send({success: false, msg: 'account_type must be one of "pleb" or "artist"'});
+			res.status(400).send({success: false, msg: 'account_type must be one of "pleb" or "artist"'});
 			else {
 				//register new user!
 				//check username/password are valid

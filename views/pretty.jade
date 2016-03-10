@@ -8,7 +8,7 @@ block content_layout
 			a(href="/") My Dashboard
 		ul.headerright
 			li.headerlink
-				a(href="/accounts/") {{username}}
+				a(href="/profile/" + "{{username}}") {{username}}
 			li.headerlink
 				a(ng-click="logout()" href="") Sign Out
 			li.headerlink

@@ -114,7 +114,7 @@ class RouteComic {
 		/* GET dashboard page. */
 		router.get('/', function(req, res, next) {
 			var username = req.user.getUsername();  // username
-			
+			var subscriptions = req.dbManager.getSubscriptions(username, null);
 			//TODO: Render list of comics accessible by user
 			req.dbManager.getUser(username, function(err,user){
 				if (err||!user) return res.status(401).send({success: false, msg: 'User does not exist'});
@@ -133,6 +133,15 @@ class RouteComic {
     							return 0;
 						});
 						res.render('dashboard', {
+							"username": req.user.getUsername(),
+							"name": req.user.getName(),
+							"description": req.user.getDescription(),
+							"email": req.user.getEmail(),
+							"location": req.user.getLocation(),
+							"timezone": req.user.getTimeZone(),
+							"link": req.user.getLink(),
+							"shouldShowSubscription": req.user.subscriptionChoice(),
+							"subscriptions": subscriptions,
 							"isartist" : isartist,
 							"notifications": sorted_notifications,
 							title: 'dashboard',
@@ -144,6 +153,21 @@ class RouteComic {
 				});
 			});
 		});
+		
+		/* GET search results */
+		router.get(/^\/comics\/search\=[a-zA-Z0-9\-]*/, function(req, res, next) {
+			var username:string = req.user.getUsername();
+			var list = req.url.split("=");
+			var query = list[1];
+			console.log(query);
+			req.dbManager.searchFor(username, query, function(err, results) { // results are comics
+				console.log(results);				
+				res.render('searchresults', {
+					title: 'search',
+					comics: results
+				});
+			});
+		})
 				
 		/* GET create comic page. */
 		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/create$/, function(req, res, next) {
@@ -440,6 +464,58 @@ class RouteComic {
 			});
 		});
 
+		router.get('/editdashboard', function(req, res, next) {
+			res.render('editdashboard');
+		});
+
+		//TODO: this is not a RESTful URI~! should PUT to /account/(username)
+		// POST (should be PUT) changes to user profile
+		router.post('/editdashboard', upload.single('image'), function(req, res, next) {
+			var username: string = req.user.getUsername();
+			var path:string = "";
+			if(req.file)
+				path = req.file.path;
+			req.dbManager.postAvatar(username, path, req.body, function(err, avatar) {
+				console.log(err);
+				res.status(500).send("error uploading changes to profile");
+			});
+			res.redirect('/');
+		});
+
+		/* GET user profile page */
+		router.get(/^\/profile\/[a-zA-Z0-9~]+\/?$/, function(req,res,next) {
+			//TODO: parse URI properly
+			var username = req.url.substr('/profile/'.length).replace(/\//g,'');
+			req.dbManager.getUser(username, function(err, user) {
+				if (err||!user) 
+					return next();
+				 res.render('profile', {
+					"username": user.getUsername(),
+					"name": user.getName(),
+					"description": user.getDescription(),
+					"email": user.getEmail(),
+					"link": user.getLink(),
+					title: "User: " + user.getUsername()
+				// TODO: Render list of comics created by user viewable by visitor 
+				});
+			})
+		});
+
+		/* GET user avatar */
+		router.get(/^\/accounts\/[a-zA-Z0-9~]+\/avatar\/?$/, function(req,res,next) {
+			//TODO: parse URI properly
+			var username = req.url.substr('/profile/'.length).replace("/avatar","").replace(/\//g,'').trim();
+			req.dbManager.getUser(username,function(err,user){
+				if (err||!user)
+					return next();
+				var path = user.getAvatar();
+				if (!path)
+					path = "public/images/icon_delete.png"
+				path=__dirname.substring(0,__dirname.lastIndexOf('/')+1) + path;
+				res.sendFile(path);
+			})
+		});
+
 		/* POST panel */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/, upload.single('image'), function(req, res, next) {
 			var comic_creator = parseComicCreator(req.url);
@@ -450,9 +526,6 @@ class RouteComic {
 				return res.status(400).redirect(req.get('referer'));
 			if (!req.file.filename||!req.file.path)
 				return res.status(400).redirect(req.get('referer'));
-			console.log("DETAILS OF FILE UPLOAD!");
-			console.log("path:" + req.file.path);
-			console.log("filename: " + req.file.filename);
 			var path:string = req.file.path;
 			var name:string = req.file.filename;
 			//page to add panel to:
@@ -476,12 +549,10 @@ class RouteComic {
 					}	else if (pageid<1||pageid>comic.getPages().length) {
 						return res.status(404).send("unknown page no. " + pageid);
 					} else {
-						console.log("Inserting image..." + name);
 						req.dbManager.postPanel(comic_creator,comic_uri,pageid,path,function(err,panel_id){
 							if (panel_id!=null&&!err) {
 								req.nManager.signalUpdate(comic_uri, function(err, notification) {
 									if (!err) {
-										console.log("Inserted image " + name);
 										res.redirect(req.get('referer'));  //user should refresh: 
 									} else res.status(400).send({msg: "error signalling update"});
 								});
@@ -584,6 +655,7 @@ class RouteComic {
 				searchresults: results
 			});
 		})
+		
 	
 		/* POST Subscription */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/subscribe$/, function(req, res, next) {

@@ -498,6 +498,7 @@ class DatabaseManager {
 		})
 	}
 
+	//TODO(tina): needs renaming, this posts more than just the avatar.
 	postAvatar(username:string, path:string, body: any, callback: any){
 		var db = this.db;
 		var users = db.get('users');
@@ -550,12 +551,10 @@ class DatabaseManager {
 						"timezone": timezone,
 						"link": link,
 						"shouldShowSubscription": shouldShowSubscription
-
 					}
 				}, {
 					upsert: true
 				})
-			console.log(user);
 		});
 	}
 

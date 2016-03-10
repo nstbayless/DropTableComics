@@ -18,10 +18,10 @@ viewlist:string[]; /** A list of all viewable comics */
 notifications:Notification[]; /** A list of notification messages to display */	
 type:string; /** type of the user, either "pleb" or "artist"*/
 shouldShowSubscription: boolean; /** the sub. choice of the user */
-avatar: string;
-name: string;
+avatar: string; /** path to avatar image */
+name: string; /**user's real or preferred name*/
 location: string;
-timezone: string;
+timezone: string; //TODO: change to proper timezone object format, not arbitrary string
 link: string;
 	
 	/** GETTERS */

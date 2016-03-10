@@ -45,7 +45,6 @@ class RouteAuth {
 		}
 
 		req.dbManager.getUser(username, function(err,user) {
-			console.log(user)
 			if (user&&!err) {
 				if (req.dbManager.checkHash(password,user.getHash())) {
 					//user is valid!

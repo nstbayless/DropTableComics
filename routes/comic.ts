@@ -120,9 +120,8 @@ class RouteComic {
     							}
     							return 0;
 						});
-						console.log(req.user.getAvatar());
 						res.render('dashboard', {
-							"avatar": req.user.getAvatar(),
+							"username": req.user.getUsername(),
 							"name": req.user.getName(),
 							"description": req.user.getDescription(),
 							"email": req.user.getEmail(),
@@ -131,7 +130,6 @@ class RouteComic {
 							"link": req.user.getLink(),
 							"shouldShowSubscription": req.user.subscriptionChoice(),
 							"subscriptions": subscriptions,
-							
 							"isartist" : isartist,
 							"notifications": sorted_notifications,
 							title: 'dashboard',
@@ -439,41 +437,52 @@ class RouteComic {
 			res.render('editdashboard');
 		});
 
+		//TODO: this is not a RESTful URI~! should PUT to /account/(username)
+		// POST (should be PUT) changes to user profile
 		router.post('/editdashboard', upload.single('image'), function(req, res, next) {
 			var username: string = req.user.getUsername();
 			var path:string = "";
 			if(req.file)
-				path = req.file.filename;
+				path = req.file.path;
 			req.dbManager.postAvatar(username, path, req.body, function(err, avatar) {
 				console.log(err);
+				res.status(500).send("error uploading changes to profile");
 			});
 			res.redirect('/');
 		});
 
-		router.get('/profile/:username', function(req,res,next) {
-			var url = req.params;
-			console.log("logging urlSplit");
-			console.log(url);
-			var username = req.params.username;
-
+		/* GET user profile page */
+		router.get(/^\/profile\/[a-zA-Z0-9~]+\/?$/, function(req,res,next) {
+			//TODO: parse URI properly
+			var username = req.url.substr('/profile/'.length).replace(/\//g,'');
 			req.dbManager.getUser(username, function(err, user) {
-
-				console.log("this is the one", user);
+				if (err||!user) 
+					return next();
 				 res.render('profile', {
 					"username": user.getUsername(),
-					"avatar": user.getAvatar(),
 					"name": user.getName(),
 					"description": user.getDescription(),
 					"email": user.getEmail(),
 					"link": user.getLink(),
-					title: 'profile'
-				
+					title: "User: " + user.getUsername()
 				// TODO: Render list of comics created by user viewable by visitor 
-			
 				});
-
 			})
+		});
 
+		/* GET user avatar */
+		router.get(/^\/accounts\/[a-zA-Z0-9~]+\/avatar\/?$/, function(req,res,next) {
+			//TODO: parse URI properly
+			var username = req.url.substr('/profile/'.length).replace("/avatar","").replace(/\//g,'').trim();
+			req.dbManager.getUser(username,function(err,user){
+				if (err||!user)
+					return next();
+				var path = user.getAvatar();
+				if (!path)
+					path = "public/images/icon_delete.png"
+				path=__dirname.substring(0,__dirname.lastIndexOf('/')+1) + path;
+				res.sendFile(path);
+			})
 		});
 
 		/* POST panel */
@@ -486,9 +495,6 @@ class RouteComic {
 				return res.status(400).redirect(req.get('referer'));
 			if (!req.file.filename||!req.file.path)
 				return res.status(400).redirect(req.get('referer'));
-			console.log("DETAILS OF FILE UPLOAD!");
-			console.log("path:" + req.file.path);
-			console.log("filename: " + req.file.filename);
 			var path:string = req.file.path;
 			var name:string = req.file.filename;
 			//page to add panel to:
@@ -512,12 +518,10 @@ class RouteComic {
 					}	else if (pageid<1||pageid>comic.getPages().length) {
 						return res.status(404).send("unknown page no. " + pageid);
 					} else {
-						console.log("Inserting image..." + name);
 						req.dbManager.postPanel(comic_creator,comic_uri,pageid,path,function(err,panel_id){
 							if (panel_id!=null&&!err) {
 								req.nManager.signalUpdate(comic_uri, function(err, notification) {
 									if (!err) {
-										console.log("Inserted image " + name);
 										res.redirect(req.get('referer'));  //user should refresh: 
 									} else res.status(400).send({msg: "error signalling update"});
 								});

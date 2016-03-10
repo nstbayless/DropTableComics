@@ -519,12 +519,20 @@ class DatabaseManager {
 	searchFor(username:string, query:string, callback:any){
 		var comics = this.db.get('comics');
 		console.log("SEARCHING FOR: " + query);
-		comics.ensureIndex(
+		comics.ensureIndex(  // makes every field of each comic a searchable string
 				{ "$**": "text" }, 
-                           	{ name: "TextIndex" });
-		comics.find( { $text: { $search: query } }, function(err,comics){
+                           	{ name: "TextIndex" }); 
+		comics.find( { $text: { $search: query } }, function(err,comics){ // finds results
 			if (err) return callback(err, null);
-			return callback(null, comics);
+			var viewable_comics = new Array<Object>();
+			for (var i = 0; i < comics.length; i++) {
+			console.log(comics[i]);
+			if (	comics[i].viewlist.indexOf(username) > -1 
+				||comics[i].editlist.indexOf(username) > -1 
+				|| comics[i].adminlist.indexOf(username) > -1) // checks if comic is viewable
+				viewable_comics.push(comics[i]);
+			}
+			return callback(null, viewable_comics);
 		 });
 
 				

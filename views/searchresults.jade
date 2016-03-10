@@ -1,0 +1,9 @@
+extends pretty
+
+block content
+	h2 Search Results
+	ul
+		each comic, i in comics
+			li
+				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+	

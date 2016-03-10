@@ -248,13 +248,58 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 						.replace(/[ _*&\^@\/\\]+/g,'-') //swap space-like characters for dash
 						.replace(/[^a-zA-Z0-9\-]/g,'') //remove bad characters
 						.replace(/\-+/g,'-') //condense multiple dashes into one.
-  }
+ 	 }
 
 	$scope.utilrange=function(a,b) {
 		r = [];
 		for (var i=a;i<b;i++)
 			r.push(i);
 		return r;
+	}
+
+	// ----------- COMMENTS ------------- //
+	// comments for viewpage
+	$scope.submit_comment=function(comic_creator, comic_uri, page) {
+		$scope.response3=""
+		console.log("user is attempting to post a comment");
+		$http.post("/accounts/" + comic_creator + "/comics/"+comic_uri+"/pages/"+page+"/comment", {
+			comment: $scope.comment_input
+		}).then(function(response3){
+			if (response3.data.success) {
+				window.location.reload();
+				console.log("successfully redirected");
+			}
+			else if (response3.data.msg) {
+				$scope.response3 = response3.data.msg;
+				console.log("did not redirect");
+			} else { console.log("Not sure if you're here!!")}
+
+		}, function errorCallback(response3) {
+			if (response3.data.msg)
+				$scope.response3 = response3.data.msg
+		})
+	}
+
+	// comments for editpage 
+	$scope.submit_editcomment=function(comic_creator, comic_uri, page) {
+		$scope.response3=""
+		console.log("user is attempting to post a comment");
+		$http.post("/accounts/" + comic_creator + "/comics/"+comic_uri+"/pages/"+page+"/edit/comment", {
+			comment: $scope.comment_input
+		}).then(function(response3){
+			if (response3.data.success) {
+				window.location.reload();
+				console.log("successfully redirected");
+			}
+			else if (response3.data.msg) {
+				$scope.response3 = response3.data.msg;
+				console.log("did not redirect");
+			} else { console.log("Not sure if you're here!!")}
+
+		}, function errorCallback(response3) {
+			if (response3.data.msg)
+				$scope.response3 = response3.data.msg
+		})
 	}
 
 	//  ------------ EDIT MODE FUNCTIONALITY ------------  //

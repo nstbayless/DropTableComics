@@ -14,10 +14,34 @@ export class Panel {
 	panelID: number;
 }
 
+export class Comment {
+	adminlevel: number;
+	username: string;
+	postDate: string;
+	description: string;
+
+	getAdminLevel(): number{
+		return this.adminlevel;
+	}
+
+	getUsername(): string{
+		return this.username;
+	}
+
+	getPostDate(): string{
+		return this.postDate;
+	}
+
+	getDescription(): string{
+		return this.description;
+	}
+}
+
 export class Page {	
 	
 	/** Ordered list of panels*/
 	panels: Panel[];
+	comments: Comment[];
 	title: string;
 	/** indicates page has been edited since last publishing*/
 	edited: boolean;
@@ -25,6 +49,7 @@ export class Page {
 	/** CONSTRUCTOR */
 	constructor(){
 		this.panels=[];
+		this.comments = [];
 		this.title="";
 		this.edited=false;
 	}
@@ -32,6 +57,7 @@ export class Page {
 	//constructs from untyped info stored in db
 	construct_from_db(page_canon: any): Page {
 		this.panels=page_canon.panels;
+		this.comments = page_canon.comments;
 		this.title=page_canon.title;
 		this.edited=(!!page_canon.edited);
 		return this;
@@ -44,5 +70,9 @@ export class Page {
 
 	getTitle(): string{
 		return this.title;
+	}
+
+	getComments(): Comment[] {
+		return this.comments;
 	}
 }

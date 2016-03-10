@@ -510,7 +510,7 @@ class RouteComic {
 					return next();
 				var path = user.getAvatar();
 				if (!path)
-					path = "public/images/icon_delete.png"
+					path = "public/images/default_avatar.png"
 				path=__dirname.substring(0,__dirname.lastIndexOf('/')+1) + path;
 				res.sendFile(path);
 			})

@@ -12,7 +12,8 @@ block content
 	p Email: #{email}
 	p Location: #{location}
 	p Time Zone: #{timezone}
-	p Subscription: #{subscription}
+	if (shouldShowSubscription == true) 
+		p Subscriptions: #{subscriptions}
 
 	if(isartist == true && comics_length != 0)
 		p Created Comics

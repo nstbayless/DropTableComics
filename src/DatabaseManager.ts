@@ -7,6 +7,7 @@ import { Comic } from './Comic';
 import { Page } from './Page';
 import { Notification } from './Notification';
 import { EventSignal } from './EventSignal';
+import { EventType } from './EventType';
 var bcrypt = require('bcrypt');
 
 class DatabaseManager {
@@ -28,14 +29,18 @@ class DatabaseManager {
 		console.log(notifications.length);
 		var users = this.db.get('users');
 		console.log("creating artist")
-		users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications, 
+		users.insert({username:username,
+			hash:hash,
+			type:"artist",
+			email:email, 
+			"notifications":notifications, 
 			"avatar":"",
 			"name": "",
 			"description": "",
 			"location": "",
 			"timezone": "",
 			"link": "",
-			"subscription": "show"
+			"subscription": true
 	});
 		return artist;
 	}
@@ -68,18 +73,22 @@ class DatabaseManager {
 				throw new Error("Corrupted database: user.type == '" + user_canon.type + "'")
 			//fill user fields based on canononical version of user...
 			user.hash=user_canon.hash;
+			user.username=user_canon.username;
 			user.email=user_canon.email;
 			user.notifications=user_canon.notifications;
-			user.subscription = user_canon.subscription;
+			user.shouldShowSubscription = user_canon.shouldShowSubscription;
 			user.avatar = user_canon.avatar;
 			user.name = user_canon.name;
 			user.description = user_canon.description;
 			user.location = user_canon.location;
 			user.timezone = user_canon.timezone;
 			user.link = user_canon.link;
+			user.avatar = user_canon.avatar;
 			callback(null,user);
 		});
 	}
+
+	
 
 	// creates a new comic and adds it to the database
 	createComic(name: string, artist: string, description:string): Comic {
@@ -145,6 +154,23 @@ class DatabaseManager {
 			callback(null,user_list);
 		});
 	}
+
+	// asynchronously retrieves the subscriptions for a viewer from the database
+	// callback: [](err,subscribers)
+	getSubscriptions(username: string, callback: any) {
+		var subscriptions = this.db.get('subscriptions');
+		var comic_ids;
+		subscriptions.find({ user_list: { $in: [username] } }, function(err, events) { // the event here is actually a sub object
+			if (err || !events) return callback(err, null);
+			for (var i = 0; i < events.length; i++) {
+				if (events[i].event.event_type == EventType.Comic_Publish)
+				console.log(events[i].event.id);
+			}
+			//	var user_li st:string[] = event.ser_list;
+			// callback(null, user_list);
+		});
+	}
+				
 
 	// async inserts a Notification message into a user
 	// callback: [](err, message)
@@ -326,7 +352,7 @@ class DatabaseManager {
 				var viewlist = comic.viewlist;
 				var editlist = comic.editlist;
 				// checks to see if given username is in the editlist
-				if (viewlist.indexOf(username) != -1 || editlist.indexOf(username) != -1); {
+				if (viewlist.indexOf(username) != -1 || editlist.indexOf(username) != -1) {
 					callback(err, true);
 				} 
 			} else {
@@ -507,9 +533,9 @@ class DatabaseManager {
 			if (body.link == "") {
 				link = user.getLink();
 			}
-			var subscription: string = body.description;
-			if (body.subscription == "") {
-				subscription = user.subscriptionChoice();
+			var shouldShowSubscription: boolean = body.shouldShowSubscription;
+			if (body.shouldShowSubscription == "") {
+				shouldShowSubscription = user.subscriptionChoice();
 			}
 			users.update({
 				"username": username
@@ -523,7 +549,7 @@ class DatabaseManager {
 						"location": location,
 						"timezone": timezone,
 						"link": link,
-						"subscription": subscription
+						"shouldShowSubscription": shouldShowSubscription
 
 					}
 				}, {

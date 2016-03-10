@@ -7,7 +7,14 @@ import { User } from './User';
 import { Notification } from './Notification';
 import { EventSignal } from './EventSignal';
 import { EventType } from './EventType';
-
+var nodemailer = require('nodemailer');
+var smtpTransport = nodemailer.createTransport("SMTP",{
+   service: "Gmail",  // sets automatically host, port and connection security settings
+   auth: {
+       user: "dropcomixupdates@gmail.com",
+       pass: "arnold4ever"
+   }
+});
 export class NotificationManager {
 	
 	dbmanager:DatabaseManager; /** Database Manager */
@@ -19,6 +26,27 @@ export class NotificationManager {
 	this.dbmanager = dbmanager;
 	}
 	
+	/** Send Mail */
+	sendMail(username:string, notification:Notification){
+		
+		this.dbmanager.getUser(username, function(err, user){	
+			smtpTransport.sendMail({  //email options
+   				from: '"DropComix 👥" <dropcomixupdates@gmail.com>', 
+				// sender address.  Must be the same as authenticated user if using GMail.
+   				to: 'arman.raina@yahoo.com', // receiver
+   				subject: "DropComix", // subject
+   				text: notification.getMessage() // body
+			}, function(error, response){  //callback
+   			if(error){
+       				console.log(error);
+   			}else{
+       			console.log("Message sent: " + response.message);
+   			}
+   
+   smtpTransport.close(); // shut down the connection pool, no more messages.  Comment this line out to continue sending emails.
+});
+		});
+	}
 		
 	/* Async subscribes user to a given event */
 	/* callback:[](err, event_id) */
@@ -62,8 +90,9 @@ export class NotificationManager {
 	// callback:[](err, event)
 	notifyUser(username:string, event:EventSignal, instance_data:string, callback){
 		console.log("Notifying " + username);
-		var db_manager:DatabaseManager=this.dbmanager;
-		var notification:Notification = new Notification(event, instance_data); // TODO: Parse event_id into user-friendly info
+		var db_manager:DatabaseManager = this.dbmanager;
+		var notification:Notification = new Notification(event, instance_data); // TODO: Properly id comic
+		this.sendMail(username, notification);
 		db_manager.insertNotification(username, notification, function(err, notification){
 			if (notification) return callback(null, notification);
 		});

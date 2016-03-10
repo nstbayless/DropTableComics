@@ -16,6 +16,8 @@ var RouteAuthentication = require('./routes/authentication');
 var RouteComic = require('./routes/comic');
 var RouteAdminPage = require('./routes/adminpage');
 
+
+
 import DatabaseManager = require("./src/DatabaseManager");
 import { NotificationManager } from './src/NotificationManager';
 

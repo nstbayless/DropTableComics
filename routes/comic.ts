@@ -11,7 +11,7 @@ var MAX_IMAGE_HEIGHT=800;
 import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
-import { Page, Panel } from '../src/Page';
+import { Comment, Page, Panel } from '../src/Page';
 import { NotificationManager } from '../src/NotificationManager';
 import { Notification } from '../src/Notification';
 import { EventSignal } from '../src/EventSignal';
@@ -80,6 +80,19 @@ function parsePanelID(url: string):string {
 	return panel;
 }
 
+// Prases page # from uri
+function parsePageID(url: string):string {
+	var res = url.split("/");
+	var id = res.indexOf("pages");
+	if (!id)
+		return null;
+	if (res.length <= id)
+		return null;
+	var page = res[id + 1];
+	return page; 
+
+}
+
 class RouteComic {
 	router_: any;
 	static searchFor(searchtext: string): SearchResult[] {
@@ -101,7 +114,7 @@ class RouteComic {
 		/* GET dashboard page. */
 		router.get('/', function(req, res, next) {
 			var username = req.user.getUsername();  // username
-			req.dbManager.getSubscriptions(username, null);
+			var subscriptions = req.dbManager.getSubscriptions(username, null);
 			//TODO: Render list of comics accessible by user
 			req.dbManager.getUser(username, function(err,user){
 				if (err||!user) return res.status(401).send({success: false, msg: 'User does not exist'});
@@ -120,6 +133,15 @@ class RouteComic {
     							return 0;
 						});
 						res.render('dashboard', {
+							"username": req.user.getUsername(),
+							"name": req.user.getName(),
+							"description": req.user.getDescription(),
+							"email": req.user.getEmail(),
+							"location": req.user.getLocation(),
+							"timezone": req.user.getTimeZone(),
+							"link": req.user.getLink(),
+							"shouldShowSubscription": req.user.subscriptionChoice(),
+							"subscriptions": subscriptions,
 							"isartist" : isartist,
 							"notifications": sorted_notifications,
 							title: 'dashboard',
@@ -209,8 +231,10 @@ class RouteComic {
 				if (!comic.getDraftPage(pageid))
 					return next();
 				var page: Page = comic.getDraftPage(pageid);
+				var comments: Comment[] = page.getComments();
 				return res.render('editcomic', {
 					title: comic.getName(),
+					editcomments: comments,
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic.getURI(),
@@ -245,10 +269,12 @@ class RouteComic {
 					return next();
 				var page: Page = comic.getPage(pageid);
 				var panels: Panel[] = page.getPanels();
+				var comments: Comment[] = page.getComments();
 				return res.render('viewcomic', {
 					title: comic.getName(),
 					description: comic.getDescription(),
 					editlist: comic.getEditlist(), 
+					comments: comments,
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic.getURI(),
@@ -438,6 +464,58 @@ class RouteComic {
 			});
 		});
 
+		router.get('/editdashboard', function(req, res, next) {
+			res.render('editdashboard');
+		});
+
+		//TODO: this is not a RESTful URI~! should PUT to /account/(username)
+		// POST (should be PUT) changes to user profile
+		router.post('/editdashboard', upload.single('image'), function(req, res, next) {
+			var username: string = req.user.getUsername();
+			var path:string = "";
+			if(req.file)
+				path = req.file.path;
+			req.dbManager.postAvatar(username, path, req.body, function(err, avatar) {
+				console.log(err);
+				res.status(500).send("error uploading changes to profile");
+			});
+			res.redirect('/');
+		});
+
+		/* GET user profile page */
+		router.get(/^\/profile\/[a-zA-Z0-9~]+\/?$/, function(req,res,next) {
+			//TODO: parse URI properly
+			var username = req.url.substr('/profile/'.length).replace(/\//g,'');
+			req.dbManager.getUser(username, function(err, user) {
+				if (err||!user) 
+					return next();
+				 res.render('profile', {
+					"username": user.getUsername(),
+					"name": user.getName(),
+					"description": user.getDescription(),
+					"email": user.getEmail(),
+					"link": user.getLink(),
+					title: "User: " + user.getUsername()
+				// TODO: Render list of comics created by user viewable by visitor 
+				});
+			})
+		});
+
+		/* GET user avatar */
+		router.get(/^\/accounts\/[a-zA-Z0-9~]+\/avatar\/?$/, function(req,res,next) {
+			//TODO: parse URI properly
+			var username = req.url.substr('/profile/'.length).replace("/avatar","").replace(/\//g,'').trim();
+			req.dbManager.getUser(username,function(err,user){
+				if (err||!user)
+					return next();
+				var path = user.getAvatar();
+				if (!path)
+					path = "public/images/default_avatar.png"
+				path=__dirname.substring(0,__dirname.lastIndexOf('/')+1) + path;
+				res.sendFile(path);
+			})
+		});
+
 		/* POST panel */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/, upload.single('image'), function(req, res, next) {
 			var comic_creator = parseComicCreator(req.url);
@@ -448,9 +526,6 @@ class RouteComic {
 				return res.status(400).redirect(req.get('referer'));
 			if (!req.file.filename||!req.file.path)
 				return res.status(400).redirect(req.get('referer'));
-			console.log("DETAILS OF FILE UPLOAD!");
-			console.log("path:" + req.file.path);
-			console.log("filename: " + req.file.filename);
 			var path:string = req.file.path;
 			var name:string = req.file.filename;
 			//page to add panel to:
@@ -474,12 +549,10 @@ class RouteComic {
 					}	else if (pageid<1||pageid>comic.getPages().length) {
 						return res.status(404).send("unknown page no. " + pageid);
 					} else {
-						console.log("Inserting image..." + name);
 						req.dbManager.postPanel(comic_creator,comic_uri,pageid,path,function(err,panel_id){
 							if (panel_id!=null&&!err) {
 								req.nManager.signalUpdate(comic_uri, function(err, notification) {
 									if (!err) {
-										console.log("Inserted image " + name);
 										res.redirect(req.get('referer'));  //user should refresh: 
 									} else res.status(400).send({msg: "error signalling update"});
 								});
@@ -522,6 +595,56 @@ class RouteComic {
 					res.sendFile(path);
 				}
 			});
+		})
+
+
+		/* POST Comment on viewpage */
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/comment$/, function(req, res, next) {
+			console.log("ARE YOU REACHING ME? @?>@@>?>@@!@>!@>!@>>12345")
+			var username = req.user.getUsername();
+			var comic_creator = parseComicCreator(req.url);
+			var comic_uri = parseComicURI(req.url);
+			console.log("parsing the page id is the problem")
+			console.log(req.url);
+			var pageid = pageid = parseInt(req.url.split("/pages/")[1].split("/comment")[0]);
+			console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
+			if (!req.body.comment) {
+				return next();
+			} else {
+				console.log("checking adminlevel...");
+				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 0, function(err){
+					if (err) {
+						res.status(500).send({success: false, msg: "Posting Comment Error"})
+					} else (
+						res.status(200).send({ success: true })
+						)
+				})
+			}
+		})
+
+		/* POST Comment on editpage*/
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/edit\/comment$/, function(req, res, next) {
+			console.log("attempting got post comment on editpage...")
+			var adminlevel: number = 0;
+			var username = req.user.getUsername();
+			var comic_creator = parseComicCreator(req.url);
+			var comic_uri = parseComicURI(req.url);
+			console.log("parsing the page id is the problem")
+			console.log(req.url);
+			var pageid = pageid = parseInt(req.url.split("/pages/")[1].split("/edit/")[0]);
+			console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
+			if (!req.body.comment) {
+				return next();
+			} else {
+				console.log("checking adminlevel...");
+				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 1, function(err) {
+					if (err) {
+						res.status(500).send({ success: false, msg: "Posting Comment Error" })
+					} else (
+						res.status(200).send({ success: true })
+					)
+				})
+			}
 		})
 
 		/* GET pretty search results */

@@ -9,6 +9,8 @@ echo "sudo npm install -g typescript"
 sudo npm install nodemailer
 echo "sudo npm install nodemailer"
 sudo npm install -g typescript
+echo "sudo npm install -g mocha"
+sudo npm install -g mocha
 echo "modules installed."
 
 

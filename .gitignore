@@ -1,5 +1,7 @@
 bin/*
 data/*
+data-test/*
+*/data-test/*
 node_modules/*
 types/*
 types
@@ -13,3 +15,10 @@ ssl/*
 src/*.js
 uploads/*
 *~
+awscli-bundle.zip
+awscli-bundle/*
+routes/.DS_Store
+views/.DS_Store
+*~s
+*.DS_Store
+>>>>>>> master

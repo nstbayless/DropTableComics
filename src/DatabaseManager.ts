@@ -4,7 +4,7 @@
 /** Represents a manager of the database, through which Users and Comics access the database*/
 import { User, Viewer, Artist } from './User';
 import { Comic } from './Comic';
-import { Page } from './Page';
+import { Comment, Page } from './Page';
 import { Notification } from './Notification';
 import { EventSignal } from './EventSignal';
 import { EventType } from './EventType';
@@ -20,17 +20,39 @@ class DatabaseManager {
 	}
 
 	// creates a new Artist and adds it to the database
-	createArtist(username: string, password: string, email: string): Artist {
-		var hash = this.computeHash(password);
-		var artist: Artist = new Artist(username);
-		artist.hash=hash;
-		artist.email=email;
-		var notifications = new Array<Notification>();
-		console.log(notifications.length);
-		var users = this.db.get('users');
-		console.log("creating artist")
-		users.insert({username:username,hash:hash,type:"artist",email:email, "notifications":notifications});
-		return artist;
+	// callback: [](err,user)
+	createArtist(username: string, password: string, email: string, callback: any) {
+		var dbm = this;
+		if (!callback) callback=function(){}
+		if (!username.match(/^[a-zA-Z0-9~]+$/) || username.length<3)
+			return callback("Error: username invalid: "+username)
+		if (!email.match(/^.+@.+\..+$/))
+			return callback("Error: email invalid: "+email)
+		this.getUser(username, function(err,user) {
+			if (err) return callback(err);
+			if (user)
+				return callback("Error: user already exists",user);
+			var hash = dbm.computeHash(password);
+			var artist: Artist = new Artist(username);
+			artist.hash=hash;
+			artist.email=email;
+			var notifications = new Array<Notification>();
+			var users = dbm.db.get('users');
+			users.insert({
+				username:username,
+				hash:hash,
+				type:"artist",
+				email:email, 
+				"notifications":notifications, 
+				"avatar":"",
+				"name": "",
+				"description": "",
+				"location": "",
+				"timezone": "",
+				"link": "",
+				"subscription": true
+			});
+		});
 	}
 
 	// creates a new Viewer and adds it to the database
@@ -40,9 +62,8 @@ class DatabaseManager {
 		viewer.hash=hash;
 		viewer.email=email;
 		var notifications = new Array<Notification>();
-		console.log(notifications.length);
 		var users = this.db.get('users');
-		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications});
+		users.insert({username:username,hash:hash,type:"pleb",email:email, "notifications":notifications, "avatar":""});
 		return viewer;
 	}
 
@@ -61,11 +82,22 @@ class DatabaseManager {
 				throw new Error("Corrupted database: user.type == '" + user_canon.type + "'")
 			//fill user fields based on canononical version of user...
 			user.hash=user_canon.hash;
+			user.username=user_canon.username;
 			user.email=user_canon.email;
 			user.notifications=user_canon.notifications;
+			user.shouldShowSubscription = user_canon.shouldShowSubscription;
+			user.avatar = user_canon.avatar;
+			user.name = user_canon.name;
+			user.description = user_canon.description;
+			user.location = user_canon.location;
+			user.timezone = user_canon.timezone;
+			user.link = user_canon.link;
+			user.avatar = user_canon.avatar;
 			callback(null,user);
 		});
 	}
+
+	
 
 	// creates a new comic and adds it to the database
 	createComic(name: string, artist: string, description:string): Comic {
@@ -131,22 +163,24 @@ class DatabaseManager {
 			callback(null,user_list);
 		});
 	}
+
 	// asynchronously retrieves the subscriptions for a viewer from the database
 	// callback: [](err,subscribers)
-	getSubscriptions(username:string, callback:any){
-		var subscriptions = this.db.get('subscriptions');	
+	//TODO: is this asynchronous or not??
+	getSubscriptions(username: string, callback: any) {
+		var subscriptions = this.db.get('subscriptions');
 		var comic_ids;
-		subscriptions.find( { user_list: { $in: [ username ] } }, function(err,events){ // the event here is actually a sub object
-		 	if (err||!events) return callback(err, null);
+		subscriptions.find({ user_list: { $in: [username] } }, function(err, events) { // the event here is actually a sub object
+			if (err || !events) return callback(err, null);
 			for (var i = 0; i < events.length; i++) {
 				if (events[i].event.event_type == EventType.Comic_Publish)
-					console.log(events[i].event.id);
+				console.log(events[i].event.id);
 			}
-		//	var user_list:string[] = event.user_list;
-		//	callback(null, user_list);
+			//	var user_li st:string[] = event.ser_list;
+			// callback(null, user_list);
 		});
 	}
-
+				
 
 	// async inserts a Notification message into a user
 	// callback: [](err, message)
@@ -328,7 +362,7 @@ class DatabaseManager {
 				var viewlist = comic.viewlist;
 				var editlist = comic.editlist;
 				// checks to see if given username is in the editlist
-				if (viewlist.indexOf(username) != -1 || editlist.indexOf(username) != -1); {
+				if (viewlist.indexOf(username) != -1 || editlist.indexOf(username) != -1) {
 					callback(err, true);
 				} 
 			} else {
@@ -376,6 +410,96 @@ class DatabaseManager {
 	      }
 			} catch (err) {
 				callback(err,null);
+			}
+		})
+	}
+
+	/* Gets the page from the comic. 
+		callback: [](err, page)*/
+	getPage(username:string, comic_uri: string, pageID: number, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username,comic_uri,function(err,comic){
+			if (comic&&!err) {
+					console.log("getting the page...")
+					var page = comic.getPage(pageID);
+				callback(null, page);
+			} else {
+				console.log("was not able to retrieve a page...")
+				callback(err, null);
+			}
+
+		})
+	}
+
+	// **** Asynchronously GETS THEM COMMENTS ***** 
+	getComments(username:string, comic_uri: string, pageID: number, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getPage(username,comic_uri,pageID,function(err,page){
+			try {
+				if (page&&!err) {
+					var comments; 
+					for (var i = 0; i < page.getComments().length; i++) {
+						comments[i] = page.getComments()[i]; 
+					}
+				} callback(null, comments);
+			} catch (err) {
+				callback(err, null); 
+			}
+		})
+	}
+
+	// Asynchronously creates a comment and updates the page
+	postComment(username: string, comic_uri: string, pageID: number, current_user: string, description: string, is_editpage: number, callback: any) {
+		var db = this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username, comic_uri, function(err,comic) {
+			try {
+				if (comic&&!err) {
+					var adminlevel = 0; 
+					if (username == current_user) {
+						adminlevel = 2; 
+					} else if (comic.getUserCanEdit(current_user)) {
+						adminlevel = 1; 
+					}
+					var comment = new Comment();
+					comment.description = description;
+					comment.username = current_user;
+					comment.postDate = Date();
+					comment.adminlevel = adminlevel;
+					console.log("made the comment, now must add to comments")
+					if (is_editpage === 0) {
+						console.log("attempting to update a comment on viewpage...")
+						comic.getPage(pageID).comments.unshift(comment);
+						var pages = comic.pages;
+						var comics = db.get('comics');
+						comics.update({
+							"urisan": comic_uri,
+							"creator": username,
+						}, {
+								$set: {
+									"pages": pages
+								}
+							})
+					} else if (is_editpage ===1) {
+						console.log("attempting to update a comment on editpage...");
+						comic.getDraftPage(pageID).comments.unshift(comment);
+						var draftpages = comic.draftpages;
+						var comics = db.get('comics');
+						comics.update({
+							"urisan": comic_uri,
+							"creator": username,
+						}, {
+								$set: {
+									"drafts": draftpages
+								}
+						})
+					}
+					callback(null);
+				}
+			} catch (err) {
+				callback(err);
 			}
 		})
 	}
@@ -473,6 +597,66 @@ class DatabaseManager {
 				callback(err);
 			}
 		})
+	}
+
+	//TODO(tina): needs renaming, this posts more than just the avatar.
+	postAvatar(username:string, path:string, body: any, callback: any){
+		var db = this.db;
+		var users = db.get('users');
+		this.getUser(username, function(err, user) {
+			if (path == "") {
+				path = user.getAvatar();
+			}
+			var name: string = body.name;
+			if (body.name == "") {
+				name = user.getName();
+			}
+			var email: string = body.email;
+			if (body.email == "") {
+				email = user.getEmail();
+			}
+			var hash: string = bcrypt.hashSync(body.password, bcrypt.genSaltSync(3));
+			if (body.password == "") {
+				hash = user.getHash();
+			}
+			var description: string = body.description;
+			if (body.description == "") {
+				description = user.getDescription();
+			}
+			var location: string = body.location;
+			if (body.location == "") {
+				location = user.getLocation();
+			}
+			var timezone: string = body.timezone;
+			if (body.timezone == "") {
+				timezone = user.getTimeZone();
+			}
+			var link: string = body.link;
+			if (body.link == "") {
+				link = user.getLink();
+			}
+			var shouldShowSubscription: boolean = body.shouldShowSubscription;
+			if (body.shouldShowSubscription == "") {
+				shouldShowSubscription = user.subscriptionChoice();
+			}
+			users.update({
+				"username": username
+			}, {
+					$set: {
+						"avatar": path,
+						"name": name,
+						"email": email,
+						"hash": hash,
+						"description": description,
+						"location": location,
+						"timezone": timezone,
+						"link": link,
+						"shouldShowSubscription": shouldShowSubscription
+					}
+				}, {
+					upsert: true
+				})
+		});
 	}
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)

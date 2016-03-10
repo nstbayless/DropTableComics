@@ -3,10 +3,13 @@ data/*
 node_modules/*
 types/*
 types
+app.js
+www.js
+config.js
+routes/*.js
 *.log
 install/*
 ssl/*
-
+src/*.js
 uploads/*
-*~
-**/*.js
+*~s

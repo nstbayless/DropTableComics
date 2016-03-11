@@ -29,6 +29,7 @@ class DatabaseManager {
 		if (!email.match(/^.+@.+\..+$/))
 			return callback("Error: email invalid: "+email)
 		this.getUser(username, function(err,user) {
+			console.log(err);
 			if (err) return callback(err);
 			if (user)
 				return callback("Error: user already exists",user);
@@ -52,6 +53,7 @@ class DatabaseManager {
 				"link": "",
 				"subscription": true
 			});
+			return callback(null,artist);
 		});
 	}
 

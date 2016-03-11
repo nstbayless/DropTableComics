@@ -161,14 +161,17 @@ class RouteAuth {
 						return;
 					}
 					//Everything good!
-					if (req.body.account_type=="pleb")
-					user=req.dbManager.createViewer(req.body.username,req.body.password,req.body.email);
+					if (req.body.account_type=="pleb") {
+						user=req.dbManager.createViewer(req.body.username,req.body.password,req.body.email);
+						if (user) {
+							RouteAuth.setAuthenticationCookie(req,res,req.body.username,req.body.password);
+							res.send({success: true, msg: 'Account successfuly created!'})
+						} else res.send({success: false, msg: 'Unknown error creating account'})
+						return;
+					}
 					else
-					user=req.dbManager.createArtist(req.body.username,req.body.password,req.body.email);
-					if (user) {
-						RouteAuth.setAuthenticationCookie(req,res,req.body.username,req.body.password);
-						res.send({success: true, msg: 'Account successfuly created!'})
-					} else res.send({success: false, msg: 'Unknown error creating account'})
+					req.dbManager.createArtist(req.body.username,req.body.password,req.body.email);
+					res.send({success: true, msg: 'Account successfuly created!'});
 				});
 			}
 		});

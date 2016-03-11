@@ -161,6 +161,7 @@ class RouteAuth {
 						return;
 					}
 					//Everything good!
+					//TODO: fix up messy code
 					if (req.body.account_type=="pleb") {
 						user=req.dbManager.createViewer(req.body.username,req.body.password,req.body.email);
 						if (user) {

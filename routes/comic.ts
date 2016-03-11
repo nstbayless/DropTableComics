@@ -604,22 +604,37 @@ class RouteComic {
 			var username = req.user.getUsername();
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
-			console.log("parsing the page id is the problem")
-			console.log(req.url);
 			var pageid = pageid = parseInt(req.url.split("/pages/")[1].split("/comment")[0]);
-			console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
-			if (!req.body.comment) {
-				return next();
-			} else {
-				console.log("checking adminlevel...");
-				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 0, function(err){
-					if (err) {
-						res.status(500).send({success: false, msg: "Posting Comment Error"})
-					} else (
-						res.status(200).send({ success: true })
-						)
-				})
-			}
+			console.log("parsing the page id is the problem");
+			req.nManager.subscribeComments(comic_uri + pageid.toString(), username, function(err, event){
+				req.nManager.signalNewComment(comic_uri +pageid.toString(), function(err, notification) {
+					if (!err) {
+							console.log(req.url);
+							console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
+							if (!req.body.comment) {
+								return next();
+							} else {
+								console.log("checking adminlevel...");
+								req.dbManager.postComment(
+									comic_creator, 
+									comic_uri, 
+									pageid, 
+									username, 
+									req.body.comment, 
+									0, 
+									function(err){
+										if (err) {
+										res.status(500).send({success: false, 
+													msg: "Posting Comment Error"})
+										} else (
+										res.status(200).send({ success: true })
+										)
+								})
+							}
+							}
+					else res.status(400).send({msg: "error signalling update"});
+					}); 		
+				});	
 		})
 
 		/* POST Comment on editpage*/
@@ -633,18 +648,30 @@ class RouteComic {
 			console.log(req.url);
 			var pageid = pageid = parseInt(req.url.split("/pages/")[1].split("/edit/")[0]);
 			console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
-			if (!req.body.comment) {
-				return next();
-			} else {
-				console.log("checking adminlevel...");
-				req.dbManager.postComment(comic_creator, comic_uri, pageid, username, req.body.comment, 1, function(err) {
-					if (err) {
-						res.status(500).send({ success: false, msg: "Posting Comment Error" })
-					} else (
-						res.status(200).send({ success: true })
-					)
-				})
-			}
+			req.nManager.subscribeEditComments(comic_uri + pageid.toString(), username, function(err, event){
+				req.nManager.signalNewEditComment(comic_uri +pageid.toString(), function(err, notification) {
+					if (!err) {
+						if (!req.body.comment) {
+							return next();
+						} else {	
+							console.log("checking adminlevel...");
+							req.dbManager.postComment(comic_creator, 
+											comic_uri, 
+											pageid, 
+											username, 
+											req.body.comment, 
+											1, 
+											function(err) {
+								if (err) {
+									res.status(500).send({ success: false, msg: "Posting Comment Error" })
+								} else (
+									res.status(200).send({ success: true })
+								)
+						})
+						}
+					}
+				});
+			});
 		})
 
 		/* GET pretty search results */

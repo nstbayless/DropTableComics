@@ -644,6 +644,7 @@ class DatabaseManager {
 			if (body.shouldShowSubscription == "") {
 				shouldShowSubscription = user.subscriptionChoice();
 			}
+			console.log("!");
 			users.update({
 				"username": username
 			}, {
@@ -661,6 +662,7 @@ class DatabaseManager {
 				}, {
 					upsert: true
 				})
+			return callback()
 		});
 	}
 

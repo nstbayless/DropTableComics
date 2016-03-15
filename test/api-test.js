@@ -87,6 +87,8 @@ module.exports = function(db_v,cleardb) {
 
 		var uri_editdash="/editdashboard";
 		var uri_account ="/profile/jane";
+		var uri_avatar = "/accounts/jane/avatar";
+		var path_image = __dirname.replace(/\/test$/,"") + "/public/images/icon_share.png"
 
 		describe("POST " + uri_editdash + " + GET " + uri_account,function() {
 
@@ -125,8 +127,35 @@ module.exports = function(db_v,cleardb) {
 			for (var property in jane_info)
 				if (jane_info.hasOwnProperty(property))
 					it ('should be able to edit ' + property, test_post_info(property))
-			
-			
+
+			it ('should be able to edit avatar', function(done){
+				var avatar_data;
+				this.timeout(3000);
+				jane.get(uri_avatar)
+					.expect(200)
+					.end(function(err,res) {
+						if (err) throw err;
+						avatar_data=res.body;
+						jane.post(uri_editdash)
+							.field('image', 'my avatar')
+							.attach('image',__dirname + "/../public/images/icon_share.png")
+							.expect(302)
+							.end(function(err,res) {
+								if (err) throw err;
+								setTimeout(function(){
+									jane.get(uri_avatar)
+										.expect(200)
+										.end(function(err,res) {
+											if (err) throw err
+											assert.notEqual(avatar_data,res.body)
+											done();
+										})
+									},50)
+							})
+					})
+				
+				persist();
+			})
 
 		})
 	})

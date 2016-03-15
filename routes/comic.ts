@@ -470,7 +470,7 @@ class RouteComic {
 			res.render('editdashboard');
 		});
 
-		//TODO: this is not a RESTful URI~! should PUT to /account/(username)
+		//TODO(tina): this is not a RESTful URI~! should PUT to /account/(username)
 		// POST (should be PUT) changes to user profile
 		router.post(/^\/editdashboard\/?$/, upload.single('image'), function(req, res, next) {
 			var username: string = req.user.getUsername();

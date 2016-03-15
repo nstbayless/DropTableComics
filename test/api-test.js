@@ -82,6 +82,52 @@ module.exports = function(db_v,cleardb) {
 						throw "Error: saw login page";
 					done();
 				})
+			persist();
+		})
+
+		var uri_editdash="/editdashboard";
+		var uri_account ="/profile/jane";
+
+		describe("POST " + uri_editdash + " + GET " + uri_account,function() {
+
+			var jane_info = {
+				name: "Jane Arnold Doe",
+				description: "My name is Jane and I like cats!",
+				email: "janedoe@somewebsite.com",
+				location: "Somewhere, Florida",
+				link: "http://www.google.com"
+			}
+
+			//tests posting user info to site
+			var test_post_info = function(info_type) {
+				return function(done) {
+					obj_to_send = {}
+					obj_to_send[info_type]=jane_info[info_type];
+					jane.post(uri_editdash)
+						.send(obj_to_send)
+						.expect(302)
+						.end(function (err,res) {
+							if (err) throw err;
+							jane.get(uri_account)
+								.expect(200)
+								.end(function(err,res) {
+									if (err) throw err;
+									if (res.text.indexOf(jane_info[info_type])>0)
+										done();
+									else
+										throw "Error: cannot find " + info_type + " text on profile page."
+								})
+						})
+					persist();
+				}
+			}
+
+			for (var property in jane_info)
+				if (jane_info.hasOwnProperty(property))
+					it ('should be able to edit ' + property, test_post_info(property))
+			
+			
+
 		})
 	})
 }

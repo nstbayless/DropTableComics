@@ -466,22 +466,23 @@ class RouteComic {
 			});
 		});
 
-		router.get('/editdashboard', function(req, res, next) {
+		router.get(/^\/editdashboard\/?$/, function(req, res, next) {
 			res.render('editdashboard');
 		});
 
 		//TODO: this is not a RESTful URI~! should PUT to /account/(username)
 		// POST (should be PUT) changes to user profile
-		router.post('/editdashboard', upload.single('image'), function(req, res, next) {
+		router.post(/^\/editdashboard\/?$/, upload.single('image'), function(req, res, next) {
 			var username: string = req.user.getUsername();
 			var path:string = "";
 			if(req.file)
 				path = req.file.path;
 			req.dbManager.postAvatar(username, path, req.body, function(err, avatar) {
-				console.log(err);
-				res.status(500).send("error uploading changes to profile");
+				if (err)
+					res.status(500).send("error uploading changes to profile");
+				else //TODO(tina): server redirect is bad practice. Client should redirect itself.
+					res.redirect('/');
 			});
-			res.redirect('/');
 		});
 
 		/* GET user profile page */
@@ -495,6 +496,7 @@ class RouteComic {
 					"username": user.getUsername(),
 					"name": user.getName(),
 					"description": user.getDescription(),
+					location: user.getLocation(),
 					"email": user.getEmail(),
 					"link": user.getLink(),
 					title: "User: " + user.getUsername()

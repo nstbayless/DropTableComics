@@ -12,7 +12,7 @@ DB_PORT=27024;
 DB_PATH='./.data-test'
 
 //if the test suite cannot connect to the db, try increasing TIME_WAIT
-var TIME_WAIT = 2800;
+var TIME_WAIT = 800;
 var TICK_MAX = 75;
 config.db='localhost:'+DB_PORT;
 config.securecookie=false;
@@ -77,12 +77,14 @@ describe('Database Test', function() {
 			return test_col.find({testfield: 'test'}).should.eventually.have.length(1);
     });
   });
-
-	describe('DatabaseManager',function () {
-		require('./dbm-test')(db,cleardb);
-	})
-
-	describe('RESTful API', function(){
-		require('./api-test')(db,cleardb);
-	})
+	
+	if (config.test_dbm)
+		describe('DatabaseManager',function () {
+			require('./dbm-test')(db,cleardb);
+		})
+	
+	if (config.test_api)
+		describe('RESTful API', function(){
+			require('./api-test')(db,cleardb);
+		})
 });

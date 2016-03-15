@@ -12,6 +12,10 @@ var config = {
 	securecookie: true, //use http-only cookies
   port:      '3000',     //port to serve on
   porthttps: '3001',     //port to serve on for https
-  https:      false      //use https instead of http; run https-genkey before 
+  https:      false,      //use https instead of http; run https-genkey before
+
+	//mocha testing options
+	test_api: true,
+	test_dbm: false
 };
 module.exports = config

@@ -35,14 +35,6 @@ li.headerlink a:hover {
     background-color: #8b0;
 }
 
-input.search {
-  display: block;
-  text-align: left;
-  padding: 10px 11px;
-  text-decoration: none;
-  color: white;
-  background-color:#111; 
-}
 
 table.auth {
   background-color:#ddf;

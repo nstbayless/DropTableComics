@@ -19,7 +19,7 @@ block content_layout
 						div(class="form-group")
 							input(type="text" class="form-control" placeholder="search . . ." onkeypress="searchKeypress(event);" onfocus="searchFocusClear();")#search
 							a(href="javascript:searchSubmit();")
-						p(class="glyphicon glyphicon-search" aria-hidden="true")
+								p(class="glyphicon glyphicon-search" aria-hidden="true")
 				ul(class="nav navbar-nav navbar-right")
 					li
 						a(href="/profile/" + "{{username}}") {{username}}

@@ -6,10 +6,10 @@ block content_authentication_head
 block content_authentication
   fieldset
     div(class="form-group")
-      input(class="form-control" type="text" ng-model="auth_username" placeholder="Username")
+      input(class="form-control" type="text" ng-model="auth_username" placeholder="Username" ng-keydown="$event.which === 13 && login()")
     div(class="form-group")
-      input(class="form-control" type="password" ng-model="auth_password" placeholder="Password")
-    button(class="btn btn-lg btn-success btn-block" ng-click="login()" ng-show="auth_username.length>-1") Login {{auth_username}}
+      input(class="form-control" type="password" ng-model="auth_password" placeholder="Password" ng-keydown="$event.which === 13 && login()")
+    button(class="btn btn-lg btn-success btn-block" ng-click="login()" ng-show="auth_username.length>-1" ng-keydown="$event.which === 13 && login()") Login {{auth_username}}
     font(size="2")
       p(style="padding-top:5px") First time user? 
         a(href="/auth/register") Register

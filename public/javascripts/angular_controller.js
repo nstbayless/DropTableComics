@@ -46,6 +46,12 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 
 	//user attempts log-in
 	$scope.login=function(){
+		function loginKeyPress(e){
+		 var key=e.keyCode || e.which;
+		  if (key==13){
+		     $scope.login;
+		  }
+		}
 		$scope.response=""
 		$http.post("/auth/login", {
 			username: $scope.auth_username,

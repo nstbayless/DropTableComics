@@ -77,12 +77,14 @@ describe('Database Test', function() {
 			return test_col.find({testfield: 'test'}).should.eventually.have.length(1);
     });
   });
-
-	describe('DatabaseManager',function () {
-		require('./dbm-test')(db,cleardb);
-	})
-
-	describe('RESTful API', function(){
-		require('./api-test')(db,cleardb);
-	})
+	
+	if (config.test_dbm)
+		describe('DatabaseManager',function () {
+			require('./dbm-test')(db,cleardb);
+		})
+	
+	if (config.test_api)
+		describe('RESTful API', function(){
+			require('./api-test')(db,cleardb);
+		})
 });

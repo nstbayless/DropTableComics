@@ -5,5 +5,5 @@
 
 //TODO: implement
 export enum EventType {
-Comic_Publish, New_Subscriber, Comic_Update
+Comic_Publish, New_Subscriber, Comic_Update, New_Comment, New_Edit_Comment
 };

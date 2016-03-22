@@ -52,6 +52,7 @@ class DatabaseManager {
 				"link": "",
 				"subscription": true
 			});
+			return callback(null,artist);
 		});
 	}
 
@@ -607,42 +608,47 @@ class DatabaseManager {
 	postAvatar(username:string, path:string, body: any, callback: any){
 		var db = this.db;
 		var users = db.get('users');
+		var dbm = this;
 		this.getUser(username, function(err, user) {
-			if (path == "") {
+			if (!path || path == "") {
 				path = user.getAvatar();
 			}
 			var name: string = body.name;
-			if (body.name == "") {
+			if (!body.name || body.name == "") {
 				name = user.getName();
 			}
+			//TODO: check email sanity
 			var email: string = body.email;
-			if (body.email == "") {
+			if (!body.email || body.email == "") {
 				email = user.getEmail();
 			}
-			var hash: string = bcrypt.hashSync(body.password, bcrypt.genSaltSync(3));
-			if (body.password == "") {
+			//TODO: should require old password to change password
+			var hash: string = ""
+			if (!body.password || body.password == "") {
 				hash = user.getHash();
-			}
+			} else
+				hash = dbm.computeHash(body.password);
 			var description: string = body.description;
-			if (body.description == "") {
+			if (!body.description || body.description == "") {
 				description = user.getDescription();
 			}
 			var location: string = body.location;
-			if (body.location == "") {
+			if (!body.location || body.location == "") {
 				location = user.getLocation();
 			}
 			var timezone: string = body.timezone;
-			if (body.timezone == "") {
+			if (! body.timezone || body.timezone == "") {
 				timezone = user.getTimeZone();
 			}
 			var link: string = body.link;
-			if (body.link == "") {
+			if (!body.link || body.link == "") {
 				link = user.getLink();
 			}
 			var shouldShowSubscription: boolean = body.shouldShowSubscription;
-			if (body.shouldShowSubscription == "") {
+			if (!body.shouldShowSubscription || body.shouldShowSubscription == "") {
 				shouldShowSubscription = user.subscriptionChoice();
 			}
+			console.log("!");
 			users.update({
 				"username": username
 			}, {
@@ -660,6 +666,7 @@ class DatabaseManager {
 				}, {
 					upsert: true
 				})
+			return callback()
 		});
 	}
 
@@ -722,8 +729,6 @@ class DatabaseManager {
 			}
 			return callback(null, viewable_comics);
 		 });
-
-				
 	}
 		
 	// creates a hash for the given password

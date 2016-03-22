@@ -54,6 +54,18 @@ export class NotificationManager {
 		var db_manager:DatabaseManager=this.dbmanager;
 		db_manager.insertSubscriber(event, username, callback);
 	}
+	
+
+	/* Async subscribes viewer to a given comics comments */
+	/* callback:[](err, event) */
+	subscribeComments(comicpage_uri:string, username:string, callback:any){
+		this.subscribeEvent(new EventSignal(EventType.New_Comment, comicpage_uri), username, callback);
+	}
+	/* Async subscribes viewer to a given comics comments */
+	/* callback:[](err, event) */
+	subscribeEditComments(comicpage_uri:string, username:string, callback:any){
+		this.subscribeEvent(new EventSignal(EventType.New_Edit_Comment, comicpage_uri), username, callback);
+	}		
 
 	/* Async subscribes viewer to a given comic */
 	/* callback:[](err, event) */
@@ -120,6 +132,12 @@ export class NotificationManager {
 	// Async signals that a comic has been published
 	signalUpdate(comic_uri:string, callback:any){
 		this.signalEvent(new EventSignal(EventType.Comic_Update, comic_uri),"Comic has been updated!", callback);	
+	}
+	signalNewComment(comicpage_uri:string, callback:any){
+		this.signalEvent(new EventSignal(EventType.New_Comment, comicpage_uri),"Comic has been commented on!", callback);	
+	}
+	signalNewEditComment(comicpage_uri:string, callback:any){
+		this.signalEvent(new EventSignal(EventType.New_Edit_Comment, comicpage_uri),"Comic has been commented on!", callback);	
 	}
 	
 }

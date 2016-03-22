@@ -13,10 +13,14 @@ block content_comic
 			<input type="hidden" name="page" value="#{pageid}">
 			input(type='submit')
 	center 
-		div(class="comicpage" style="width:1000px")
-			span(id="page-area" contenteditable="true")
+		div(class="comicpage" id="comicpage" style="width:1000px;")
+			span(id="page-area" contenteditable="true" style="position:relative;")
 				span(data-ng-repeat="i in utilrange(0,draft.panels.length)")
 					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i,$event)" id="panel{{i}}")
+				span(data-ng-repeat="i in utilrange(0,draft.overlays.length)" style="position: absolute;top:0;left:0;")
+					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.overlays[i].panelID}}" style="{{'position:absolute;left:'+getOverlayX(i)+'px;'}}")
+					
+					
 	p(ng-show="response.length>0")
 		font(color="red") {{response}}
 	p(ng-show="draft.edited")

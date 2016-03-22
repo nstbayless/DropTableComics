@@ -404,7 +404,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 
 		$scope.poppanel=function(panel) {
 			var panelID = $scope.draft.panels[panel];
-			var decal_obj = {panelID: panelID, x: 500, y: 32};
+			var decal_obj = {panelID: panelID, x: 0, y: 32};
 			$scope.draft.panels.splice(panel,1);
 			var o = $scope.draft.overlays | [];
 			if (o==0)
@@ -428,6 +428,11 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
  	     if (response.data.msg)
 					$scope.response = response.data.msg
 		  })
+		}
+
+		$scope.getOverlayX=function(i){
+			var offs=document.getElementById('page-area').offsetWidth/2;
+			return $scope.draft.overlays[i].x+offs;
 		}
 	}
 })

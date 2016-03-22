@@ -22,12 +22,13 @@ block content
 		p Add Link to Other Sites
 		input(type="text" name="link" placeholder="Enter Link...")
 		
-		if(isartist !== true)
+		
+		if(isartist == false)
 			p Subscription List
 			input(type="radio" name="shouldShowSubscription" value=true)
 			b Show
 			input(type="radio" name="shouldShowSubscription" value=false)
 			b Hide
-			p
-	
-	input(type='submit')
+			
+		p
+		input(type='submit')

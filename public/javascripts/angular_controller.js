@@ -406,10 +406,9 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			var panelID = $scope.draft.panels[panel];
 			var decal_obj = {panelID: panelID, x: 0, y: 32};
 			$scope.draft.panels.splice(panel,1);
-			var o = $scope.draft.overlays | [];
-			if (o==0)
+			var o = $scope.draft.overlays;
+			if (!(o instanceof Array))
 				o=[];
-			console.log(o)
 			o.push(decal_obj);
 			$scope.draft.overlays=o;
 			$scope.draft.edited=true;

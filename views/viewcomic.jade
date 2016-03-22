@@ -10,11 +10,12 @@ block content_comic
 	if (editable)
 		p
 			a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + pageid + "/edit" ) Edit page
-	center
-		div(class="comicpage" style="width:1000px")
-			span(id="page-area" contenteditable="true")
-				each pic, i in panels 
-					img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
+	if (panels.length>0)
+		center
+			div(class="comicpage" style="width:1000px")
+				span(id="page-area" contenteditable="true")
+					each pic, i in panels 
+						img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i)
 	p
 		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
 			img(src="/images/icon_share.png" alt="share")

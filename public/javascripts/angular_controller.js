@@ -367,6 +367,19 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 				return img_elem.getBoundingClientRect();
 			}
 		}
+
+		$scope.updateServer=function(){
+			block_update=true;
+			$http.put("draft/json", {
+				draft:$scope.draft
+			}).then(function(response){
+				block_update=true;
+			}, function errorCallback(response) {
+ 	     if (response.data.msg)
+					$scope.response = response.data.msg
+		  })
+		}
+		
 		$scope.movepanel=function(panel, dst){
 			if (dst<0)
 				return;
@@ -376,16 +389,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			$scope.draft.panels.splice(dst,0,panel_move);
 			$scope.draft.edited=true;
 
-			block_update=true;
-
-			$http.put("draft/json", {
-				draft:$scope.draft
-			}).then(function(response){
-				block_update=true;
-			}, function errorCallback(response) {
- 	     if (response.data.msg)
-					$scope.response = response.data.msg
-		  })
+			$scope.updateServer();
 
 			$scope.mouseover_panel=-1;
 		}
@@ -393,19 +397,28 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			$scope.draft.panels.splice(panel,1);
 			$scope.draft.edited=true;
 
-			block_update=true;
-
-			$http.put("draft/json", {
-				draft:$scope.draft
-			}).then(function(response){
-				block_update=true;
-			}, function errorCallback(response) {
- 	     if (response.data.msg)
-					$scope.response = response.data.msg
-		  })
+			$scope.updateServer();
 
 			$scope.mouseover_panel=-1;
 		}
+
+		$scope.poppanel=function(panel) {
+			var panelID = $scope.draft.panels[panel];
+			var decal_obj = {panelID: panelID, x: 500, y: 32};
+			$scope.draft.panels.splice(panel,1);
+			var o = $scope.draft.overlays | [];
+			if (o==0)
+				o=[];
+			console.log(o)
+			o.push(decal_obj);
+			$scope.draft.overlays=o;
+			$scope.draft.edited=true;
+
+			$scope.updateServer();
+
+			$scope.mouseover_panel=-1;
+		}
+
 		$scope.revertPage=function(){
 			$http.delete("draft", {
 				draft:$scope.draft

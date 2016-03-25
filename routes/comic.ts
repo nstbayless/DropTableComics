@@ -170,6 +170,26 @@ class RouteComic {
 				});
 			});
 		})
+		/* GET advanced search results */
+		router.get(/^\/comics\/asearch\=[a-zA-Z0-9\-]*/, function(req, res, next) {
+			var username:string = req.user.getUsername();
+			var list = req.url.split("=");
+			var query = list[1];
+			var list2 = query.split("?");
+			query = list2[0];
+			var criteria = new Array<String>();
+			for(var i = 1; i < list2.length; i++){
+				criteria[i-1]=list2[i];
+			}
+			console.log(query + " " + criteria.length);
+			req.dbManager.searchAdvanced(criteria, username, query, function(err, results) { // results are comics
+				console.log(results);				
+				res.render('searchresults', {
+					title: 'search',
+					comics: results
+				});
+			});
+		})
 				
 		/* GET create comic page. */
 		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/create$/, function(req, res, next) {

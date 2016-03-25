@@ -120,7 +120,37 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 				$scope.response = response.data.msg
 	  })
 	}
-
+		
+		
+	//advanced search
+	$scope.a_search=function() {
+		$scope.response=""
+		var text = document.getElementById('asearch').value;
+		console.log(" Text box: "+text);
+		var title = document.getElementById('searchtitle').checked;
+		console.log(title);
+		if (document.getElementById('searchtitle').checked){
+			text = text +'?title';
+		}
+		if (document.getElementById('searchcreator').checked){
+			text=text +'?creator';
+		}
+		if (document.getElementById('searchdescription').checked){
+			text=text +'?description';
+		}
+		if (document.getElementById('searchtags').checked){
+			text=text +'?tags';
+		}
+  		window.location.href="/comics\/asearch="+text;
+		$http.get("/comics\/search="+text, {
+		}).then(function(response){
+			if (response.data.success)
+				window.location= '';
+		}, function errorCallback(response) {
+      			if (response.data.msg)
+				$scope.response = response.data.msg
+	  	})
+	}
 	//user attempts to subscribe
 	$scope.subscribe_comic = function(comic_uri){
 		$scope.response=""

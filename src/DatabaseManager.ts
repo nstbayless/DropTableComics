@@ -121,7 +121,7 @@ class DatabaseManager {
 									"image_collection":comic.getImageCollection(),
 									"panel_map":comic.panel_map,
 									"pages": comic.pages,
-									"drafts": comic.draftpages});
+									"drafts": comic.draftpages, "tags":comic.tags});
 		return comic;
 	}
 
@@ -221,6 +221,7 @@ class DatabaseManager {
 			comic.editlist = comic_canon.editlist;
 			comic.adminlist = comic_canon.adminlist;
 			comic.pages = [];
+			comic.tags = comic_canon.tags;
 			for (var i=0;i<comic_canon.pages.length;i++) {
 				comic.pages[i]=(new Page().construct_from_db(comic_canon.pages[i]));
 			}
@@ -714,6 +715,7 @@ class DatabaseManager {
 	searchFor(username:string, query:string, callback:any){
 		var comics = this.db.get('comics');
 		console.log("SEARCHING FOR: " + query);
+		comics.dropIndex("TextIndex");
 		comics.ensureIndex(  // makes every field of each comic a searchable string
 				{ "$**": "text" }, 
                            	{ name: "TextIndex" }); 
@@ -721,7 +723,6 @@ class DatabaseManager {
 			if (err) return callback(err, null);
 			var viewable_comics = new Array<Object>();
 			for (var i = 0; i < comics.length; i++) {
-			console.log(comics[i]);
 			if (	comics[i].viewlist.indexOf(username) > -1 
 				||comics[i].editlist.indexOf(username) > -1 
 				|| comics[i].adminlist.indexOf(username) > -1) // checks if comic is viewable
@@ -729,6 +730,43 @@ class DatabaseManager {
 			}
 			return callback(null, viewable_comics);
 		 });
+	}
+	
+		// Advanced Search Helper
+	searchByCriteria(criteria:string, username:string, query:string, callback:any){
+		var comics = this.db.get('comics');
+		console.log("SEARCHING FOR: " + query + " with criteria: " + criteria);
+		var field = "$" + criteria;
+		comics.dropIndex("TextIndex");
+		comics.ensureIndex(  // makes a specific field of each comic a searchable string
+				{ field: "text" }, 
+                           	{ name: "TextIndex" }); 
+		comics.find( { $text: { $search: query } }, function(err,comics){ // finds results
+			if (err) return callback(err, null);
+			var viewable_comics = new Array<Object>();
+			for (var i = 0; i < comics.length; i++) {
+				if (	comics[i].viewlist.indexOf(username) > -1 
+					||comics[i].editlist.indexOf(username) > -1 
+					|| comics[i].adminlist.indexOf(username) > -1) // checks if comic is viewable
+					viewable_comics.push(comics[i]);
+			}
+			console.log(" found " + comics.length + " for criteria " + criteria);
+			return callback(null, viewable_comics);
+		 });
+	}
+	// Advanced Search, requires list of criteria
+	searchAdvanced(criteria:string[], username:string, query:string, callback:any){
+		var comics = new Array<Object>();		
+		for (var i = 0; i < criteria.length; i++){
+			this.searchByCriteria(criteria[i], username, query, function(err, viewable_comics){
+				if (!err && viewable_comics) comics = comics.concat(viewable_comics);
+				if (i == criteria.length - 1) {
+					console.log(" found " + comics.length + " results " );
+					return callback(null, comics);
+				} 
+			});
+		}
+		
 	}
 		
 	// creates a hash for the given password

@@ -466,21 +466,31 @@ class RouteComic {
 			});
 		});
 
-		router.get(/^\/editdashboard\/?$/, function(req, res, next) {
-			res.render('editdashboard');
-		});
+ 		/*GET forgot my password page. */
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
+			res.render('forgotmypassword');
+			});		
+
 
 		/* GET change password page. */
-		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
-			var username:string = req.user.getUsername();  // artist username
-			var path:string = "";
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
+			res.render('changepassword');
 			});
 
 		/* PUT user password changes. */
 		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
 			var username:string = req.user.getUsername();  // artist username
 			var path:string = "";
-			});
+			req.dbManager.postPassword(username, path, req.body, function(err, password) {
+
+			})
+
+		});
+
+		/* GET edit dashboard page. */
+		router.get(/^\/editdashboard\/?$/, function(req, res, next) {
+			res.render('editdashboard');
+		});
 
 		//TODO(tina): this is not a RESTful URI~! should PUT to /account/(username)
 		// POST (should be PUT) changes to user profile
@@ -490,7 +500,7 @@ class RouteComic {
 			var path:string = "";
 			if(req.file)
 				path = req.file.path;
-			req.dbManager.postAvatar(username, path, req.body, function(err, avatar) {
+			req.dbManager.postAvatarandInfo(username, path, req.body, function(err, avatar) {
 				if (err)
 					res.status(500).send("error uploading changes to profile");
 				else //TODO(tina): server redirect is bad practice. Client should redirect itself.

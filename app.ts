@@ -15,6 +15,26 @@ var RouteAuthentication = require('./routes/authentication');
 var RouteComic = require('./routes/comic');
 var RouteAdminPage = require('./routes/adminpage');
 
+// require moongose
+var mongoose = require('mongoose');
+mongoose.connect("http://"+config.db);
+
+var User = mongoose.model('User', 
+	{
+	 userName: String, 
+	 email: String,
+	 password: String,
+	 name: String,
+	 description: String,
+	 type: String,
+	 avatar: String, 
+	 notification: [String],
+	 viewList: [String],
+	 isArtist: Boolean,
+	 subscriptionChoice: Boolean,
+	 location: String,
+	 timeZone: [Date]
+	});
 
 
 import DatabaseManager = require("./src/DatabaseManager");

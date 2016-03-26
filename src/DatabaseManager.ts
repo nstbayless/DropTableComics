@@ -605,7 +605,7 @@ class DatabaseManager {
 	}
 
 	//TODO(tina): needs renaming, this posts more than just the avatar.
-	postAvatar(username:string, path:string, body: any, callback: any){
+	postAvatarandInfo(username:string, path:string, body: any, callback: any){
 		var db = this.db;
 		var users = db.get('users');
 		var dbm = this;
@@ -622,12 +622,6 @@ class DatabaseManager {
 			if (!body.email || body.email == "") {
 				email = user.getEmail();
 			}
-			//TODO: should require old password to change password
-			var hash: string = ""
-			if (!body.password || body.password == "") {
-				hash = user.getHash();
-			} else
-				hash = dbm.computeHash(body.password);
 			var description: string = body.description;
 			if (!body.description || body.description == "") {
 				description = user.getDescription();
@@ -669,6 +663,38 @@ class DatabaseManager {
 			return callback()
 		});
 	}
+
+
+	postPassword(username: string, path: string, body: any, callback5: any) {
+		var db = this.db;
+		var users = db.get('users');
+		var dbm = this;
+		this.getUser(username, function(err, user) {
+			var hash: string = ""
+
+			// check if old password matches
+			if (checkHash(body.oldpass, user.getHash()) == true) {
+				// check if new password and confirm password matches
+				if (body.confirmpass == body.password) {
+					hash = dbm.computeHash(body.password);
+
+					users.update({
+						"username": username
+					}, {
+							$set: {
+								"hash": hash,
+							}
+						}, {
+							upsert: true
+						})
+				}
+			}
+			return callback()
+		});
+		
+	}
+
+
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)

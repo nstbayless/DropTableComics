@@ -470,9 +470,22 @@ class RouteComic {
 			res.render('editdashboard');
 		});
 
+		/* GET change password page. */
+		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
+			var username:string = req.user.getUsername();  // artist username
+			var path:string = "";
+			});
+
+		/* PUT user password changes. */
+		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
+			var username:string = req.user.getUsername();  // artist username
+			var path:string = "";
+			});
+
 		//TODO(tina): this is not a RESTful URI~! should PUT to /account/(username)
 		// POST (should be PUT) changes to user profile
-		router.post(/^\/editdashboard\/?$/, upload.single('image'), function(req, res, next) {
+		/* PUT user profile changes. */
+		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/editdashboard$/, upload.single('image'), function(req, res, next) {
 			var username: string = req.user.getUsername();
 			var path:string = "";
 			if(req.file)
@@ -482,6 +495,7 @@ class RouteComic {
 					res.status(500).send("error uploading changes to profile");
 				else //TODO(tina): server redirect is bad practice. Client should redirect itself.
 					res.redirect('/');
+					// ask Noah: what error should I consider for here? 
 			});
 		});
 
@@ -520,7 +534,7 @@ class RouteComic {
 			})
 		});
 
-		/* POST panel */
+ 		 /* POST panel */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/, upload.single('image'), function(req, res, next) {
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);

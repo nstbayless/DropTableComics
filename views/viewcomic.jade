@@ -1,6 +1,10 @@
 extends comic
 
 block content_comic
+	meta(property='og:url', content='#{share_link}')
+	meta(property='og:type', content='website')
+	meta(property='og:title', content='DropComix')
+	meta(property='og:description', content='Your description')
 	h1.bannertext=comic_name
 	if (description)
 		p
@@ -21,6 +25,7 @@ block content_comic
 			| share
 		span(ng-show="shlink.length>0")
 			input(readonly="readonly" ng-model="shlink" ng-init="")
+	a(href="https://www.facebook.com/sharer/sharer.php?u="+"#{share_link}" target="_blank" ) Share on Facebook
 	button(ng-click = "subscribe_comic('#{comic_uri}')" ng-show = "!isartist") Subscribe
 	p Collaborators:
 		each user, i in editlist

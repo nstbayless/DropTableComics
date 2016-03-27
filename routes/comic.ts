@@ -301,6 +301,14 @@ class RouteComic {
 					return next();
 				var page: Page = comic.getPage(pageid);
 				var panels: Panel[] = page.getPanels();
+				// preloading
+				var next_page:Page;
+				var next_panels:Panel[]=[];
+				if (!(pageid == comic.getPages().length)) {
+					next_page = comic.getPage(pageid+1);
+					next_panels = next_page.getPanels();
+				}
+				//
 				var comments: Comment[] = page.getComments();
 				return res.render('viewcomic', {
 					title: comic.getName(),
@@ -315,6 +323,7 @@ class RouteComic {
 					pageid: pageid,
 					maxpageid: comic.getPages().length,
 					panels: panels,
+					next_panels:next_panels,
 					pagename: page.getTitle(),
 					url_append: "/"
 				})

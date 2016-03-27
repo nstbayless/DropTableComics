@@ -161,6 +161,11 @@ class RouteComic {
 			var username:string = req.user.getUsername();
 			var list = req.url.split("=");
 			var query = list[1];
+			var query2 = query.split("%20");
+			query = "";
+			for (var i = 0; i < query2.length; i++){ // parsing query
+				query = query + query2 + " "; 
+			}
 			console.log(query);
 			req.dbManager.searchFor(username, query, function(err, results) { // results are comics
 				console.log(results);				
@@ -177,8 +182,13 @@ class RouteComic {
 			var query = list[1];
 			var list2 = query.split("?");
 			query = list2[0];
+			var query2 = query.split("%20");
+			query = "";
+			for (var i = 0; i < query2.length; i++){ // parsing query
+				query = query + query2 + " "; 
+			}
 			var criteria = new Array<String>();
-			for(var i = 1; i < list2.length; i++){
+			for(var i = 1; i < list2.length; i++){ // parsing criteria
 				criteria[i-1]=list2[i];
 			}
 			console.log(query + " " + criteria.length);

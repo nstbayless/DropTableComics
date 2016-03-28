@@ -17,7 +17,7 @@ block content_comic
 	center
 		//= render comic using angular (slightly different from published view to allow live edits)
 		div(class="comicpage" id="comicpage" style="width:1000px;")
-			span(id="page-area" contenteditable="true" style="position:relative;")
+			span(id="page-area" style="position:relative;")
 				//- panels
 				span(data-ng-repeat="i in utilrange(0,draft.panels.length)")
 					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i,'panel',$event)" ng-mousemove="mousemove(i,'panel',$event)" id="panel{{i}}")

@@ -13,13 +13,18 @@ block content_comic
 	if (panels.length>0)
 		center
 			div(class="comicpage" style="width:1000px;position:relative;")
-				span(id="page-area" contenteditable="true")
+				span(id="page-area")
 					each pic, i in panels
 						span
-							img(src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic style="position:relative;")
+							img(src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic style="position:relative;" alt="panel "+i)
 					each pic, i in overlays
 						span(style="position: absolute;top:0;left:0;")
 							img(src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic.panelID style="position:absolute;left:"+(pic.x+500)+"px;top:" + pic.y + "px;")
+	//- hidden preloading bit
+	div(align="right")
+		span(id="page-area-preload")
+				each pic, i in next_panels 
+					img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i, hidden)
 	p
 		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
 			img(src="/images/icon_share.png" alt="share")

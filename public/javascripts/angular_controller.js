@@ -4,7 +4,7 @@
 var REDIRECT_TIMEOUT=200;
 
 var app = angular.module('authentication', [])
-app.controller('authController', function($location, $scope, $http, $timeout) {
+app.controller('authController', function($location, $scope, $http, $timeout, $interval) {
 	//read http headers:
 	var req = new XMLHttpRequest();
 	req.open('GET', document.location, false);
@@ -355,6 +355,11 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		$scope.grabx=0;
 		$scope.graby=0;
 
+		//overlays visible
+		$scope.overlays_vis=true;
+		//time when overlays last toggled
+		$scope.overlay_toggle_time=0;
+
 		//user mouses over panel
 		$scope.mouseover=function(panel){
 			if ($scope.overlay_grabbed) return;
@@ -363,6 +368,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		}
 		//user mouses over an overlay
 		$scope.mouseover_lay=function(overlay){
+			if (!$scope.overlays_vis) return;
 			if ($scope.overlay_grabbed) return;
 			$scope.mouseover_overlay=overlay;
 			$scope.mouseover_panel=-1;
@@ -416,6 +422,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		//- objtype: 'panel' or 'overlay'
 		//- e: mouse event (pass in from dispatcher)
 		$scope.mousemove=function(id,objtype,e) {
+			if (!$scope.overlays_vis) return;
 			var target = e.target || e.srcElement; //Firefox compatibility
 			var rect = target.getBoundingClientRect();
 			var x=e.x || (e.offsetX+rect.left);
@@ -450,6 +457,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		//- e: mouse event (pass in from dispatcher)
 		$scope.toggleGrabOverlay=function(e) {
 			if ($scope.mouseover_overlay==-1) return;
+			if (!$scope.overlays_vis) return;
 			$scope.overlay_grabbed=!$scope.overlay_grabbed;
 			if (!$scope.overlay_grabbed) {
 				//move overlay:
@@ -577,8 +585,40 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			return {x:(pos.x+center),y:pos.y}
 		}
 
+		$scope.getToggleOverlayText=function() {
+			if ($scope.overlays_vis)
+				return "Partially hide overlays";
+			else
+				return "Show overlays";
+		}
+
+		$scope.toggleOverlays=function(){
+			$scope.overlays_vis=!$scope.overlays_vis;
+			$scope.overlay_toggle_time=Date.now();
+			var interval_k = $interval(function(){
+				//force angular to refresh
+				if (Date.now() - $scope.overlay_toggle_time > 1200)
+					$interval.cancel(interval_k);
+			},10)
+		}
+
 		$scope.getOverlayOpacity=function() {
-			return 1;
+			//transparency animation
+			opacity=(Date.now() - $scope.overlay_toggle_time)/900;
+			if (!$scope.overlays_vis)
+				opacity=1-opacity;
+			else
+				//much faster for fade-in
+				opacity*=2.1;
+			if (opacity<0.0)
+				opacity=0.0;
+			if (opacity>1)
+				opacity=1;
+			//smoothing
+			opacity=(Math.cos((1-opacity)*3.14159265)+1)/2
+			opacity=opacity*opacity;
+			opacity=0.65*opacity+0.35;
+			return opacity;
 		}
 	}
 })

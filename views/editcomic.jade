@@ -12,6 +12,8 @@ block content_comic
 			input(type='file', name='image' id='image_upload')
 			<input type="hidden" name="page" value="#{pageid}">
 			input(type='submit')
+	p
+		a(href="" ng-click="toggleOverlays()") {{getToggleOverlayText()}}
 	center
 		//= render comic using angular (slightly different from published view to allow live edits)
 		div(class="comicpage" id="comicpage" style="width:1000px;")

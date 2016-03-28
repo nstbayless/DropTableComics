@@ -378,6 +378,35 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 					$scope.mouseover_overlay=-1;
 			}
 		}
+		//user's mouse moves over an object
+		//this checks to see if any overlay should take priority and switches selection to the overlay instead
+		//- id: unique id of object (same as in mouseover_overlay or mouseover_panel)
+		//- objtype: 'panel' or 'overlay'
+		//- e: mouse event (pass in from dispatcher)
+		$scope.mousemove=function(id,objtype,e) {
+			var target = e.target || e.srcElement; //Firefox compatibility
+			var rect = target.getBoundingClientRect();
+			var x=e.x || (e.offsetX+rect.left);
+			var y=e.y || (e.offsetY+rect.top);
+			//console.log("mousemove: " + x+","+y);
+			//find if any overlays overlap
+			for (var i=$scope.draft.overlays.length-1;i>=0;i--) {
+				var img_elem = document.getElementById('overlay'+i);
+				if (!img_elem)
+					continue;
+				box= img_elem.getBoundingClientRect();
+				box_x=box.left;
+				box_y=box.top;
+				box_w=box.width;
+				box_h=box.height;
+				if (box_x<x&&box_y<y&&box_x+box_w>x&&box_y+box_h>y) {
+					//found an overlay that intersects mouse; switch to select it
+					$scope.mouseover_panel=-1;
+					$scope.mouseover_overlay=i;
+					break;
+				}
+			}
+		}
 		$scope.boxgetattr=function(){
 			if ($scope.mouseover_panel!=-1) {
 				var img_elem = document.getElementById('panel'+$scope.mouseover_panel);
@@ -463,6 +492,10 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		$scope.getOverlayX=function(i){
 			var offs=document.getElementById('page-area').offsetWidth/2;
 			return $scope.draft.overlays[i].x+offs;
+		}
+
+		$scope.getOverlayOpacity=function() {
+			return 1;
 		}
 	}
 })

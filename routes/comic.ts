@@ -11,7 +11,7 @@ var MAX_IMAGE_HEIGHT=800;
 import {User } from'../src/User' ;
 import {Artist } from'../src/User' ;
 import { Comic } from '../src/Comic';
-import { Comment, Page, Panel } from '../src/Page';
+import { Comment, Page, Panel, Overlay } from '../src/Page';
 import { NotificationManager } from '../src/NotificationManager';
 import { Notification } from '../src/Notification';
 import { EventSignal } from '../src/EventSignal';
@@ -271,6 +271,7 @@ class RouteComic {
 					return next();
 				var page: Page = comic.getPage(pageid);
 				var panels: Panel[] = page.getPanels();
+				var overlays: Overlay[] = page.getOverlays();
 				var comments: Comment[] = page.getComments();
 				return res.render('viewcomic', {
 					title: comic.getName(),
@@ -285,6 +286,7 @@ class RouteComic {
 					pageid: pageid,
 					maxpageid: comic.getPages().length,
 					panels: panels,
+					overlays: overlays,
 					pagename: page.getTitle(),
 					url_append: "/"
 				})

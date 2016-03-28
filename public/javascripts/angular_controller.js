@@ -346,13 +346,24 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		//which overlay user is hovering over
 		//(at least one of mouseover_panel or mouseover_overlay must be -1)
 		$scope.mouseover_overlay=-1;
+		//overlay is grabbed (prevents changing selection)
+		$scope.overlay_grabbed=false;
+		//mouse position at start
+		$scope.grabx_init=0;
+		$scope.graby_init=0;
+		//current mouse position
+		$scope.grabx=0;
+		$scope.graby=0;
+
 		//user mouses over panel
 		$scope.mouseover=function(panel){
+			if ($scope.overlay_grabbed) return;
 			$scope.mouseover_panel=panel;
 			$scope.mouseover_overlay=-1;
 		}
 		//user mouses over an overlay
 		$scope.mouseover_lay=function(overlay){
+			if ($scope.overlay_grabbed) return;
 			$scope.mouseover_overlay=overlay;
 			$scope.mouseover_panel=-1;
 		}
@@ -361,6 +372,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		//- objtype: 'panel' or 'overlay'
 		//- e: mouse event (pass in from dispatcher)
 		$scope.mouseleave=function(id, objtype,e){
+			if ($scope.overlay_grabbed) return;
 			var target = e.target || e.srcElement; //Firefox compatibility
 			var rect = target.getBoundingClientRect();
 			var x=e.x || (e.offsetX+rect.left);
@@ -378,6 +390,18 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 					$scope.mouseover_overlay=-1;
 			}
 		}
+
+		//bounds overlay position to be in comic border
+		boundoverlay=function(id,x,y){
+			if (x<-500)
+				x=-500;
+			if (x>500)
+				x=500;
+			if (y<0)
+				y=0;
+			return {x:x,y:y}
+		}
+
 		//user's mouse moves over an object
 		//this checks to see if any overlay should take priority and switches selection to the overlay instead
 		//- id: unique id of object (same as in mouseover_overlay or mouseover_panel)
@@ -388,25 +412,67 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			var rect = target.getBoundingClientRect();
 			var x=e.x || (e.offsetX+rect.left);
 			var y=e.y || (e.offsetY+rect.top);
-			//console.log("mousemove: " + x+","+y);
-			//find if any overlays overlap
-			for (var i=$scope.draft.overlays.length-1;i>=0;i--) {
-				var img_elem = document.getElementById('overlay'+i);
-				if (!img_elem)
-					continue;
-				box= img_elem.getBoundingClientRect();
-				box_x=box.left;
-				box_y=box.top;
-				box_w=box.width;
-				box_h=box.height;
-				if (box_x<x&&box_y<y&&box_x+box_w>x&&box_y+box_h>y) {
-					//found an overlay that intersects mouse; switch to select it
-					$scope.mouseover_panel=-1;
-					$scope.mouseover_overlay=i;
-					break;
+			if ($scope.overlay_grabbed) {
+				$scope.grabx=x;
+				$scope.graby=y;
+			}
+			else {
+				//console.log("mousemove: " + x+","+y);
+				//find if any overlays overlap
+				for (var i=$scope.draft.overlays.length-1;i>=0;i--) {
+					var img_elem = document.getElementById('overlay'+i);
+					if (!img_elem)
+						continue;
+					box= img_elem.getBoundingClientRect();
+					box_x=box.left;
+					box_y=box.top;
+					box_w=box.width;
+					box_h=box.height;
+					if (box_x<x&&box_y<y&&box_x+box_w>x&&box_y+box_h>y) {
+						//found an overlay that intersects mouse; switch to select it
+						$scope.mouseover_panel=-1;
+						$scope.mouseover_overlay=i;
+						break;
+					}
 				}
 			}
 		}
+
+		//user starts/stops pulling overlay currently selected
+		//- e: mouse event (pass in from dispatcher)
+		$scope.toggleGrabOverlay=function(e) {
+			if ($scope.mouseover_overlay==-1) return;
+			$scope.overlay_grabbed=!$scope.overlay_grabbed;
+			if (!$scope.overlay_grabbed) {
+				//move overlay:
+				var x = $scope.draft.overlays[$scope.mouseover_overlay].x;
+				x+=$scope.grabx-$scope.grabx_init;
+				var y = $scope.draft.overlays[$scope.mouseover_overlay].y;
+				y+=$scope.graby-$scope.graby_init;
+				pos=boundoverlay($scope.mouseover_overlay,x,y);
+				$scope.draft.overlays[$scope.mouseover_overlay].x=pos.x;
+				$scope.draft.overlays[$scope.mouseover_overlay].y=pos.y;
+
+				$scope.draft.edited=true;
+
+				$scope.updateServer();
+			}
+
+			var target = e.target || e.srcElement; //Firefox compatibility
+			var rect = target.getBoundingClientRect();
+			var x=e.x || (e.offsetX+rect.left);
+			var y=e.y || (e.offsetY+rect.top);
+			$scope.grabx_init=$scope.grabx=x;
+			$scope.graby_init=$scope.graby=y;
+		}
+
+		$scope.getOverlayColourStyle=function() {
+			if ($scope.overlay_grabbed)
+				return "stroke-width:4;stroke:white;fill:white;fill-opacity:0.33;"
+			else
+				return "stroke-width:3;stroke:green;fill:green;fill-opacity:0.25;"
+		}
+
 		$scope.boxgetattr=function(){
 			if ($scope.mouseover_panel!=-1) {
 				var img_elem = document.getElementById('panel'+$scope.mouseover_panel);
@@ -489,9 +555,18 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		  })
 		}
 
-		$scope.getOverlayX=function(i){
-			var offs=document.getElementById('page-area').offsetWidth/2;
-			return $scope.draft.overlays[i].x+offs;
+		$scope.getOverlayPos=function(i){
+			//overlay is in place
+			var center=document.getElementById('page-area').offsetWidth/2;
+			x_offs= $scope.draft.overlays[i].x;
+			y_offs= $scope.draft.overlays[i].y;
+			if (i==$scope.mouseover_overlay&&$scope.overlay_grabbed) {
+				//overlay is being held by user
+				x_offs+=$scope.grabx-$scope.grabx_init;	
+				y_offs+=$scope.graby-$scope.graby_init;	
+			}
+			pos=boundoverlay(i,x_offs,y_offs)
+			return {x:(pos.x+center),y:pos.y}
 		}
 
 		$scope.getOverlayOpacity=function() {

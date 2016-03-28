@@ -341,31 +341,53 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		}
 		reloaddraft();
 
+		//which panel user is hovering over, or -1 if none
 		$scope.mouseover_panel=-1;
+		//which overlay user is hovering over
+		//(at least one of mouseover_panel or mouseover_overlay must be -1)
+		$scope.mouseover_overlay=-1;
 		//user mouses over panel
 		$scope.mouseover=function(panel){
 			$scope.mouseover_panel=panel;
+			$scope.mouseover_overlay=-1;
 		}
-		//user's mouse leaves panel
-		$scope.mouseleave=function(panel,e){
-			var target = e.target || e.srcElement;
+		//user mouses over an overlay
+		$scope.mouseover_lay=function(overlay){
+			$scope.mouseover_overlay=overlay;
+			$scope.mouseover_panel=-1;
+		}
+		//user's mouse leaves panel or overlay
+		//- id: unique id of object (same as in mouseover_overlay or mouseover_panel)
+		//- objtype: 'panel' or 'overlay'
+		//- e: mouse event (pass in from dispatcher)
+		$scope.mouseleave=function(id, objtype,e){
+			var target = e.target || e.srcElement; //Firefox compatibility
 			var rect = target.getBoundingClientRect();
 			var x=e.x || (e.offsetX+rect.left);
 			var y=e.y || (e.offsetY+rect.top);
-			if (x==0&&y==0) //required for firefox compatibility
+			if (x==0&&y==0) //required for firefox compatibility. (x,y)==(0,0) is spurious
+				//this is a small hack as if the image actually is at (0,0) all events will fail,
+				//but as far as I can tell there's no better way to filter out Firefox's garbage.
+				//Fortunately, the page html is layed out to make this unlikely or impossible to happen.
 				return;
 			var box = $scope.boxgetattr();
-			if ($scope.mouseover_panel==panel || panel==-1)
-				if (x<box.left||y<box.top||x>box.left+box.width||y>box.top+box.height)
+			if (x<box.left||y<box.top||x>box.left+box.width||y>box.top+box.height) {
+				if (($scope.mouseover_panel==id && objtype=="panel") || id==-1)
 					$scope.mouseover_panel=-1;
+				if (($scope.mouseover_panel==id && objtype=="overlay") || id==-1)
+					$scope.mouseover_overlay=-1;
+			}
 		}
 		$scope.boxgetattr=function(){
-			if ($scope.mouseover_panel==-1)
-				return {width: 0, height: 0, left: 0, top: 0}
-			else {
+			if ($scope.mouseover_panel!=-1) {
 				var img_elem = document.getElementById('panel'+$scope.mouseover_panel);
 				return img_elem.getBoundingClientRect();
 			}
+			if ($scope.mouseover_overlay!=-1) {
+				var img_elem = document.getElementById('overlay'+$scope.mouseover_overlay);
+				return img_elem.getBoundingClientRect();
+			}
+			return {width: 0, height: 0, left: 0, top: 0}
 		}
 
 		$scope.updateServer=function(){
@@ -416,6 +438,15 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			$scope.updateServer();
 
 			$scope.mouseover_panel=-1;
+		}
+
+		$scope.deleteoverlay=function(overlay) {
+			$scope.draft.overlays.splice(overlay,1);
+			$scope.draft.edited=true;
+
+			$scope.updateServer();
+
+			$scope.mouseover_overlay=-1;
 		}
 
 		$scope.revertPage=function(){

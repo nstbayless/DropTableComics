@@ -12,13 +12,16 @@ block content_comic
 			input(type='file', name='image' id='image_upload')
 			<input type="hidden" name="page" value="#{pageid}">
 			input(type='submit')
-	center 
+	center
+		//= render comic using angular (slightly different from published view to allow live edits)
 		div(class="comicpage" id="comicpage" style="width:1000px;")
 			span(id="page-area" contenteditable="true" style="position:relative;")
+				//- panels
 				span(data-ng-repeat="i in utilrange(0,draft.panels.length)")
-					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i,$event)" id="panel{{i}}")
+					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i,'panel',$event)" id="panel{{i}}")
+				//- overlays
 				span(data-ng-repeat="i in utilrange(0,draft.overlays.length)" style="position: absolute;top:0;left:0;")
-					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.overlays[i].panelID}}" style="{{'position:absolute;left:'+getOverlayX(i)+'px;'}}")
+					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.overlays[i].panelID}}" style="{{'position:absolute;left:'+getOverlayX(i)+'px;'}}" ng-mouseover="mouseover_lay(i)" ng-mouseleave="mouseleave(i,'overlay',$event)" id="overlay{{i}}")
 					
 					
 	p(ng-show="response.length>0")
@@ -34,9 +37,9 @@ block content_comic
 			a(href="" ng-click="confirmdelete=true;" ng-hide="confirmdelete") Delete this page
 			a(href="" ng-click="deletePage('#{comic_creator}','#{comic_uri}',#{pageid})" ng-show="confirmdelete") Confirm!
 
-	//- dynamic elements
+	//- dynamic elements --- mouseover for panel
 	div(style="position:fixed;left:0px;top:0px;")
-		svg(width=20000 height=30000 ng-show="mouseover_panel>-1" ng-mouseleave="mouseleave(-1,$event)" ng-mouseover="mouseleave(-1,$event)")
+		svg(width=20000 height=30000 ng-show="mouseover_panel>-1" ng-mouseleave="mouseleave(-1,'',$event)" ng-mouseover="mouseleave(-1,'',$event)")
 			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="stroke-width:3;stroke:black;fill:blue;fill-opacity:0.1;" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
 	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_panel>-1")
 		img(src="/images/icon_back.png" ng-click="movepanel(mouseover_panel,mouseover_panel-1);")
@@ -46,6 +49,13 @@ block content_comic
 		img(src="/images/icon_delete.png" ng-click="deletepanel(mouseover_panel);")
 		| &nbsp
 		img(src="/images/icon_pop.png" ng-click="poppanel(mouseover_panel);")
+
+	//- dynamic elements --- mouseover for overlay
+	div(style="position:fixed;left:0px;top:0px;")
+		svg(width=20000 height=30000 ng-show="mouseover_overlay>-1" ng-mouseleave="mouseleave(-1,'',$event)" ng-mouseover="mouseleave(-1,'',$event)")
+			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="stroke-width:3;stroke:black;fill:red;fill-opacity:0.1;" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
+	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_overlay>-1")
+		img(src="/images/icon_delete.png" ng-click="deleteoverlay(mouseover_overlay);")
 
 block content_comment
 	div(class="commentcontainer")

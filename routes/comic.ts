@@ -16,21 +16,28 @@ import { NotificationManager } from '../src/NotificationManager';
 import { Notification } from '../src/Notification';
 import { EventSignal } from '../src/EventSignal';
 import { EventType } from '../src/EventType';
-var multer  = require('multer');
-var upload = multer({ dest: './data/images/' });
-var fs = require('fs');
 
 var express = require('express');
 var config = require('../config');
 var fs = require('fs');
 var sizeOf = require('image-size');
-var multer  = require('multer');
+var multer = require('multer');
+var storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+    cb(null, './data/images')
+  },
+	filename: function (req, file, cb) {
+		console.log(file);
+    cb(null, Date.now() + "--"+file.originalname)
+  }
+})
 var upload = multer({
   dest: './data/images/',
   limits: {
 		fileSize: MAX_FILE_SIZE,
 		files: 1
-	}
+	},
+	storage:storage
 });
 
 //struct for a single result in a list of search results
@@ -643,17 +650,14 @@ class RouteComic {
 
 		/* POST Comment on viewpage */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/comment$/, function(req, res, next) {
-			console.log("ARE YOU REACHING ME? @?>@@>?>@@!@>!@>!@>>12345")
 			var username = req.user.getUsername();
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
 			var pageid = pageid = parseInt(req.url.split("/pages/")[1].split("/comment")[0]);
-			console.log("parsing the page id is the problem");
 			req.nManager.subscribeComments(comic_uri + pageid.toString(), username, function(err, event){
 				req.nManager.signalNewComment(comic_uri +pageid.toString(), function(err, notification) {
 					if (!err) {
 							console.log(req.url);
-							console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
 							if (!req.body.comment) {
 								return next();
 							} else {
@@ -682,15 +686,12 @@ class RouteComic {
 
 		/* POST Comment on editpage*/
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/pages\/[0-9]+\/edit\/comment$/, function(req, res, next) {
-			console.log("attempting got post comment on editpage...")
 			var adminlevel: number = 0;
 			var username = req.user.getUsername();
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);
-			console.log("parsing the page id is the problem")
 			console.log(req.url);
 			var pageid = pageid = parseInt(req.url.split("/pages/")[1].split("/edit/")[0]);
-			console.log("Was able to parse from uri!!!!!!!!!!!!!!!!!!!!!!")
 			req.nManager.subscribeEditComments(comic_uri + pageid.toString(), username, function(err, event){
 				req.nManager.signalNewEditComment(comic_uri +pageid.toString(), function(err, notification) {
 					if (!err) {

@@ -393,12 +393,20 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 
 		//bounds overlay position to be in comic border
 		boundoverlay=function(id,x,y){
-			if (x<-500)
-				x=-500;
-			if (x>500)
-				x=500;
+			var img_elem = document.getElementById('overlay'+id);
+			if (!img_elem)
+				return {x:x,y:y}
+			box= img_elem.getBoundingClientRect();
+			var x_bound_radius = document.getElementById('page-area').offsetWidth/2;
+			var y_bound_range = document.getElementById('page-area').offsetHeight;
+			if (x<-x_bound_radius)
+				x=-x_bound_radius;
+			if (x>x_bound_radius-box.width)
+				x=x_bound_radius-box.height;
 			if (y<0)
 				y=0;
+			if (y>y_bound_range-box.height)
+				y=y_bound_range-box.height;
 			return {x:x,y:y}
 		}
 

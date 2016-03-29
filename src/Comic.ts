@@ -23,7 +23,8 @@ export class Comic {
 	image_collection:string;//! TODO: this is sketchy. Use mongodb's hierarchy system
 	panel_map:string[]; /**maps from panel-id to path to image*/
 	manager:DatabaseManager; /** Database Manager */
-	
+	tags:string[];
+
 	/*  CONSTRUCTOR */
 	/** Looks up Comic from database by name */
 	constructor(uri_sanitized: string, creator: string, description: string){
@@ -34,6 +35,7 @@ export class Comic {
 		this.viewlist = [];
 		this.editlist = [];
 		this.pages = [];
+		this.tags = [];
 		this.pages.push(new Page());
 		this.draftpages = [];
 		this.draftpages.push(new Page());

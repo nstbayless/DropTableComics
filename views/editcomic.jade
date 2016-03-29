@@ -13,7 +13,7 @@ block content_comic
 			<input type="hidden" name="page" value="#{pageid}">
 			input(type='submit')
 	p
-		a(href="" ng-click="toggleOverlays()") {{getToggleOverlayText()}}
+		a(href="" ng-hide="{{(draft.overlays.length<=0)}" ng-click="toggleOverlays();") {{getToggleOverlayText()}}
 	center
 		//= render comic using angular (slightly different from published view to allow live edits)
 		div(class="comicpage" id="comicpage" style="width:1000px;")
@@ -23,7 +23,7 @@ block content_comic
 					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.panels[i]}}" ng-mouseover="mouseover(i)" ng-mouseleave="mouseleave(i,'panel',$event)" ng-mousemove="mousemove(i,'panel',$event)" id="panel{{i}}")
 				//- overlays
 				span(data-ng-repeat="i in utilrange(0,draft.overlays.length)" style="position: absolute;top:0;left:0;")
-					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.overlays[i].panelID}}" style="{{'position:absolute;left:'+(getOverlayPos(i).x)+'px;top:' + (getOverlayPos(i).y) + 'px;opacity:'+getOverlayOpacity()+';'}}" ng-mouseover="mouseover_lay(i)" ng-mouseleave="mouseleave(i,'overlay',$event)" ng-mousemove="mousemove(i,'overlay',$event)" ng-click="toggleGrabOverlay($event)" id="overlay{{i}}")
+					img(ng-src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/{{draft.overlays[i].panelID}}" style="{{'position:absolute;left:'+(getOverlayPos(i).x)+'px;top:' + (getOverlayPos(i).y) + 'px;opacity:'+getOverlayOpacity()+';'}}" ng-mouseover="mouseover_lay(i)" ng-mouseleave="mouseleave(i,'overlay',$event)" ng-mousemove="mousemove(i,'overlay',$event)" ng-click="toggleGrabOverlay($event)" id="overlay{{i}}" title="click to drag")
 					
 					
 	p(ng-show="response.length>0")
@@ -44,24 +44,25 @@ block content_comic
 		svg(width=20000 height=30000 ng-show="mouseover_panel>-1" ng-mouseleave="mouseleave(-1,'',$event)" ng-mouseover="mouseleave(-1,'',$event)" ng-mousemove="mousemove(-1,'',$event)")
 			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="stroke-width:3;stroke:black;fill:blue;fill-opacity:0.1;" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
 	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_panel>-1")
-		img(src="/images/icon_back.png" ng-click="movepanel(mouseover_panel,mouseover_panel-1);")
+		img(src="/images/icon_back.png" ng-click="movepanel(mouseover_panel,mouseover_panel-1);" title="move panel back")
 		| &nbsp
-		img(src="/images/icon_forward.png" ng-click="movepanel(mouseover_panel,mouseover_panel+1);")
+		img(src="/images/icon_forward.png" ng-click="movepanel(mouseover_panel,mouseover_panel+1);" title="bring panel ahead")
 		| &nbsp
-		img(src="/images/icon_delete.png" ng-click="deletepanel(mouseover_panel);")
+		img(src="/images/icon_delete.png" ng-click="deletepanel(mouseover_panel);" title="delete panel")
 		| &nbsp
-		img(src="/images/icon_pop.png" ng-click="poppanel(mouseover_panel);")
+		img(src="/images/icon_pop.png" ng-click="poppanel(mouseover_panel);" title="pop out (make overlay)")
 
 	//- dynamic elements --- mouseover for overlay
 	div(style="position:fixed;left:0px;top:0px;")
-		svg(width=20000 height=30000 ng-show="mouseover_overlay>-1" ng-mouseleave="mouseleave(-1,'',$event)" ng-mouseover="mouseleave(-1,'',$event)" ng-mousemove="mousemove(-1,'',$event)" ng-click="toggleGrabOverlay($event)")
-			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="{{getOverlayColourStyle()}}" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
+		svg(width=20000 height=30000 ng-show="mouseover_overlay>-1" ng-mouseleave="mouseleave(-1,'',$event)" ng-mouseover="mouseleave(-1,'',$event)" ng-mousemove="mousemove(-1,'',$event)" ng-click="toggleGrabOverlay($event)" title="click to drag")
+			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="{{getOverlayColourStyle()}}" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}" title="click to drag")
+				title click to drag
 	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_overlay>-1")
-		img(src="/images/icon_delete.png" ng-click="deleteoverlay(mouseover_overlay);")
+		img(src="/images/icon_delete.png" ng-click="deleteoverlay(mouseover_overlay);" title="delete overlay")
 		| &nbsp
-		img(src="/images/icon_pop.png" ng-click="overlaytop(mouseover_overlay);")
+		img(src="/images/icon_pop.png" ng-click="overlaytop(mouseover_overlay);" title="bring to front")
 		| &nbsp
-		img(src="/images/icon_push.png" ng-click="overlaybot(mouseover_overlay);")
+		img(src="/images/icon_push.png" ng-click="overlaybot(mouseover_overlay);" title="push to back")
 
 block content_comment
 	div(class="commentcontainer")

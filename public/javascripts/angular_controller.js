@@ -638,6 +638,8 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 		}
 
 		$scope.getToggleOverlayText=function() {
+			if ($scope.draft.overlays.length<=0)
+				return "";
 			if ($scope.overlays_vis)
 				return "Partially hide overlays";
 			else

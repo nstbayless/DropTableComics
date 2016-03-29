@@ -22,12 +22,14 @@ block content_comic
 	p
 		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
 			img(src="/images/icon_share.png" alt="share")
-			| share
+			span(ng-hide="shlink.length>0")
+				| share
 		span(ng-show="shlink.length>0")
-			input(readonly="readonly" ng-model="shlink" ng-init="")
-	a(href="https://www.facebook.com/sharer/sharer.php?u="+"#{share_link}" target="_blank" ) Share on Facebook
-	br
-	a(class="twitter-share-button"  href="https://twitter.com/intent/tweet?text=#{share_link}") Tweet
+			input(readonly="readonly" ng-model="shlink" ng-init="" cols=200)
+			| &nbsp;
+			a(href="https://www.facebook.com/sharer/sharer.php?u="+"#{share_link}" target="_blank" ) Share on Facebook
+			|  | 
+			a(class="twitter-share-button"  href="https://twitter.com/intent/tweet?text=#{share_link}") Tweet
 	button(ng-click = "subscribe_comic('#{comic_uri}')" ng-show = "!isartist") Subscribe
 	p Collaborators:
 		each user, i in editlist

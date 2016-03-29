@@ -52,7 +52,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			password: $scope.auth_password
 		}).then(function(response){
 			if (response.data.success) //redirect to dashboard
-				$timeout(function(){window.location='/';},REDIRECT_TIMEOUT)
+				$timeout(function(){window.location.reload();},REDIRECT_TIMEOUT)
 			else if (response.data.msg)
 				$scope.response = response.data.msg
 		}, function errorCallback(response) {

@@ -466,22 +466,29 @@ class RouteComic {
 			});
 		});
 
+		/* TODO(NaOH): I am a bit confused on how you are doing the path to
+		include the user name in angular */
  		/*GET forgot my password page. */
-		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
+		router.get("/forgetpassword", function(req, res, next) {
 			res.render('forgotmypassword');
-			});		
+		});	
+
+		/*POST forgot my password */
+		router.post("/forgetpassword/:username", function(req, res, next){
+		req.dbManager.postPasswordetrival(req.body.username);
+		});
 
 
 		/* GET change password page. */
-		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
+		router.get("/changepassword", function(req, res, next) {
 			res.render('changepassword');
-			});
+		});
 
 		/* PUT user password changes. */
-		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/changepassword$/, function(req, res, next) {
-			var username:string = req.user.getUsername();  // artist username
+		router.put("/changepassword", function(req, res, next) {
+			var username:string = req.body.username; 
 			var path:string = "";
-			req.dbManager.postPassword(username, path, req.body, function(err, password) {
+			req.dbManager.postPasswordChange(username, path, req.body, function(err, password) {
 
 			})
 
@@ -495,7 +502,7 @@ class RouteComic {
 		//TODO(tina): this is not a RESTful URI~! should PUT to /account/(username)
 		// POST (should be PUT) changes to user profile
 		/* PUT user profile changes. */
-		router.put(/^\/accounts\/[a-zA-Z0-9\-]*\/editdashboard$/, upload.single('image'), function(req, res, next) {
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/editdashboard$/, upload.single('image'), function(req, res, next) {
 			var username: string = req.user.getUsername();
 			var path:string = "";
 			if(req.file)
@@ -503,9 +510,8 @@ class RouteComic {
 			req.dbManager.postAvatarandInfo(username, path, req.body, function(err, avatar) {
 				if (err)
 					res.status(500).send("error uploading changes to profile");
-				else //TODO(tina): server redirect is bad practice. Client should redirect itself.
-					res.redirect('/');
-					// ask Noah: what error should I consider for here? 
+				//else //TODO(tina): server redirect is bad practice. Client should redirect itself.
+					//res.redirect('/');
 			});
 		});
 

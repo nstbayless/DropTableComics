@@ -9,6 +9,11 @@ import { Notification } from './Notification';
 import { EventSignal } from './EventSignal';
 import { EventType } from './EventType';
 var bcrypt = require('bcrypt');
+import { NotificationManager } from './NotificationManager';
+
+// random password generator
+var generator = require('generate-password');
+
 
 class DatabaseManager {
 
@@ -604,7 +609,7 @@ class DatabaseManager {
 		})
 	}
 
-	//TODO(tina): needs renaming, this posts more than just the avatar.
+	//POSTs the new user information 
 	postAvatarandInfo(username:string, path:string, body: any, callback: any){
 		var db = this.db;
 		var users = db.get('users');
@@ -630,10 +635,10 @@ class DatabaseManager {
 			if (!body.location || body.location == "") {
 				location = user.getLocation();
 			}
-			var timezone: string = body.timezone;
+			/*var timezone: string = body.timezone;
 			if (! body.timezone || body.timezone == "") {
 				timezone = user.getTimeZone();
-			}
+			}*/
 			var link: string = body.link;
 			if (!body.link || body.link == "") {
 				link = user.getLink();
@@ -650,10 +655,9 @@ class DatabaseManager {
 						"avatar": path,
 						"name": name,
 						"email": email,
-						"hash": hash,
 						"description": description,
 						"location": location,
-						"timezone": timezone,
+						//"timezone": timezone,
 						"link": link,
 						"shouldShowSubscription": shouldShowSubscription
 					}
@@ -664,8 +668,8 @@ class DatabaseManager {
 		});
 	}
 
-
-	postPassword(username: string, path: string, body: any, callback5: any) {
+	// POSTs the new password 
+	postPasswordChange(username: string, path: string, body: any, callback: any) {
 		var db = this.db;
 		var users = db.get('users');
 		var dbm = this;
@@ -673,7 +677,7 @@ class DatabaseManager {
 			var hash: string = ""
 
 			// check if old password matches
-			if (checkHash(body.oldpass, user.getHash()) == true) {
+			if (this.checkHash(body.oldpass, user.getHash()) == true) {
 				// check if new password and confirm password matches
 				if (body.confirmpass == body.password) {
 					hash = dbm.computeHash(body.password);
@@ -694,6 +698,37 @@ class DatabaseManager {
 		
 	}
 
+	// sets a temporary password for the user to retrieve their account with 
+	// emails user with temp password. 
+	postPasswordRetrival(usernameoremail: string) {
+		var db = this.db;
+		var users = db.get('users');
+		var dbm = this;
+
+		// generates a random password 
+		var temppass = generator.generate({
+			length: 6,
+			numbers: true
+		});
+		var NM = new NotificationManager(this);
+		NM.sendMailPassword(usernameoremail, temppass);
+
+		var hash = dbm.computeHash(temppass);
+
+		users.update({
+			$or: [
+				{ username: usernameoremail },
+				{ email: usernameoremail }
+			]
+		}, {
+				$set: {
+					"hash": hash,
+				}
+			}, {
+				upsert: true
+			});
+
+	}
 
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)

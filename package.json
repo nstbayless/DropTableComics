@@ -13,6 +13,7 @@
     "debug": "~2.2.0",
     "express": "~4.13.1",
     "fs": "0.0.2",
+    "generate-password": "^1.1.1",
     "http": "0.0.0",
     "https": "^1.0.0",
     "image-size": "^0.4.0",
@@ -25,9 +26,9 @@
     "morgan": "~1.6.1",
     "multer": "^1.1.0",
     "nodemailer": "^0.7.1",
-    "serve-favicon": "~2.3.0",
     "progress": "^1.1.8",
     "semaphore": "^1.0.5",
+    "serve-favicon": "~2.3.0",
     "should": "^8.2.2",
     "supertest": "^1.2.0"
   }

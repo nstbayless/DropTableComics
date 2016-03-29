@@ -138,7 +138,7 @@ class RouteComic {
 								"description": req.user.getDescription(),
 								"email": req.user.getEmail(),
 								"location": req.user.getLocation(),
-								"timezone": req.user.getTimeZone(),
+								//"timezone": req.user.getTimeZone(),
 								"link": req.user.getLink(),
 								"shouldShowSubscription": req.user.subscriptionChoice(),
 								"subscriptions": comic_ids,
@@ -466,34 +466,25 @@ class RouteComic {
 			});
 		});
 
-		/* TODO(NaOH): I am a bit confused on how you are doing the path to
-		include the user name in angular */
- 		/*GET forgot my password page. */
-		router.get("/forgetpassword", function(req, res, next) {
-			res.render('forgotmypassword');
-		});	
-
-		/*POST forgot my password */
-		router.post("/forgetpassword/:username", function(req, res, next){
-		req.dbManager.postPasswordetrival(req.body.username);
-		});
-
-
+	
 		/* GET change password page. */
 		router.get("/changepassword", function(req, res, next) {
 			res.render('changepassword');
 		});
 
+		//TODO (NaOH): the bodyparser didn't work for me :(
 		/* PUT user password changes. */
-		router.put("/changepassword", function(req, res, next) {
-			var username:string = req.body.username; 
+		router.post("/changepassword", upload.single('image'), function(req, res, next) {
+			var username: string = req.user.getUsername();
 			var path:string = "";
 			req.dbManager.postPasswordChange(username, path, req.body, function(err, password) {
-
-			})
+			res.redirect('/');
+			});
 
 		});
 
+		/* TODO(NaOH): I am a bit confused on how you are doing the path to
+		include the user name in angular */
 		/* GET edit dashboard page. */
 		router.get(/^\/editdashboard\/?$/, function(req, res, next) {
 			res.render('editdashboard');
@@ -501,8 +492,9 @@ class RouteComic {
 
 		//TODO(tina): this is not a RESTful URI~! should PUT to /account/(username)
 		// POST (should be PUT) changes to user profile
+		//TODO: tried PUT, it didn't work, looked it up. It is becase HTML forms only support GET and POST
 		/* PUT user profile changes. */
-		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/editdashboard$/, upload.single('image'), function(req, res, next) {
+		router.post(/^\/editdashboard\/?$/, upload.single('image'), function(req, res, next) {
 			var username: string = req.user.getUsername();
 			var path:string = "";
 			if(req.file)
@@ -510,8 +502,8 @@ class RouteComic {
 			req.dbManager.postAvatarandInfo(username, path, req.body, function(err, avatar) {
 				if (err)
 					res.status(500).send("error uploading changes to profile");
-				//else //TODO(tina): server redirect is bad practice. Client should redirect itself.
-					//res.redirect('/');
+				else //TODO(tina): server redirect is bad practice. Client should redirect itself.
+					res.redirect('/');
 			});
 		});
 

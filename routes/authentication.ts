@@ -4,6 +4,8 @@
 
 var express = require('express');
 var config = require('../config');
+var multer  = require('multer');
+var upload = multer({ dest: './data/images/' });
 import User = require('../src/User')
 
 class RouteAuth {
@@ -96,6 +98,24 @@ class RouteAuth {
 			else //user already logged in, no need to see this page.
 			res.redirect('/')
 		});
+
+		/* TODO(NaOH): I am a bit confused on how you are doing the path to
+		include the user name in angular */
+			/*GET forgot my password page. */
+		router.get("/forgotpassword", function(req, res, next) {
+			res.render('forgotmypassword');
+		});	
+
+		/*POST forgot my password */
+		router.post("/forgotpassword", upload.single('image'), function(req, res, next){
+			var userexists = req.dbManager.postPasswordRetrival(req.body.usernameoremail);
+			res.append('userexists',userexists);
+				res.render('forgotmypasswordsent');
+		});
+
+		router.get("/forgotpassword/sent", function(req, res, next) {
+			res.render('forgotmypasswordsent');
+		});	
 
 		/* POST login. (POSTs a new session) */
 		router.post('/auth/login', function(req, res, next) {

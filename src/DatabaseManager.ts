@@ -14,6 +14,15 @@ import { NotificationManager } from './NotificationManager';
 // random password generator
 var generator = require('generate-password');
 
+var nodemailer = require('nodemailer');
+var smtpTransport = nodemailer.createTransport("SMTP",{
+   service: "Gmail",  // sets automatically host, port and connection security settings
+   auth: {
+       user: "dropcomixupdates@gmail.com",
+	   pass: "arnold4ever"
+	  }
+});
+
 
 class DatabaseManager {
 
@@ -52,7 +61,7 @@ class DatabaseManager {
 				"avatar":"",
 				"name": "",
 				"description": "",
-				"location": "",
+				//"location": "",
 				"timezone": "",
 				"link": "",
 				"subscription": true
@@ -78,6 +87,7 @@ class DatabaseManager {
 	getUser(username: string, callback:any) {
 		var users = this.db.get('users');
 		users.findOne({username:username}, function(err,user_canon){
+			console.log("BLAH:" + user_canon);
 			if (err||!user_canon) return callback(err,null);
 			var user: User;
 			if (user_canon.type=="artist")
@@ -614,6 +624,7 @@ class DatabaseManager {
 		var db = this.db;
 		var users = db.get('users');
 		var dbm = this;
+		console.log(username);
 		this.getUser(username, function(err, user) {
 			if (!path || path == "") {
 				path = user.getAvatar();
@@ -673,14 +684,17 @@ class DatabaseManager {
 		var db = this.db;
 		var users = db.get('users');
 		var dbm = this;
-		this.getUser(username, function(err, user) {
-			var hash: string = ""
+		console.log(username);
+		console.log(body.confirmpass);
+		console.log(body.newpass);
+		this.getUser(username, (err, user) => {
+			var hash: string = "";
 
 			// check if old password matches
-			if (this.checkHash(body.oldpass, user.getHash()) == true) {
+			if (this.checkHash(body.oldpass, user.hash) == true) {
 				// check if new password and confirm password matches
-				if (body.confirmpass == body.password) {
-					hash = dbm.computeHash(body.password);
+				if (body.confirmpass == body.newpass) {
+					hash = dbm.computeHash(body.newpass);
 
 					users.update({
 						"username": username
@@ -691,16 +705,17 @@ class DatabaseManager {
 						}, {
 							upsert: true
 						})
+					return callback();
 				}
 			}
-			return callback()
+
 		});
 		
 	}
 
 	// sets a temporary password for the user to retrieve their account with 
 	// emails user with temp password. 
-	postPasswordRetrival(usernameoremail: string) {
+	postPasswordRetrival(usernameoremail: string): Boolean {
 		var db = this.db;
 		var users = db.get('users');
 		var dbm = this;
@@ -710,10 +725,23 @@ class DatabaseManager {
 			length: 6,
 			numbers: true
 		});
-		var NM = new NotificationManager(this);
-		NM.sendMailPassword(usernameoremail, temppass);
 
 		var hash = dbm.computeHash(temppass);
+
+		console.log(temppass);
+		console.log(usernameoremail);
+
+		users.findOne({
+			$or: [
+				{ username: usernameoremail },
+				{ email: usernameoremail }
+				
+		]}, (err, user) => {
+			console.log(user);
+			if (!user) return false;
+		
+			this.sendMailPassword(user.username, temppass);
+		});
 
 		users.update({
 			$or: [
@@ -727,7 +755,31 @@ class DatabaseManager {
 			}, {
 				upsert: true
 			});
+		return true;
 
+	}
+
+	/** Send Mail */
+	sendMailPassword(username:string, message:string){
+		console.log("HELLO:" + username);
+		this.getUser(username, function(err, user){
+
+			smtpTransport.sendMail({  //email options
+				from: '"DropComix 👥" <dropcomixupdates@gmail.com>',
+				// sender address. Must be the same as authenticated user if using GMail.
+				to: user.getEmail(), // receiver
+				subject: "DropComix", // subject
+				text: message// body
+			}, function(error, response) {  //call back
+				if (error) {
+					console.log(error);
+				} else {
+					console.log("Message sent: " + response.message);
+				}
+
+				smtpTransport.close(); // shut down the connection pool, no more messages.  Comment this line out to continue sending emails.
+			});
+		});
 	}
 
 

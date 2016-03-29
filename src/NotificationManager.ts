@@ -25,11 +25,34 @@ export class NotificationManager {
 	constructor(dbmanager:DatabaseManager){
 	this.dbmanager = dbmanager;
 	}
-	
-	/** Send Mail */
-	sendMailHelper(username:string, message:string){
+
+/** Send Mail */
+	sendMail(username:string, notification:Notification){
 		
 		this.dbmanager.getUser(username, function(err, user){	
+			smtpTransport.sendMail({  //email options
+   				from: '"DropComix 👥" <dropcomixupdates@gmail.com>', 
+				// sender address.  Must be the same as authenticated user if using GMail.
+   				to: user.getEmail(), // receiver
+   				subject: "DropComix", // subject
+   				text: notification.getMessage() // body
+			}, function(error, response){  //callback
+   			if(error){
+       				console.log(error);
+   			}else{
+       			console.log("Message sent: " + response.message);
+   			}
+   
+   smtpTransport.close(); // shut down the connection pool, no more messages.  Comment this line out to continue sending emails.
+});
+		});
+	}
+	
+	/** Send Mail 
+	sendMailHelper(username:string, message:string){
+		
+		this.dbmanager.getUser(username, function(err, user){
+			console.log(user)	
 			smtpTransport.sendMail({  //email options
    				from: '"DropComix 👥" <dropcomixupdates@gmail.com>', 
 				// sender address.  Must be the same as authenticated user if using GMail.
@@ -56,10 +79,9 @@ export class NotificationManager {
 	}
 
 	//send mail for notificactions
-	sendMail(username:string, notification:Notification){
+	sendMailNotifcation(username:string, notification:Notification){
 		this.sendMailHelper(username, notification.getMessage());
 	}
-
 
 
 	/* Async subscribes user to a given event */

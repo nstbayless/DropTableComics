@@ -2,27 +2,29 @@ extends pretty
 
 block content
 	center
-		div(class="dropdown")
-			button(class="dropbtn") Page Selection
-			div(class="dropdown-content")
-				- var i = 1
-				while i <= maxpageid
-						a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + i++ + url_append) Page #{i-1}
-	block content_comic
-	center
-		p
-			if pageid>1
-				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/1#{url_append}")
-					img(src="/images/icon_first.png")
-				| &nbsp;
-				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{pageid-1}#{url_append}")
-					img(src="/images/icon_back.png")
-			|	&nbsp;
-			if pageid<maxpageid
-				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{pageid+1}#{url_append}")
-					img(src="/images/icon_forward.png")
-				| &nbsp;
-				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{maxpageid}#{url_append}")
-					img(src="/images/icon_last.png")
+		div(style="max-width:1200px;margin-left:20px;margin-right:20px;" align="left")
+			center
+				div(class="dropdown")
+					button(class="dropbtn") Page Selection
+					div(class="dropdown-content")
+						- var i = 1
+						while i <= maxpageid
+								a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + i++ + url_append) Page #{i-1}
+			block content_comic
+			center
+				p
+					if pageid>1
+						a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/1#{url_append}")
+							img(src="/images/icon_first.png")
+						| &nbsp;
+						a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{pageid-1}#{url_append}")
+							img(src="/images/icon_back.png")
+					|	&nbsp;
+					if pageid<maxpageid
+						a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{pageid+1}#{url_append}")
+							img(src="/images/icon_forward.png")
+						| &nbsp;
+						a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{maxpageid}#{url_append}")
+							img(src="/images/icon_last.png")
 	
-	block content_comment
+			block content_comment

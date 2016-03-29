@@ -590,6 +590,28 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 			$scope.mouseover_overlay=-1;
 		}
 
+		// bring overlay to top
+		$scope.overlaytop=function(i) {
+			$scope.draft.overlays.push($scope.draft.overlays[i]);
+			$scope.draft.overlays.splice(i,1);
+			$scope.draft.edited=true;
+
+			$scope.updateServer();
+
+			$scope.mouseover_overlay=$scope.draft.overlays.length-1;
+		}
+
+		//push overlay to bottom
+		$scope.overlaybot=function(i) {
+			$scope.draft.overlays.unshift($scope.draft.overlays[i]);
+			$scope.draft.overlays.splice(i+1,1);
+			$scope.draft.edited=true;
+
+			$scope.updateServer();
+
+			$scope.mouseover_overlay=0;
+		}
+
 		$scope.revertPage=function(){
 			$http.delete("draft", {
 				draft:$scope.draft

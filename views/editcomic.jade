@@ -58,6 +58,10 @@ block content_comic
 			rect(width="{{boxgetattr().width}}" height="{{boxgetattr().height}}" style="{{getOverlayColourStyle()}}" x="{{boxgetattr().left}}" y="{{boxgetattr().top}}")
 	div(style="position:fixed;left:{{boxgetattr().left}}px;top:{{boxgetattr().top}}px;" ng-show="mouseover_overlay>-1")
 		img(src="/images/icon_delete.png" ng-click="deleteoverlay(mouseover_overlay);")
+		| &nbsp
+		img(src="/images/icon_pop.png" ng-click="overlaytop(mouseover_overlay);")
+		| &nbsp
+		img(src="/images/icon_push.png" ng-click="overlaybot(mouseover_overlay);")
 
 block content_comment
 	div(class="commentcontainer")

@@ -3,36 +3,47 @@ extends pretty
 
 block content
 	form(ng-init="comics=#{comics_js}")
-	h1.bannertext Dashboard
-	
-	h2= username
-	p
-		img(src='/accounts/#{username}/avatar' width=96 border=2)
-	
-	p Description: #{description}
-	p Name: #{name}
-	p Email: #{email}
-	p Location: #{location}
-	p Time Zone: #{timezone}
-	
-	if(isartist == false)
-		p Subscriptions: #{subscriptions}
-	
-	a(href="/editdashboard") Edit Information
-
-	h2 Comics
-	if(isartist == true && comics_length != 0)
-		p Created Comics
-	if(isartist == false && comics_length != 0)
-		p My Comics
-	ul
-		each comic, i in comics
-			li
-				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
-	if(typeof(notifications) !== 'undefined' && notifications_length != 0)
-		h2 Notifications
-		ul
-			each notification, i in notifications
-				li
-					= notification.timestamp+ ": " + notification.event.id + " (" + notification.msg + ")"
-	
+		div(class="container bs-docs-container")
+				p(class="form-subtitle") Dashboard
+				div(class="row")
+					//- PROFILE BOX
+					div(class="col-md-4")
+						//- form(ng-init="comics=#{comics_js}")
+						div(class="twPc-div")
+							a(class="twPc-bg twPc-block")
+							div
+								//- edit information button
+								div(class="twPc-button")
+									a(type="button" href="/editdashboard" class="btn btn-primary" style="padding-top:2px;padding-bottom:2px") edit info
+								//- edit information button end
+							a(title="#{username}" href="/profile/#{username}" class="twPc-avatarLink")
+								img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg")
+							div(class="twPc-divUser")
+								div(class="twPc-divName")
+									a(href="/profile/#{username}") #{username}
+								span
+									p Description: #{description} 
+								span
+									p(style="padding-left:10px;line-height:150%;") Name: #{name} <br />
+										| Email: #{email} <br />
+										| Location: #{location} <br />
+										| Time Zone: #{timezone}
+					//- END OF PROFILE BOX
+				div(class="row")
+					if(isartist == false)
+						p Subscriptions: #{subscriptions}
+					h2 Comics
+					if(isartist == true && comics_length != 0)
+						p Created Comics
+					if(isartist == false && comics_length != 0)
+						p My Comics
+					ul
+						each comic, i in comics
+							li
+								a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+					if(typeof(notifications) !== 'undefined' && notifications_length != 0)
+						h2 Notifications
+						ul
+							each notification, i in notifications
+								li
+									= notification.timestamp+ ": " + notification.event.id + " (" + notification.msg + ")"

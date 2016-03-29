@@ -65,8 +65,8 @@ export class Page {
 	/** CONSTRUCTOR */
 	constructor(){
 		this.panels=[];
-		this.comments = [];
 		this.overlays = [];
+		this.comments = new Array<Comment>();
 		this.title="";
 		this.edited=false;
 	}

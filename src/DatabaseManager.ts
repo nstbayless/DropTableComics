@@ -14,9 +14,6 @@ var ReadWriteLock = require('rwlock');
 var Set = require("collections/set");
 
 
- 
-
-
 class DatabaseManager {
 
 	// mongo database

@@ -7,7 +7,7 @@ block content
 				p(class="form-subtitle") Dashboard
 				div(class="row")
 					//- PROFILE BOX
-					div(class="col-md-4")
+					div(class="col-md-12")
 						//- form(ng-init="comics=#{comics_js}")
 						div(class="twPc-div")
 							a(class="twPc-bg twPc-block")
@@ -29,21 +29,70 @@ block content
 										| Location: #{location} <br />
 										| Time Zone: #{timezone}
 					//- END OF PROFILE BOX
+				//- COMIC BOX TABS
 				div(class="row")
-					if(isartist == false)
-						p Subscriptions: #{subscriptions}
-					h2 Comics
-					if(isartist == true && comics_length != 0)
-						p Created Comics
-					if(isartist == false && comics_length != 0)
-						p My Comics
-					ul
-						each comic, i in comics
-							li
-								a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
-					if(typeof(notifications) !== 'undefined' && notifications_length != 0)
-						h2 Notifications
-						ul
-							each notification, i in notifications
-								li
-									= notification.timestamp+ ": " + notification.event.id + " (" + notification.msg + ")"
+					div(class="col-md-8" style="padding:15px;")
+						div(id="custom_carousel" class="carousel slide dashboardcomicbox")
+							div(class="controls")
+								ul(class="nav nav-tabs" role="tablist" style="padding-top:10px")
+									li(role="presentation" class="active" data-target="#custom_carousel" data-slide-to="0")
+										a(href="#" aria-controls="comics" role="tab" data-toggle="tab")
+											small Comics
+									li(role="presentation" data-target="#custom_carousel" data-slide-to="1")
+										a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab")
+											small Subscriptions
+									//- li(data-target="#custom_carousel" data-slide-to="2")
+									//- 	a(href="#")
+									//- 		img(src="http://placehold.it/50x50")
+									//- 		small Slide Three
+									//- li(data-target="#custom_carousel" data-slide-to="3")
+									//- 	a(href="#")
+									//- 		img(src="http://placehold.it/50x50")
+									//- 		small Slide Four
+							<br />
+							div(class="carousel-inner")
+								div(class="item active")
+									div(class="container-fluid")
+										div(class="col-md-3")
+											img(src="http://placehold.it/350x250" class="img-responsive")
+										div(class="col-md-9")
+											h2 Comics
+											if(isartist == true && comics_length != 0)
+												p Created Comics
+											if(isartist == false && comics_length != 0)
+												p My Comics
+											ul
+												each comic, i in comics
+													li
+														a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+								div(class="item")
+									div(class="container-fluid")
+										div(class="col-md-3")
+											img(src="http://placehold.it/350x250" class="img-responsive")
+										div(class="col-md-9")
+											h2 Subscriptions
+											if(isartist == false)
+												p Subscriptions: #{subscriptions}
+								//- div(class="item")
+								//- 	div(class="container-fluid")
+								//- 		div(class="col-md-3")
+								//- 			img(src="http://placehold.it/350x250" class="img-responsive")
+								//- 		div(class="col-md-9")
+								//- 			h2 Slide 3
+								//- 			p hello this is the third slide, hopefully it's working
+								//- div(class="item")
+								//- 	div(class="container-fluid")
+								//- 		div(class="col-md-3")
+								//- 			img(src="http://placehold.it/350x250" class="img-responsive")
+								//- 		div(class="col-md-9")
+								//- 			h2 Slide 4
+								//- 			p hello this is the fourth slide, hopefully it's working
+					div(class="col-md-4" style="padding-top:15px")
+						div(class="dashboardcomicbox")
+							h2 Notifications
+							hr
+							if(typeof(notifications) !== 'undefined' && notifications_length != 0)
+								ul
+									each notification, i in notifications
+										li
+											= notification.timestamp+ ": " + notification.event.id + " (" + notification.msg + ")"

@@ -1,3 +1,39 @@
+/*Footer at bottom with information*/
+html,
+body {
+  margin:0;
+  padding:0;
+  height:100%;
+}
+
+#wrapperbottom {
+  min-height:100%;
+  position:relative;
+}
+#contentbottom {
+  padding-bottom:100px; /* Height of the footer element */
+}
+#footerbottom {
+  background:#ffab62;
+  width:100%;
+  height:100px;
+  position:absolute;
+  bottom:0;
+  left:0;
+}
+
+/* Comic card and Notifcation card on dashboard*/
+.dashboardcomicbox {
+  min-height:400px;
+  max-height:500px;
+  border: 1px solid #e1e8ed;
+  border-radius: 6px;
+  padding-left:15px;
+  padding-bottom:15px;
+  padding-right:15px;
+  overflow:auto;
+}
+
 /*Profile card on dashboard*/
 
 .twPc-div {
@@ -5,8 +41,8 @@
     border: 1px solid #e1e8ed;
     border-radius: 6px;
     height: wrap-content;
-    max-width: 340px; // orginal twitter 
-    width: 290px;
+    max-width: 100%; // orginal twitter 
+    width: 100%;
 }
 .twPc-bg {
     background-image: url("https://pbs.twimg.com/profile_banners/50988711/1384539792/600x200");
@@ -417,6 +453,7 @@ a.share {
   display:inline-block;
 }
 
+/*Comment Section */
 .commentcontainer {
   padding:0.01em 16px;
   border:1px solid black;

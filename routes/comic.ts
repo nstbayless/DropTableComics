@@ -274,6 +274,7 @@ class RouteComic {
 				return res.render('editcomic', {
 					title: comic.getName(),
 					editcomments: comments,
+					username: req.user.getUsername(),
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic.getURI(),
@@ -322,6 +323,7 @@ class RouteComic {
 					description: comic.getDescription(),
 					editlist: comic.getEditlist(), 
 					comments: comments,
+					username: req.user.getUsername(),
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic.getURI(),

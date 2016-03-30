@@ -15,10 +15,11 @@ block content_layout
 			div(class="collapse navbar-collapse" id="bs-example-navbar-collapse-1")
 				ul(class="nav navbar-nav navbar-right text-center")
 					form(class="navbar-form" role="search")
-						div(class="form-group")
+						div(class="input-group")
 							input(type="text" class="form-control" placeholder="search . . ." onkeypress="searchKeypress(event);" onfocus="searchFocusClear();")#search
-							a(href="javascript:searchSubmit();")
-								p(class="glyphicon glyphicon-search" aria-hidden="true")
+							span(class="input-group-btn")
+								a(href="javascript:searchSubmit();")
+									p(class="btn glyphicon glyphicon-search" aria-hidden="true" style="margin-top:0px")
 				ul(class="nav navbar-nav navbar-left")
 					li
 						a(href="/accounts/"+ "{{username}}" +"/create" ng-show="isartist") + Create Comic

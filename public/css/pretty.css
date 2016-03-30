@@ -6,20 +6,37 @@ body {
   height:100%;
 }
 
-#wrapperbottom {
+#wrapperbottom{
   min-height:100%;
   position:relative;
 }
-#contentbottom {
-  padding-bottom:100px; /* Height of the footer element */
+#contentbottom{
+  padding-bottom:150px; /* Height of the footer element */
 }
-#footerbottom {
-  background:#ffab62;
+#footerbottom{
+  background:#242729;
   width:100%;
-  height:100px;
+  height:150px;
   position:absolute;
+  margin:auto;
+  text-align: left;
+  box-sizing: content-box;
   bottom:0;
   left:0;
+  padding-top:20px;
+  clear:both;
+}
+#footerbottom p{
+  color:#b9bdc1;
+}
+
+#footerbottom #copyright {
+  clear: both;
+  padding-top: 10px;
+  font-size: 11px;
+  font-weight: 400;
+  text-align:left;
+  color:#767d84;
 }
 
 /* Comic card and Notifcation card on dashboard*/
@@ -235,10 +252,23 @@ p.form-subtitle
     letter-spacing: 4px;
 }
 
+/*Small centered space createcomic*/
 form.smallcenter
 {
-    width: 250px;
-    margin: 0 auto;
+    padding:20px;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    height: wrap-content;
+    width: 500px;
+    margin: auto;
+}
+/*textarea styling*/
+.noresize {
+  resize:none;
+}
+
+textarea {
+  min-height:100px;
 }
 
 form.login input[type="text"], form.login input[type="password"]

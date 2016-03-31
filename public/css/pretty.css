@@ -486,11 +486,13 @@ a.share {
 
 .commentcontainer {
   overflow:hidden;
+
 }
 
 .commentcontainer section{
   min-height:125px;
   display:block;
+  background-color: gray;
 }
 
 #commenttextarea {

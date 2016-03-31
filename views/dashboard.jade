@@ -2,6 +2,8 @@ extends pretty
 - var comics_js = JSON.stringify(comics)
 
 block content
+	div(id="bg")
+		background-colour: white; 
 	form(ng-init="comics=#{comics_js}")
 		div(class="container bs-docs-container")
 				p(class="form-subtitle") Dashboard
@@ -15,21 +17,20 @@ block content
 							div
 								//- edit information button
 								div(class="twPc-button")
-									a(type="button" href="/editdashboard" class="btn btn-primary" style="padding-top:4px;padding-bottom:4px;  margin: -150px 10px 0;") edit info
+									a(type="button" href="/editdashboard" class="btn btn-primary" style="padding-top:4px;padding-bottom:4px;  margin: 2px 10px 0;") edit info
 								//- edit information button end
 								
 								//- change password button
 								div(class="twPc-button")
 									a(type="button" href="/changepassword" class="btn btn-primary"
-									style="padding-top:4px;padding-bottom:4px;margin: -125px 10px 0;") change password
+									style="padding-top:4px;padding-bottom:4px;margin: 2px 10px 0;") change password
 								//- change password button end
 
 							a(title="#{username}" href="/profile/#{username}" class="twPc-avatarLink")
-								img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg" style = "margin-top: -50px;")
+								img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg" style = "margin-top: -35px;")
 							div(class="twPc-divUser")
-								p(style="padding-left:10px;") Name: #{name} <br />
 								div(class="twPc-divName")
-									p(style="padding-left:10px;")
+									p(style="padding-left:10px; margin: -50px 0 0 75px;")
 										a(href="/profile/#{username}") #{username}
 								span
 									p(style="padding-left:10px;") Description: #{description} 
@@ -45,12 +46,14 @@ block content
 						div(id="custom_carousel" class="carousel slide dashboardcomicbox")
 							div(class="controls")
 								ul(class="nav nav-tabs" role="tablist" style="padding-top:10px")
-									li(role="presentation" class="active" data-target="#custom_carousel" data-slide-to="0")
-										a(href="#" aria-controls="comics" role="tab" data-toggle="tab")
-											small Comics
-									li(role="presentation" data-target="#custom_carousel" data-slide-to="1")
-										a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab")
-											small Subscriptions
+									if(isartist == true)
+										li(role="presentation" class="active" data-target="#custom_carousel" data-slide-to="0")
+											a(href="#" aria-controls="comics" role="tab" data-toggle="tab")
+												small Comics
+									if(isartist == false)
+										li(role="presentation" data-target="#custom_carousel" data-slide-to="1")
+											a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab")
+												small Subscriptions
 									//- li(data-target="#custom_carousel" data-slide-to="2")
 									//- 	a(href="#")
 									//- 		img(src="http://placehold.it/50x50")
@@ -61,6 +64,7 @@ block content
 									//- 		small Slide Four
 							<br />
 							div(class="carousel-inner")
+							if(isartist == true)
 								div(class="item active")
 									div(class="container-fluid")
 										b Comics
@@ -76,14 +80,15 @@ block content
 												each comic, i in comics
 													li
 														a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+							if(isartist == false)
 								div(class="item")
 									div(class="container-fluid")
 										b Subscriptions
 										div(class="col-md-3")
 											img(src="http://placehold.it/350x250" class="img-responsive")
 										div(class="col-md-9")
-											if(isartist == false)
-												p Subscriptions: #{subscriptions}
+										if(shouldShowSubscription == true) 
+											p #{subscriptions}
 								//- div(class="item")
 								//- 	div(class="container-fluid")
 								//- 		div(class="col-md-3")
@@ -98,6 +103,7 @@ block content
 								//- 		div(class="col-md-9")
 								//- 			h2 Slide 4
 								//- 			p hello this is the fourth slide, hopefully it's working
+
 					div(class="col-md-4" style="padding-top:15px")
 						div(class="dashboardcomicbox")
 							b Notifications

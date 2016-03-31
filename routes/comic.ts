@@ -563,11 +563,14 @@ class RouteComic {
 			req.dbManager.getUser(username, function(err, user) {
 				if (err||!user) 
 					return next();
+				var isartist = user.isArtist();
 				req.dbManager.getComics(username, function(err, comics) {
 					res.render('profile', {
+						"isartist": isartist,
 						"username": user.getUsername(),
 						"name": user.getName(),
 						"description": user.getDescription(),
+						"subscription": user.subscriptionChoice(), 
 						location: user.getLocation(),
 						"email": user.getEmail(),
 						"link": user.getLink(),

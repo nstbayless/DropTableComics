@@ -9,7 +9,7 @@ block content
 	//- 			while i <= maxpageid
 	//- 					a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + i++ + url_append) Page #{i-1}
 	block content_comic
-	center
+	center(style="margin:20px")
 		p
 			if pageid>1
 				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/1#{url_append}")
@@ -24,5 +24,5 @@ block content
 				| &nbsp;
 				a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/#{maxpageid}#{url_append}")
 					img(src="/images/icon_last.png")
-	
+	block content_sharing
 	block content_comment

@@ -1,19 +1,35 @@
 extends comic
 
 block content_comic
-	h1.bannertext Edit #{comic_name}
-	if (adminable)
-		p
-			a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/admin") Admin options
-	p
-		a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/pages/#{pageid}") View page
-	p
-		form(method='post', enctype='multipart/form-data', action= '/accounts/' + comic_creator + '/comics/' + comic_uri+"/panels")
-			input(type='file', name='image' id='image_upload')
-			<input type="hidden" name="page" value="#{pageid}">
-			input(type='submit')
-	p
-		a(href="" ng-hide="{{(draft.overlays.length<=0)}" ng-click="toggleOverlays();") {{getToggleOverlayText()}}
+	div
+		div(class="row")
+			p(class="titleleft") Edit: #{comic_name} 
+				span(class="titleleftsmall") Page #{pageid}
+	div(class="btn-group btn-group-justified" role="group" aria-label="...")
+		div(class="btn-group" role="group")
+			if (adminable)
+				a(class="btn btn-default" role="button" href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/admin") Admin options
+		div(class="btn-group" role="group")
+			a(class="btn btn-default" role="button" href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/pages/#{pageid}") View page
+		div(class="btn-group" role="group")
+			a(class="btn btn-default" role="button" href="" ng-hide="{{(draft.overlays.length<=0)}" ng-click="toggleOverlays();") Partially Hide Overlays
+		div(class="btn-group" role="group")
+			a(class="btn btn-default" role="button" href="" ng-click="postPage('#{comic_creator}','#{comic_uri}')") New Page
+	br
+	//- if (adminable)
+	//- 	p
+	//- 		a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/admin") Admin options
+	//- p
+	//- 	a(href="/accounts/"+comic_creator+"/comics/"+comic_uri+"/pages/#{pageid}") View page
+	div(class="row")
+		div(class="col-md-4")
+			form(method='post', enctype='multipart/form-data', action= '/accounts/' + comic_creator + '/comics/' + comic_uri+"/panels" style="float:left")
+				input(type='file', name='image' id='image_upload')
+				<input type="hidden" name="page" value="#{pageid}">
+				input(class="btn btn-primary btn-xs" type='submit')
+				p <br />
+	//- p
+	//- 	a(href="" ng-hide="{{(draft.overlays.length<=0)}" ng-click="toggleOverlays();") {{getToggleOverlayText()}}
 	center
 		//= render comic using angular (slightly different from published view to allow live edits)
 		div(class="comicpage" id="comicpage" style="width:1000px;")
@@ -32,12 +48,12 @@ block content_comic
 		a(href="" ng-click="publishPage('#{comic_creator}','#{comic_uri}',#{pageid})") Publish page
 		|  | 
 		a(href="" ng-click="revertPage()") Revert page
-	p
-		a(href="" ng-click="postPage('#{comic_creator}','#{comic_uri}')") New Page
+	//- p
+	//- 	a(href="" ng-click="postPage('#{comic_creator}','#{comic_uri}')") New Page
 	if pageid==maxpageid && pageid>1
 		p
-			a(href="" ng-click="confirmdelete=true;" ng-hide="confirmdelete") Delete this page
-			a(href="" ng-click="deletePage('#{comic_creator}','#{comic_uri}',#{pageid})" ng-show="confirmdelete") Confirm!
+			a(class="btn btn-default" href="" ng-click="confirmdelete=true;" ng-hide="confirmdelete") Delete this page
+			a(class="btn btn-warning" href="" ng-click="deletePage('#{comic_creator}','#{comic_uri}',#{pageid})" ng-show="confirmdelete") Confirm!
 
 	//- dynamic elements --- mouseover for panel
 	div(style="position:fixed;left:0px;top:0px;")
@@ -69,10 +85,10 @@ block content_comment
 		div(class="col-md-8 col-md-offset-2")
 			h2 Comment on the page
 			hr
-			div(class="row")
-				div(class="col-md-2")
+			div(class="row" style="margin:5%")
+				div(class="pull-left")
 					img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg center-block")
-				div(class="col-md-10")
+				div(class="pull-right" style="width:calc(100% - 80px)")
 					p
 						textarea(class="noresize form-control" id="commenttextarea" type="text" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150")
 						div(class="text-right")
@@ -80,37 +96,38 @@ block content_comment
 					p
 						font(color="red") {{response3}}
 			hr
-			each comment, i in editcomments
-				div(class="row")
-					div(class="col-md-2")
-						div(style="padding-top:20px;padding-bottom:20px")
-							img(alt="#{comment.username}" src="/accounts/#{comment.username}/avatar" class="twPc-avatarImg center-block")
-					div(class="col-md-10")
-						div(style="padding-top:30px")
-							if comment.adminlevel == 2
-								header
-									span
-										a(class="purplelevel" href="/profile/#{comment.username}") #{comment.username}   
-									span
-										span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
-										span(class="timestamp") #{comment.postDate}
-								p
-									|#{comment.description}  <br />
-							else if comment.adminlevel == 1
-								header
-									span
-										a(class="bluelevel" href="/profile/#{comment.username}") #{comment.username}   
-									span
-										span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
-										span(class="timestamp") #{comment.postDate}
-								p
-									|#{comment.description}  <br />	
-							else
-								header
-									span
-										a(class="pleblevel" href="/profile/#{comment.username}") #{comment.username}   
-									span
-										span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
-										span(class="timestamp") #{comment.postDate}
-								p
-									|#{comment.description}  <br />
+			div(style="max-height:1500px;overflow:auto;overflow-x:hidden")
+				each comment, i in editcomments
+					div(class="row" style="margin:5%")
+						div(class="pull-left")
+							div
+								img(alt="#{comment.username}" src="/accounts/#{comment.username}/avatar" class="twPc-avatarImg center-block")
+						div(class="pull-right" style="width:calc(100% - 80px)")
+							div(style="padding-top:3%")
+								if comment.adminlevel == 2
+									header
+										span
+											a(class="purplelevel" href="/profile/#{comment.username}") #{comment.username}   
+										span
+											span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
+											span(class="timestamp") #{comment.postDate}
+									p
+										|#{comment.description}  <br />
+								else if comment.adminlevel == 1
+									header
+										span
+											a(class="bluelevel" href="/profile/#{comment.username}") #{comment.username}   
+										span
+											span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
+											span(class="timestamp") #{comment.postDate}
+									p
+										|#{comment.description}  <br />	
+								else
+									header
+										span
+											a(class="pleblevel" href="/profile/#{comment.username}") #{comment.username}   
+										span
+											span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
+											span(class="timestamp") #{comment.postDate}
+									p
+										|#{comment.description}  <br />

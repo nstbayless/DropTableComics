@@ -1,29 +1,35 @@
 extends pretty
 
 block content
-	h2 Search Results
-	ul
+	p(class="titleleft") Search results
+	form#aform(name='cat', method='GET')
+		div(class="row")
+			div(class="col-md-4")
+				p Advanced Search:
+					input#asearch(class="form-control" type="text" ng-model="query" placeholder="Search for...")
+		div(class="row")
+			div(class="col-md-2")
+				label 
+					input#searchtitle(type='checkbox' name='title' checked) 
+				|  Title
+				br
+				label 
+					input#searchcreator(type='checkbox' name='creator' checked) 
+				|  Creator
+			div(class="col-md-2")
+				label 
+					input#searchdescription(type='checkbox' name='description' checked) 
+				|  Description
+				br
+				label 
+					input#searchtags(type='checkbox' name='tags' checked) 
+				|  Tags
+				br
+		div(class="row")
+			div(class="col-md-4")
+				input(class="btn btn-primary" type=submit ng-click="a_search()" ng-show = "query.length>0" value='Search For {{query}}') 
+	ul(style="margin-top:40px")
+		p <b><i> Search results: </i></b>
 		each comic, i in comics
 			li
 				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
-	form#aform(name='cat', method='GET')
-		p Advanced Search
-			input#asearch(type="text" ng-model="query" placeholder="Enter Query")
-		label 
-			input#searchtitle(type='checkbox' name='title' checked) 
-		| Title
-		br
-		label 
-			input#searchcreator(type='checkbox' name='creator' checked) 
-		| Creator
-		br
-		label 
-			input#searchdescription(type='checkbox' name='description' checked) 
-		| Description
-		br
-		label 
-			input#searchtags(type='checkbox' name='tags' checked) 
-		| Tags
-		br
-		input(type=submit ng-click="a_search()" ng-show = "query.length>0" value='Search For {{query}}') 
-

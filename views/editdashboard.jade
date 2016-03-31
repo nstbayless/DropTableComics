@@ -14,26 +14,41 @@ block content
 				p(class="dashboard_b") -Description- 
 				p(class="dashboard_c") current: #{description}
 				p
-				input(type="text" name="description" placeholder="Enter Description..")
+				if (!description)
+					input(type="text" name="description" placeholder="Enter Description..")
+				else
+					input(type="text" name="description" placeholder="Enter Description.." value="#{description}")
 				p
 				p(class="dashboard_a") -Name- 
 				p(class="dashboard_c") current: #{name}
 				p
-				input(type="text" name="name" placeholder= "Enter Name...")
+				if (!name)
+					input(type="text" name="name" placeholder= "Enter Name...")
+				else
+					input(type="text" name="name" placeholder= "Enter Name..." value="#{name}")
 				p
 				p(class="dashboard_b") -Email- 
 				p(class="dashboard_c") current: #{email}
 				p
-				input(type="email" name="email" placeholder="Change Email...")
+				if (!email)
+					input(type="email" name="email" placeholder="Change Email...")
+				else
+					input(type="email" name="email" placeholder="Change Email..." value="#{email}")
 				p
 				p(class="dashboard_a") -Location- 
 				p(class="dashboard_c") current: #{location}
 				p
-				input(type="text" name="location" placeholder="Enter Location...")
+				if (!location)
+					input(type="text" name="location" placeholder="Enter Location...")
+				else
+					input(type="text" name="location" placeholder="Enter Location..." value="#{location}")
 				p
 				p(class="dashboard_b") -Add Link to Other Sites- 
 				p(class="dashboard_c") current: #{link}
-				input(type="text" name="link" placeholder="Enter Link...")
+				if (!link)
+					input(type="text" name="link" placeholder="Enter Link...")
+				else
+					input(type="text" name="link" placeholder="Enter Link..." value="#{link}")
 				p
 
 				if(isartist == false) 

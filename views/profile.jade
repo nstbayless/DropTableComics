@@ -3,7 +3,8 @@ extends pretty
 
 block content
 	form(ng-init="comics=#{comics_js}")
-		div(class="container bs-docs-container")
+		div(class="container bs-docs-container posrel")
+				p(class="form-subtitle") #{username}'s Profile
 				div(class="row")
 					//- PROFILE BOX
 					div(class="col-md-12")

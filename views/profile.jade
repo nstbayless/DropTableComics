@@ -2,8 +2,10 @@ extends pretty
 - var comics_js = JSON.stringify(comics)
 
 block content
+	div(id="bg")
+		img(src="/images/background.png" alt="")
 	form(ng-init="comics=#{comics_js}")
-		div(class="container bs-docs-container")
+		div(class="container bs-docs-container porsel")
 				div(class="row")
 					//- PROFILE BOX
 					div(class="col-md-12")
@@ -33,11 +35,11 @@ block content
 								ul(class="nav nav-tabs" role="tablist" style="padding-top:10px")
 									if(comics_length != 0)
 										li(role="presentation" class="active" data-target="#custom_carousel" data-slide-to="0")
-											a(href="#" aria-controls="comics" role="tab" data-toggle="tab")
+											a(href="#" aria-controls="comics" role="tab" data-toggle="tab" style="background-color:rgba(255, 255, 255, 0.5)")
 												small Comics
 									if(isartist == false)
 										li(role="presentation" data-target="#custom_carousel" data-slide-to="1")
-											a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab")
+											a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab" style="background-color:rgba(255, 255, 255, 0.5)")
 												small Subscriptions
 									//- li(data-target="#custom_carousel" data-slide-to="2")
 									//- 	a(href="#")
@@ -50,17 +52,25 @@ block content
 							<br />
 							div(class="carousel-inner")
 							if(comics_length != 0)
-								div(class="item active")
+								div(class="item")
 									div(class="container-fluid")
-										b #{username}'s Comics
+										b Comics
 										div(class="col-md-3")
-											img(src="http://placehold.it/350x250" class="img-responsive")
+											div(style="height:250px;")
+												img(class="img-responsive" id="test1" src="http://placehold.it/350x250")
 										div(class="col-md-9")
-												if(comics_length != 0) 
-												ul
-													each comic, i in comics
-														li
-															a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+											<br/>
+											if(isartist == true && comics_length != 0)
+												p Created Comics
+											if(isartist == false && comics_length != 0)
+												p My Comics
+											ul
+												each comic, i in comics
+													li
+														if (comic.panel_preview != undefined)
+															a(href="/accounts/" + comic.creator + "/comics/" + comic.uri onmouseover="document.getElementById('test1').src='/accounts/#{comic.creator}/comics/#{comic.uri}/panels/#{comic.panel_preview}'")= comic.title
+														else if (comic.panel_preview === undefined)
+															a(href="/accounts/" + comic.creator + "/comics/" + comic.uri onmouseover="document.getElementById('test1').src='http://placehold.it/350x250'")= comic.title
 							//- 			if(isartist == true && comics_length != 0)
 							//- 				p Created Comics
 							//- 			if(isartist == false && comics_length != 0)

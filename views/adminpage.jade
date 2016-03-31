@@ -1,38 +1,43 @@
 extends pretty
 
 block content
-	h1 Permissions Page for "#{title}"
-	hr
-	h2 Viewing Permissions
-	div(id="viewlistdiv1")
-		p Comic viewlist: #{viewlist.length}
-		p
-			each user, i in viewlist
-				input(type="checkbox" ng-model="vl.#{user}")
-				|  #{user}
-				br
-		button(class="btn btn-warning" ng-show="evict_list('view').length>0" ng-click="evict_users(evict_list('view'),'view')")
-			| Evict {{evict_list('view').join(', ')}}
-		form
-			p Invite a new user to view:
-				input(type="text" ng-model="username_input" placeholder="Enter username here")
-			button(class="btn btn-default" ng-click = 'viewlist_add()' ng-show='username_input.length>0') Submit {{username_input}}
-		p
-			font(color="red") {{response1}}
-	hr
-	h2 Collaboration Permissions
-	div(id="editlistdiv2") 
-		p Comic editlist: #{editlist.length}
-		p
-			each user, i in editlist
-				input(type="checkbox" ng-model="el.#{user}")
-				|  #{user}
-				br
-		button(class="btn btn-warning" ng-show="evict_list('edit').length>0" ng-click="evict_users(evict_list('edit'),'edit')")
-			| Evict {{evict_list('edit').join(', ')}}
-		form
-			p Invite a new Artist to collaborate:
-				input(type="text" ng-model="editor_input" placeholder="Enter username here")
-			button(class="btn btn-default" ng-click="editlist_add()" ng-show="editor_input.length>0") Submit {{editor_input}}
-		p
-			font(color="red") {{response2}}
+	div(id="bg")
+		img(src="/images/background.png" alt="")
+	div(class="container posrel")
+		p(class="form-subtitle") Permissions Page for "#{title}"
+		div(class="smallcenter opaquewhite")
+			h2 Viewing Permissions
+			hr
+			div(id="viewlistdiv1")
+				p Comic viewlist: #{viewlist.length}
+				p
+					each user, i in viewlist
+						input(type="checkbox" ng-model="vl.#{user}")
+						|  #{user}
+						br
+				button(class="btn btn-warning" ng-show="evict_list('view').length>0" ng-click="evict_users(evict_list('view'),'view')")
+					| Evict {{evict_list('view').join(', ')}}
+				form
+					p Invite a new user to view:
+						input(class="form-control" type="text" ng-model="username_input" placeholder="Enter username here")
+					button(class="btn btn-default" ng-click = 'viewlist_add()' ng-show='username_input.length>0') Submit {{username_input}}
+				p
+					font(color="red") {{response1}}
+		div(class="smallcenter opaquewhite" style="margin-top:30px")
+			h2 Collaboration Permissions
+			hr
+			div(id="editlistdiv2") 
+				p Comic editlist: #{editlist.length}
+				p
+					each user, i in editlist
+						input(type="checkbox" ng-model="el.#{user}")
+						|  #{user}
+						br
+				button(class="btn btn-warning" ng-show="evict_list('edit').length>0" ng-click="evict_users(evict_list('edit'),'edit')")
+					| Evict {{evict_list('edit').join(', ')}}
+				form
+					p Invite a new Artist to collaborate:
+						input(class="form-control" type="text" ng-model="editor_input" placeholder="Enter username here")
+					button(class="btn btn-default" ng-click="editlist_add()" ng-show="editor_input.length>0") Submit {{editor_input}}
+				p
+					font(color="red") {{response2}}

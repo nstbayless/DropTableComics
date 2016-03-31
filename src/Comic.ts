@@ -24,10 +24,13 @@ export class Comic {
 	panel_map:string[]; /**maps from panel-id to path to image*/
 	manager:DatabaseManager; /** Database Manager */
 	tags:string[];
+	public_view:string;
+	cover:string; //path to coverpage
+	panel_preview:string;
 
 	/*  CONSTRUCTOR */
 	/** Looks up Comic from database by name */
-	constructor(uri_sanitized: string, creator: string, description: string){
+	constructor(uri_sanitized: string, creator: string, description: string, public_view: string){
 		this.uri_sanitized = uri_sanitized;
 		this.creator = creator;
 		this.description = description;
@@ -40,6 +43,8 @@ export class Comic {
 		this.draftpages = [];
 		this.draftpages.push(new Page());
 		this.panel_map=[];
+		this.public_view=public_view;
+
 	} /** stub */
 	
 	/* GETTERS */
@@ -88,6 +93,14 @@ export class Comic {
 	}
 	getPanelPath(panel:number){
 		return this.panel_map[panel];
+	}
+
+	getPublicView(): string{
+		return this.public_view;
+	}
+
+	getCover(): string{
+		return this.cover;
 	}
 
 	/* PREDICATES */

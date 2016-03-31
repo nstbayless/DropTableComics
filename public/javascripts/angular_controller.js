@@ -66,7 +66,8 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 		$scope.response=""
 		$http.post("/accounts/" + $scope.username + "/comics", {
 			comic_name: $scope.comic_name,
-			description: $scope.comic_description
+			description: $scope.comic_description,
+			public_view: $scope.comic_public_view,
 		}).then(function(response){
 			if (response.data.success)
 				window.location= "/accounts/" + response.data.comic_url;

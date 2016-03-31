@@ -28,6 +28,12 @@ block content_comic
 				<input type="hidden" name="page" value="#{pageid}">
 				input(class="btn btn-primary btn-xs" type='submit')
 				p <br />
+	//- div(class="row")
+		div(class="col-md-4")
+			form(method='post', enctype='multipart/form-data', action='/accounts/' + comic_creator + '/comics/' + comic_uri + "/cover" style="float:right")
+				input(type='file', name='cover' id='image_upload')
+				input(class="btn btn-primary" type='submit')
+				p <br />
 	//- p
 	//- 	a(href="" ng-hide="{{(draft.overlays.length<=0)}" ng-click="toggleOverlays();") {{getToggleOverlayText()}}
 	center

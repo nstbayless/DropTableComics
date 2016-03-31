@@ -117,10 +117,10 @@ class DatabaseManager {
 	
 
 	// creates a new comic and adds it to the database
-	createComic(name: string, artist: string, description:string): Comic {
+	createComic(name: string, artist: string, description:string, public_view:string): Comic {
 		var uri = Comic.sanitizeName(name);
 		var uri_sanitized = Comic.canonicalURI(uri)
-		var comic = new Comic(uri_sanitized, artist, description);
+		var comic = new Comic(uri_sanitized, artist, description, public_view);
 		comic.name=name;
 		comic.uri=uri;
 		var viewlist = new Array<string>();
@@ -132,12 +132,14 @@ class DatabaseManager {
 		console.log("creating comic");
 		comics.insert({"uri": uri, "urisan": uri_sanitized,
 									"title":name,"viewlist":viewlist,
+									"public_view": public_view,
 									"editlist":editlist,"adminlist":adminlist,"creator":artist,
 									"description":description,
 									"image_collection":comic.getImageCollection(),
 									"panel_map":comic.panel_map,
 									"pages": comic.pages,
-									"drafts": comic.draftpages, "tags":comic.tags});
+									"drafts": comic.draftpages, "tags":comic.tags,
+									});
 		return comic;
 	}
 
@@ -230,7 +232,7 @@ class DatabaseManager {
 				return callback(err,null); 
 			}
 			var comic: Comic;
-			comic = new Comic(comic_uri, username, "");
+			comic = new Comic(comic_uri, username, "", "");
 			comic.uri=comic_canon.uri;
 			comic.name=comic_canon.title;
 			comic.viewlist = comic_canon.viewlist;
@@ -238,6 +240,7 @@ class DatabaseManager {
 			comic.adminlist = comic_canon.adminlist;
 			comic.pages = [];
 			comic.tags = comic_canon.tags;
+			comic.public_view= comic_canon.public_view;
 			for (var i=0;i<comic_canon.pages.length;i++) {
 				comic.pages[i]=(new Page().construct_from_db(comic_canon.pages[i]));
 			}
@@ -400,6 +403,13 @@ class DatabaseManager {
 	getComics(username:string, callback: any){
 		var comics = this.db.get('comics');
 		comics.find({ creator: username }, {}, callback);
+	}
+
+	//RETURNs all comics that have a public value set to true or 1
+
+	getPublicComics(ispublic:number, callback: any) {
+		var comics = this.db.get('comics');
+		comics.find({ public_view: ispublic }, {}, callback);
 	}
 
 	
@@ -787,6 +797,32 @@ class DatabaseManager {
 	}
 
 
+	postCover(username:string, comic_uri:string, path:string, callback: any) {
+		var db=this.db;
+		comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(username,comic_uri,function(err,comic){
+			try {
+				if (comic&&!err) {
+					var cover = path;
+					var comics = db.get('comics');
+					console.log("hello");
+					comics.update({
+						"urisan":comic_uri,
+						"creator":username
+					}, {
+						$set: {
+							"cover":cover,
+						}
+					})
+					console.log("are you reaching the callback?");
+					callback(null,cover);
+				}
+			} catch (err) {
+				callback(err,null);
+			}
+		})
+	}
+
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)
 	// - if no error occurred, err field is null
@@ -816,7 +852,8 @@ class DatabaseManager {
 					{
 						$set: {
 							"drafts":pages,
-							"panel_map":panel_map
+							"panel_map":panel_map,
+							"panel_preview":new_panel_id
 						}
 					})
 					callback(null,new_panel_id);

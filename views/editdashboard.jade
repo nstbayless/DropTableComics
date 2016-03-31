@@ -2,30 +2,34 @@ extends pretty
 - var comics_js = JSON.stringify(comics)
 
 block content
-	form(ng-init="comics=#{comics_js}")
-	p(class="form-subtitle") Dashboard
-	form(method='post' enctype='multipart/form-data' action= '/editdashboard')
-		p -Avatar- 
-		input(type="file" name="image" id='image_upload')
-		p -Description-
-		input(type="text" name="description" placeholder="Enter Description..")
-		p -Name-
-		input(type="text" name="name" placeholder="Enter Name...")
-		p -Email-
-		input(type="email" name="email" placeholder="Change Email...")
-		p -Location-
-		input(type="text" name="location" placeholder="Enter Location...")
-		//- p Time Zone
-		p -Add Link to Other Sites-
-		input(type="text" name="link" placeholder="Enter Link...")
+	div(id="bg")
+		img(src="/images/background.png" alt="")
+	div(class="container")
+		p(class="form-subtitle posrel") Dashboard
+		div(class="smallcenter opaquewhite")
+			form(ng-init="comics=#{comics_js}")
+			form(method='post' enctype='multipart/form-data' action= '/editdashboard')
+				p -Avatar- 
+				input(type="file" name="image" id='image_upload')
+				p -Description-
+				input(type="text" name="description" placeholder="Enter Description..")
+				p -Name-
+				input(type="text" name="name" placeholder="Enter Name...")
+				p -Email-
+				input(type="email" name="email" placeholder="Change Email...")
+				p -Location-
+				input(type="text" name="location" placeholder="Enter Location...")
+				//- p Time Zone
+				p -Add Link to Other Sites-
+				input(type="text" name="link" placeholder="Enter Link...")
 
-		if(isartist != true) 
-			p -Subscription List-
-			input(type="radio" name="shouldShowSubscription" value=true)
-			b Show
-			<br />
-			input(type="radio" name="shouldShowSubscription" value=false)
-			b Hide
-			
-		p
-		input(type='submit')
+				if(isartist != true) 
+					p -Subscription List-
+					input(type="radio" name="shouldShowSubscription" value=true)
+					b Show
+					<br />
+					input(type="radio" name="shouldShowSubscription" value=false)
+					b Hide
+					
+				p
+				input(type='submit')

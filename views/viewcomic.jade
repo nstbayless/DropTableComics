@@ -70,18 +70,19 @@ block content_comment
 		div(class="col-md-8 col-md-offset-2")
 			h2 Comment on the page
 			hr
-			div(class="row" style="margin:5%")
-				div(class="pull-left")
-					img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg center-block")
-				div(class="pull-right" style="width:calc(100% - 80px)")
-					p
-						textarea(class="noresize form-control" id="commenttextarea" type="text" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150")
-						div(class="text-right")
-							button(class="btn btn-default" ng-click = "submit_comment('#{comic_creator}', '#{comic_uri}', '#{pageid}')" ng-show='comment_input.length>0') Submit 
-					p
-						font(color="red") {{response3}}
+			div(class="containeropaque")
+				div(class="row" style="margin:5%")
+					div(class="pull-left")
+						img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg center-block")
+					div(class="pull-right" style="width:calc(100% - 80px)")
+						p
+							textarea(class="noresize form-control" id="commenttextarea" type="text" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150")
+							div(class="text-right")
+								button(class="btn btn-default" ng-click = "submit_comment('#{comic_creator}', '#{comic_uri}', '#{pageid}')" ng-show='comment_input.length>0') Submit 
+						p
+							font(color="red") {{response3}}
 			hr
-			div(style="max-height:1500px;overflow:auto;overflow-x:hidden")
+			div(class="containeropaque" style="max-height:1500px;overflow:auto;overflow-x:hidden")
 				each comment, i in comments
 					div(class="row" style="margin:5%")
 						div(class="pull-left")

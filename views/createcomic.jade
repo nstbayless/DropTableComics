@@ -1,14 +1,17 @@
 extends pretty
 
 block content
-	h1.bannertext= header
-	form
-		p Comic
-			input(type="text" ng-model="comic_name" placeholder="Enter name here")
-		p Description
-			input(type="text" ng-model="comic_description" placeholder="Enter description here")
-		button(ng-click = "create_comic()" ng-show = "comic_name.length>0") Create {{comic_name}}
-		p(ng-show="comic_name.length>0")
-			font(color="gray" size="2") URL: /accounts/{{username}}/comics/{{sanitizeName(comic_name)}}
-		p
-			font(color="red") {{response}}
+	div(id="bg")
+		img(src="/images/background.png" alt="")
+	div(class="container")
+			p(class="form-subtitle posrel") create comic
+			form(class="smallcenter opaquewhite")
+				p Comic name:
+					input(type="text" class="form-control" ng-model="comic_name" placeholder="Enter name here")
+				p Description:
+					textarea(class="form-control noresize" type="text" rows="2" ng-model="comic_description" placeholder="Enter description here")
+				button(class="btn btn-primary" ng-click = "create_comic()" ng-show = "comic_name.length>0") Create {{comic_name}} <br />
+				p(ng-show="comic_name.length>0")
+					font(color="gray" size="2") <br />URL: /accounts/{{username}}/comics/{{sanitizeName(comic_name)}}
+				p
+					font(color="red") {{response}}

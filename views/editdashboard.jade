@@ -2,32 +2,61 @@ extends pretty
 - var comics_js = JSON.stringify(comics)
 
 block content
-	form(ng-init="comics=#{comics_js}")
-	h1.bannertext= Dashboard
-	form(method='post', enctype='multipart/form-data', action= '/editdashboard')
-		p Avatar 
-		input(type='file', name='image' id='image_upload')
-		p Description
-		input(type='text', name='description' placeholder="Enter Description..")
-		p Name
-		input(type="text" name="name" placeholder="Enter Name...")
-		p Password
-		input(type="password" name="password" placeholder="Enter New Password...")
-		p Email
-		input(type="email" name="email" placeholder="Change Email...")
-		p Location
-		input(type="text" name="location" placeholder="Enter Location...")
-		p Time Zone
-		input(type="text" name="timezone" placeholder="Enter TimeZone...")
-		p Add Link to Other Sites
-		input(type="text" name="link" placeholder="Enter Link...")
-		
-		if(isartist !== true)
-			p Subscription List
-			input(type="radio" name="shouldShowSubscription" value=true)
-			b Show
-			input(type="radio" name="shouldShowSubscription" value=false)
-			b Hide
 
-		p
-		input(type='submit')
+	div(class="container")
+		p(class="form-subtitle posrel") Dashboard
+		div(class="smallcenter opaquewhite")
+			form(ng-init="comics=#{comics_js}")
+			form(method='post' enctype='multipart/form-data' action= '/editdashboard' style = "text-align:center;")
+				p(class="dashboard_a")	-Avatar- 
+				input(type="file" name="image" id='image_upload' style="margin-left:auto;")
+				p
+				p(class="dashboard_b") -Description- 
+				p(class="dashboard_c") current: #{description}
+				p
+				if (!description)
+					input(type="text" name="description" placeholder="Enter Description..")
+				else
+					input(type="text" name="description" placeholder="Enter Description.." value="#{description}")
+				p
+				p(class="dashboard_a") -Name- 
+				p(class="dashboard_c") current: #{name}
+				p
+				if (!name)
+					input(type="text" name="name" placeholder= "Enter Name...")
+				else
+					input(type="text" name="name" placeholder= "Enter Name..." value="#{name}")
+				p
+				p(class="dashboard_b") -Email- 
+				p(class="dashboard_c") current: #{email}
+				p
+				if (!email)
+					input(type="email" name="email" placeholder="Change Email...")
+				else
+					input(type="email" name="email" placeholder="Change Email..." value="#{email}")
+				p
+				p(class="dashboard_a") -Location- 
+				p(class="dashboard_c") current: #{location}
+				p
+				if (!location)
+					input(type="text" name="location" placeholder="Enter Location...")
+				else
+					input(type="text" name="location" placeholder="Enter Location..." value="#{location}")
+				p
+				p(class="dashboard_b") -Add Link to Other Sites- 
+				p(class="dashboard_c") current: #{link}
+				if (!link)
+					input(type="text" name="link" placeholder="Enter Link...")
+				else
+					input(type="text" name="link" placeholder="Enter Link..." value="#{link}")
+				p
+
+				if(isartist == false) 
+					p(class="dashboard_a") -Subscription List-
+					input(type="radio" name="shouldShowSubscription" value=true)
+					b Show
+					input(type="radio" name="shouldShowSubscription" value=false)
+					b Hide
+					
+				p
+				input(type='submit')

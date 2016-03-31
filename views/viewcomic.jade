@@ -5,30 +5,50 @@ block content_comic
 	meta(property='og:type', content='website')
 	meta(property='og:title', content='DropComix')
 	meta(property='og:description', content='Your description')
-	h1.bannertext=comic_name
-	if (description)
-		p
-			i= description
-	if (pagename)
-		h2.bannertext= pagename
-	if (editable)
-		p
-			a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + pageid + "/edit" ) Edit page
-	if (panels.length>0)
-		center
-			div(class="comicpage" style="width:1000px;position:relative;")
-				span(id="page-area")
-					each pic, i in panels
-						span
-							img(src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic style="position:relative;" alt="panel "+i)
-					each pic, i in overlays
-						span(style="position: absolute;top:0;left:0;")
-							img(src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic.panelID style="position:absolute;left:"+(pic.x+500)+"px;top:" + pic.y + "px;")
+	div
+		div(class="row")
+			p(class="titleleft") #{comic_name} 
+				span(class="titleleftsmall") Page #{pageid}
+			div(class="col-md-4")
+				if (description)
+					p(class="nicegrey")
+						|Description: <br />
+						i= description
+	//- if (pagename)
+	//- 	h2.bannertext= pagename
+	div(class="row")
+		div(class="pull-left")
+			if (editable)
+				p
+					a(class="btn btn-primary" href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + pageid + "/edit") Edit page
+		div(class="pull-right")
+			div(class="dropdown")
+				button(class="dropbtn") Page Selection 
+					span(class="caret")
+				div(class="dropdown-content")
+					- var i = 1
+					while i <= maxpageid
+							a(href="/accounts/" + comic_creator + "/comics/" + comic_uri + "/pages/" + i++ + url_append) Page #{i-1}
+	br
+	div(class="row")
+		if (panels.length>0)
+			center
+				div(class="comicpage" style="width:1000px;position:relative;")
+					span(id="page-area")
+						each pic, i in panels
+							span
+								img(src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic style="position:relative;" alt="panel "+i)
+						each pic, i in overlays
+							span(style="position: absolute;top:0;left:0;")
+								img(src="/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic.panelID style="position:absolute;left:"+(pic.x+500)+"px;top:" + pic.y + "px;")
 	//- hidden preloading bit
 	div(align="right")
 		span(id="page-area-preload")
 				each pic, i in next_panels 
 					img(src= "/accounts/"+comic_creator+"/comics/"+comic_uri+"/panels/"+pic, alt="panel "+i, hidden)
+	br
+block content_sharing
+	br
 	p
 		a.share(ng-href="#share" ng-click="shlink='#{share_link}'")
 			img(src="/images/icon_share.png" alt="share")
@@ -39,34 +59,61 @@ block content_comic
 			| &nbsp;
 			a(href="https://www.facebook.com/sharer/sharer.php?u="+"#{share_link}" target="_blank" ) Share on Facebook
 			|  | 
-			a(class="twitter-share-button"  href="https://twitter.com/intent/tweet?text=#{share_link}") Tweet
+			a(class="twitter-share-button" src="https://platform.twitter.com/widgets.js" href="https://twitter.com/intent/tweet?text=#{share_link}") Tweet
 	button(ng-click = "subscribe_comic('#{comic_uri}')" ng-show = "!isartist") Subscribe
-	p Collaborators:
+	p <i> Collaborators: 
 		each user, i in editlist
-			li
-				p #{user}
+			span #{user}, 
+			</i>
 block content_comment
 	div(class="commentcontainer")
-		form
-			p COMMENT:
-			p
-				textarea(id="commenttextarea" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150" rows=10 cols=100)
-				button(ng-click = "submit_comment('#{comic_creator}', '#{comic_uri}', '#{pageid}')" ng-show='comment_input.length>0') Submit 
-			p
-				font(color="red") {{response3}}
-			each comment, i in comments
-				if comment.adminlevel == 2
-					p(class="comment; purplelevel") 
-						|#{comment.username}: 
-						|#{comment.description}  <br />
-						p(class="timestamp")|#{comment.postDate}	
-				else if comment.adminlevel == 1
-					p(class="comment; bluelevel")
-						|#{comment.username}: 
-						|#{comment.description}  <br />
-						p(class="timestamp")|#{comment.postDate}	
-				else
-					p(class="comment; pleblevel")
-						|#{comment.username}: 
-						|#{comment.description}  <br />
-						p(class="timestamp")|#{comment.postDate}				
+		div(class="col-md-8 col-md-offset-2")
+			h2 Comment on the page
+			hr
+			div(class="containeropaque")
+				div(class="row" style="margin:5%")
+					div(class="pull-left")
+						img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg center-block")
+					div(class="pull-right" style="width:calc(100% - 80px)")
+						p
+							textarea(class="noresize form-control" id="commenttextarea" type="text" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150")
+							div(class="text-right")
+								button(class="btn btn-default" ng-click = "submit_comment('#{comic_creator}', '#{comic_uri}', '#{pageid}')" ng-show='comment_input.length>0') Submit 
+						p
+							font(color="red") {{response3}}
+			hr
+			div(class="containeropaque" style="max-height:1500px;overflow:auto;overflow-x:hidden")
+				each comment, i in comments
+					div(class="row" style="margin:5%")
+						div(class="pull-left")
+							div
+								img(alt="#{comment.username}" src="/accounts/#{comment.username}/avatar" class="twPc-avatarImg center-block")
+						div(class="pull-right" style="width:calc(100% - 80px)")
+							div(style="padding-top:3%")
+								if comment.adminlevel == 2
+									header
+										span
+											a(class="purplelevel" href="/profile/#{comment.username}") #{comment.username}   
+										span
+											span(class="nicegrey") &nbsp;-&nbsp;   
+											span(class="timestamp") #{comment.postDate}
+									p
+										|#{comment.description}  <br />
+								else if comment.adminlevel == 1
+									header
+										span
+											a(class="bluelevel" href="/profile/#{comment.username}") #{comment.username}   
+										span
+											span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
+											span(class="timestamp") #{comment.postDate}
+									p
+										|#{comment.description}  <br />	
+								else
+									header
+										span
+											a(class="pleblevel" href="/profile/#{comment.username}") #{comment.username}   
+										span
+											span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
+											span(class="timestamp") #{comment.postDate}
+									p
+										|#{comment.description}  <br />

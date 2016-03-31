@@ -1,3 +1,207 @@
+/*Footer at bottom with information*/
+html,
+body {
+  margin:0;
+  padding:0;
+  height:100%;
+}
+
+.twitter-share-button{
+  margin-top:2px;
+}
+
+#containerwrapper {
+width:100%;
+background:#242729;
+position:relative;
+}
+#headercontent {
+  margin:0 auto;
+  width:960px;
+}
+
+#wrapperbottom{
+  min-height:100%;
+  position:relative;
+}
+#contentbottom{
+  padding-bottom:150px; /* Height of the footer element */
+}
+#footerbottom{
+  background:#242729;
+  width:100%;
+  height:150px;
+  position:absolute;
+  margin:auto;
+  text-align: left;
+  box-sizing: content-box;
+  bottom:0;
+  left:0;
+  padding-top:20px;
+  clear:both;
+}
+#footerbottom p{
+  color:#b9bdc1;
+}
+
+#footerbottom #copyright {
+  clear: both;
+  padding-top: 10px;
+  font-size: 11px;
+  font-weight: 400;
+  text-align:left;
+  color:#767d84;
+}
+
+/* Comic card and Notifcation card on dashboard*/
+.dashboardcomicbox {
+  min-height:400px;
+  max-height:500px;
+  border: 1px solid #e1e8ed;
+  border-radius: 6px;
+  padding-left:15px;
+  padding-bottom:15px;
+  padding-right:15px;
+  overflow:auto;
+  background-color:rgba(255, 255, 255, 0.5);
+}
+
+.posrel{
+  position:relative;
+}
+
+.smallcenter {
+    padding:20px;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    height: wrap-content;
+    width: 500px;
+    margin: auto;
+    position:relative;
+}
+
+.zindex{
+  z-index: 1;
+}
+
+.containeropaque{
+  border: 1px solid #e1e8ed;
+  border-radius: 6px;
+  background-color:rgba(255, 255, 255, 0.5);
+}
+
+.opaquecontainer{
+  min-height:400px;
+  border: 1px solid #e1e8ed;
+  border-radius: 6px;
+  padding-left:15px;
+  padding-bottom:15px;
+  padding-right:15px;
+  background-color:rgba(255, 255, 255, 0.5);
+}
+
+.opaquewhite {
+  background-color:rgba(255, 255, 255, 0.5);
+}
+
+/*Profile card on dashboard*/
+
+.twPc-div {
+    background: #fff none repeat scroll 0 0;
+    opacity: 0.9;
+    background-color:rgba(255, 255, 255, 0.5);
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    height: wrap-content;
+    max-width: 100%;
+    width: 100%;
+}
+.twPc-bg {
+    background-image: url("https://pbs.twimg.com/profile_banners/50988711/1384539792/600x200");
+    background-position: 0 50%;
+    background-size: 100% auto;
+    border-bottom: 1px solid #e1e8ed;
+    border-radius: 4px 4px 0 0;
+    height: 95px;
+    width: 100%;
+}
+.twPc-block {
+    display: block !important;
+}
+.twPc-button {
+    text-align: right;
+    width: 100%;
+    opacity: 0.8;
+}
+.twPc-avatarLink {
+    background-color: #fff;
+    border-radius: 6px;
+    display: inline-block !important;
+    float: left;
+    margin: -30px 5px 0 8px;
+    max-width: 100%;
+    padding: 1px;
+    vertical-align: bottom;
+}
+.twPc-avatarImg {
+    border: 2px solid #fff;
+    border-radius: 7px;
+    box-sizing: border-box;
+    color: #fff;
+    height: 72px;
+    width: 72px;
+}
+.twPc-divUser {
+    margin: 10px 0 0;
+}
+.twPc-divName {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 21px;
+}
+.twPc-divName a {
+    color: inherit !important;
+}
+.twPc-divStats {
+    margin-left: 11px;
+    padding: 10px 0;
+}
+.twPc-Arrange {
+    box-sizing: border-box;
+    display: table;
+    margin: 0;
+    min-width: 100%;
+    padding: 0;
+    table-layout: auto;
+}
+ul.twPc-Arrange {
+    list-style: outside none none;
+    margin: 0;
+    padding: 0;
+}
+.twPc-ArrangeSizeFit {
+    display: table-cell;
+    padding: 0;
+    vertical-align: top;
+}
+.twPc-ArrangeSizeFit a:hover {
+    text-decoration: none;
+}
+.twPc-StatValue {
+    display: block;
+    font-size: 18px;
+    font-weight: 500;
+    transition: color 0.15s ease-in-out 0s;
+}
+.twPc-StatLabel {
+    color: #8899a6;
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    text-transform: uppercase;
+    transition: color 0.15s ease-in-out 0s;
+}
+
 /*login page*/
 
 .vertical-offset-100
@@ -92,11 +296,51 @@ p.form-title
     text-transform: uppercase;
     letter-spacing: 4px;
 }
-
-form
+p.titleleft
 {
-    width: 250px;
-    margin: 0 auto;
+    font-family: 'Cornerstone';
+    font-size: 30px;
+    font-weight: 600;
+    margin-top: 2.5%;
+    letter-spacing: 4px;
+}
+.titleleftsmall
+{
+    font-family: 'Cornerstone';
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 2.5%;
+    letter-spacing: 4px;
+}
+p.form-subtitle
+{
+    font-family: 'Cornerstone';
+    font-size: 30px;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 2.5%;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+/*Small centered space createcomic*/
+form.smallcenter
+{
+    padding:20px;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    height: wrap-content;
+    width: 500px;
+    margin: auto;
+}
+
+/*textarea styling*/
+.noresize {
+  resize:none;
+}
+
+textarea {
+  min-height:100px;
 }
 
 form.login input[type="text"], form.login input[type="password"]
@@ -311,32 +555,46 @@ a.share {
   display:inline-block;
 }
 
+/*Comment Section */
+
 .commentcontainer {
-  padding:0.01em 16px;
-  border:1px solid black;
-  background-color:#fdf5e6;
-  background-size: 80px 60px;
-  height: auto;
-  max-height: 1000px;
-  max-width: 900px;
-  margin: auto;
-  width: 75%;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  overflow:auto;
+  overflow:hidden;
+
+}
+
+.commentcontainer section{
+  min-height:125px;
+  display:block;
+  background-color: gray;
 }
 
 #commenttextarea {
-  border:1px solid black;
-  background-color: rgba(255,255,255,0.5);
-  border-radius: 3px;
-  max-width: 90%; 
+  border: 1px solid #e1e8ed;
+  border-radius: 6px;
+  /*background-color: rgba(255,255,255,0.5);*/
+  box-shadow: none;
+  min-height:80px;
+  padding:15px;
+  font-size:15px;
+  overflow:auto;
+  /*margin-left:100px;*/
 }
 .timestamp{
   font-size:10px;
-  border-bottom:1px solid black;
+  color: rgba(0,39,59,.35);
+  font-weight:500;
+  /*border-bottom:1px solid black;*/
+}
+
+.nicegrey {
+  color: rgba(0,39,59,.35);
+  font-weight:500;
 }
 .purplelevel{
   color: rgb(255, 0, 255); 
+  font-family: inherit;
+  font-size: 15px;
+  font-weight:700;
 }
 
 .bluelevel{
@@ -347,14 +605,37 @@ a.share {
   color: green;
 }
 
+.dashboard_a{
+  color: rgba(0,0,255,0.5); 
+  font-family: inherit;
+  font-size: 15px;
+  font-weight:700;
+}
+
+.dashboard_b{
+  color: rgba(36, 144, 168, 0.9); 
+  font-family: inherit;
+  font-size: 15px;
+  font-weight:700;
+}
+
+.dashboard_c {
+    color: rgba(0,39,59,.35);
+    font-style: italic;
+    font-weight:400;
+}
+
+
 /* Style The Dropdown Button */
 .dropbtn {
-    background-color: rgb(89, 89, 89);
-    color: white;
-    padding: 16px;
-    font-size: 16px;
-    border: none;
+    background-color: white;
+    color: black;
+    font-size: 12px;
+    border: 1px solid #e1e8ed;
     cursor: pointer;
+    height:25px;
+    position:relative;
+
 }
 
 /* The container <div> - needed to position the dropdown content */
@@ -366,20 +647,24 @@ a.share {
 
 /* Dropdown Content (Hidden by Default) */
 .dropdown-content {
+    top:100%;
     display: none;
     position: absolute;
     background-color: #f9f9f9;
     width:100%;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index:2;
 }
 
 /* Links inside the dropdown */
 .dropdown-content a {
+  top:100%;
     color: black;
     padding: 3px 16px;
     text-decoration: none;
     position: right;
     display: block;
+    font-size:12px;
 }
 
 /* Change color of dropdown links on hover */
@@ -388,6 +673,7 @@ a.share {
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
     display: block;
+    position: absolute;
 }
 
 /* Change the background color of the dropdown button when the dropdown content is shown */

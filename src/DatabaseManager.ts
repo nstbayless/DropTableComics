@@ -9,13 +9,22 @@ import { Notification } from './Notification';
 import { EventSignal } from './EventSignal';
 import { EventType } from './EventType';
 var bcrypt = require('bcrypt');
+import { NotificationManager } from './NotificationManager';
+
+// random password generator
+var generator = require('generate-password');
+
+var nodemailer = require('nodemailer');
+var smtpTransport = nodemailer.createTransport("SMTP",{
+   service: "Gmail",  // sets automatically host, port and connection security settings
+   auth: {
+       user: "dropcomixupdates@gmail.com",
+	   pass: "arnold4ever"
+	  }
+});
 var MongoClient = require('mongodb').MongoClient;
 var ReadWriteLock = require('rwlock');
 var Set = require("collections/set");
-
-
- 
-
 
 class DatabaseManager {
 
@@ -54,7 +63,7 @@ class DatabaseManager {
 				"avatar":"",
 				"name": "",
 				"description": "",
-				"location": "",
+				//"location": "",
 				"timezone": "",
 				"link": "",
 				"subscription": true
@@ -612,11 +621,12 @@ class DatabaseManager {
 		})
 	}
 
-	//TODO(tina): needs renaming, this posts more than just the avatar.
-	postAvatar(username:string, path:string, body: any, callback: any){
+	//POSTs the new user information 
+	postAvatarandInfo(username:string, path:string, body: any, callback: any){
 		var db = this.db;
 		var users = db.get('users');
 		var dbm = this;
+		console.log(username);
 		this.getUser(username, function(err, user) {
 			if (!path || path == "") {
 				path = user.getAvatar();
@@ -630,12 +640,6 @@ class DatabaseManager {
 			if (!body.email || body.email == "") {
 				email = user.getEmail();
 			}
-			//TODO: should require old password to change password
-			var hash: string = ""
-			if (!body.password || body.password == "") {
-				hash = user.getHash();
-			} else
-				hash = dbm.computeHash(body.password);
 			var description: string = body.description;
 			if (!body.description || body.description == "") {
 				description = user.getDescription();
@@ -644,10 +648,10 @@ class DatabaseManager {
 			if (!body.location || body.location == "") {
 				location = user.getLocation();
 			}
-			var timezone: string = body.timezone;
+			/*var timezone: string = body.timezone;
 			if (! body.timezone || body.timezone == "") {
 				timezone = user.getTimeZone();
-			}
+			}*/
 			var link: string = body.link;
 			if (!body.link || body.link == "") {
 				link = user.getLink();
@@ -664,10 +668,9 @@ class DatabaseManager {
 						"avatar": path,
 						"name": name,
 						"email": email,
-						"hash": hash,
 						"description": description,
 						"location": location,
-						"timezone": timezone,
+						//"timezone": timezone,
 						"link": link,
 						"shouldShowSubscription": shouldShowSubscription
 					}
@@ -677,6 +680,112 @@ class DatabaseManager {
 			return callback()
 		});
 	}
+
+	// POSTs the new password 
+	postPasswordChange(username: string, path: string, body: any, callback: any) {
+		var db = this.db;
+		var users = db.get('users');
+		var dbm = this;
+		console.log(username);
+		console.log(body.confirmpass);
+		console.log(body.newpass);
+		this.getUser(username, (err, user) => {
+			var hash: string = "";
+
+			// check if old password matches
+			if (this.checkHash(body.oldpass, user.hash) == true) {
+				// check if new password and confirm password matches
+				if (body.confirmpass == body.newpass) {
+					hash = dbm.computeHash(body.newpass);
+
+					users.update({
+						"username": username
+					}, {
+							$set: {
+								"hash": hash,
+							}
+						}, {
+							upsert: true
+						})
+					return callback();
+				}
+			}
+
+		});
+		
+	}
+
+	// sets a temporary password for the user to retrieve their account with 
+	// emails user with temp password. 
+	postPasswordRetrival(usernameoremail: string, callback: any) {
+		var db = this.db;
+		var users = db.get('users');
+		var dbm = this;
+
+		// generates a random password 
+		var temppass = generator.generate({
+			length: 6,
+			numbers: true
+		});
+
+		var hash = dbm.computeHash(temppass);
+
+		console.log(temppass);
+		console.log(usernameoremail);
+
+		users.findOne({
+			$or: [
+				{ username: usernameoremail },
+				{ email: usernameoremail }
+				
+		]}, (err, user) => {
+			console.log("this is user: " + user);
+			if (user != null) {
+				this.sendMailPassword(user.username, temppass);
+				callback(true);
+			}
+			else {
+				callback(false);
+			}
+		});
+
+		users.update({
+			$or: [
+				{ username: usernameoremail },
+				{ email: usernameoremail }
+			]
+		}, {
+				$set: {
+					"hash": hash,
+				}
+			}, {
+				upsert: true
+			});
+	}
+
+	/** Send Mail */
+	sendMailPassword(username:string, message:string){
+		console.log("send mail to user :" + username);
+		this.getUser(username, function(err, user){
+
+			smtpTransport.sendMail({  //email options
+				from: '"DropComix 👥" <dropcomixupdates@gmail.com>',
+				// sender address. Must be the same as authenticated user if using GMail.
+				to: user.getEmail(), // receiver
+				subject: "DropComix", // subject
+				text: "This is your temporary password: "+ message// body
+			}, function(error, response) {  //call back
+				if (error) {
+					console.log(error);
+				} else {
+					console.log("Message sent: " + response.message);
+				}
+
+				smtpTransport.close(); // shut down the connection pool, no more messages.  Comment this line out to continue sending emails.
+			});
+		});
+	}
+
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)

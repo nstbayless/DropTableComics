@@ -773,7 +773,7 @@ class DatabaseManager {
 				// sender address. Must be the same as authenticated user if using GMail.
 				to: user.getEmail(), // receiver
 				subject: "DropComix", // subject
-				text: message// body
+				text: "This is your temporary password: "+ message// body
 			}, function(error, response) {  //call back
 				if (error) {
 					console.log(error);

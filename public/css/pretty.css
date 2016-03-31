@@ -535,10 +535,12 @@ a.share {
 .dropbtn {
     background-color: rgb(89, 89, 89);
     color: white;
-    padding: 16px;
-    font-size: 16px;
+    font-size: 12px;
     border: none;
     cursor: pointer;
+    height:25px;
+    position:relative;
+
 }
 
 /* The container <div> - needed to position the dropdown content */
@@ -550,15 +552,18 @@ a.share {
 
 /* Dropdown Content (Hidden by Default) */
 .dropdown-content {
+    top:100%;
     display: none;
     position: absolute;
     background-color: #f9f9f9;
     width:100%;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index:2;
 }
 
 /* Links inside the dropdown */
 .dropdown-content a {
+  top:100%;
     color: black;
     padding: 3px 16px;
     text-decoration: none;
@@ -572,6 +577,7 @@ a.share {
 /* Show the dropdown menu on hover */
 .dropdown:hover .dropdown-content {
     display: block;
+    position: absolute;
 }
 
 /* Change the background color of the dropdown button when the dropdown content is shown */

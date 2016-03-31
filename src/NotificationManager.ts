@@ -7,12 +7,13 @@ import { User } from './User';
 import { Notification } from './Notification';
 import { EventSignal } from './EventSignal';
 import { EventType } from './EventType';
+var config = require('../config')
 var nodemailer = require('nodemailer');
 var smtpTransport = nodemailer.createTransport("SMTP",{
    service: "Gmail",  // sets automatically host, port and connection security settings
    auth: {
-       user: "dropcomixupdates@gmail.com",
-       pass: "arnold4ever"
+       user: config.email_user,
+       pass: config.email_pass
    }
 });
 export class NotificationManager {
@@ -28,24 +29,23 @@ export class NotificationManager {
 
 /** Send Mail */
 	sendMail(username:string, notification:Notification){
-		
-		this.dbmanager.getUser(username, function(err, user){	
-			smtpTransport.sendMail({  //email options
-   				from: '"DropComix 👥" <dropcomixupdates@gmail.com>', 
-				// sender address.  Must be the same as authenticated user if using GMail.
-   				to: user.getEmail(), // receiver
-   				subject: "DropComix", // subject
-   				text: notification.getMessage() // body
-			}, function(error, response){  //callback
-   			if(error){
-       				console.log(error);
-   			}else{
-       			console.log("Message sent: " + response.message);
-   			}
-   
-   smtpTransport.close(); // shut down the connection pool, no more messages.  Comment this line out to continue sending emails.
-});
-		});
+		if (config.email)
+			this.dbmanager.getUser(username, function(err, user){	
+				smtpTransport.sendMail({  //email options
+		 				from: '"DropComix 👥" <dropcomixupdates@gmail.com>', 
+					// sender address.  Must be the same as authenticated user if using GMail.
+		 				to: user.getEmail(), // receiver
+		 				subject: "DropComix", // subject
+		 				text: notification.getMessage() // body
+					}, function(error, response){  //callback
+			 			if(error){
+				   				console.log(error);
+			 			}else{
+				   			console.log("Message sent: " + response.message);
+			 			}
+		 		smtpTransport.close(); // shut down the connection pool, no more messages.  Comment this line out to continue sending emails.
+				});
+			});
 	}
 	
 	/** Send Mail 

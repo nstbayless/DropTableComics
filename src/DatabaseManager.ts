@@ -22,7 +22,9 @@ var smtpTransport = nodemailer.createTransport("SMTP",{
 	   pass: "arnold4ever"
 	  }
 });
-
+var MongoClient = require('mongodb').MongoClient;
+var ReadWriteLock = require('rwlock');
+var Set = require("collections/set");
 
 class DatabaseManager {
 
@@ -135,7 +137,7 @@ class DatabaseManager {
 									"image_collection":comic.getImageCollection(),
 									"panel_map":comic.panel_map,
 									"pages": comic.pages,
-									"drafts": comic.draftpages});
+									"drafts": comic.draftpages, "tags":comic.tags});
 		return comic;
 	}
 
@@ -235,6 +237,7 @@ class DatabaseManager {
 			comic.editlist = comic_canon.editlist;
 			comic.adminlist = comic_canon.adminlist;
 			comic.pages = [];
+			comic.tags = comic_canon.tags;
 			for (var i=0;i<comic_canon.pages.length;i++) {
 				comic.pages[i]=(new Page().construct_from_db(comic_canon.pages[i]));
 			}
@@ -826,24 +829,89 @@ class DatabaseManager {
 	
 	// Basic Search
 	searchFor(username:string, query:string, callback:any){
+		// Connection URL 
+		var url = 'mongodb://localhost:27018/cpsc310';
 		var comics = this.db.get('comics');
-		console.log("SEARCHING FOR: " + query);
-		comics.ensureIndex(  // makes every field of each comic a searchable string
-				{ "$**": "text" }, 
-                           	{ name: "TextIndex" }); 
-		comics.find( { $text: { $search: query } }, function(err,comics){ // finds results
-			if (err) return callback(err, null);
-			var viewable_comics = new Array<Object>();
-			for (var i = 0; i < comics.length; i++) {
-			console.log(comics[i]);
-			if (	comics[i].viewlist.indexOf(username) > -1 
-				||comics[i].editlist.indexOf(username) > -1 
-				|| comics[i].adminlist.indexOf(username) > -1) // checks if comic is viewable
-				viewable_comics.push(comics[i]);
-			}
-			return callback(null, viewable_comics);
-		 });
+		// Use connect method to connect to the Server 
+		MongoClient.connect(url, function(err, newdb) {
+			console.log("Connected correctly to server");			
+			var collection = newdb.collection('comics');
+			console.log("SEARCHING FOR: " + query);
+			collection.dropIndex("TextIndex", function(err, result) { 
+				collection.ensureIndex(  // makes every field of each comic a searchable string
+							{ "$**": "text" }, 
+        	        		           	{ name: "TextIndex" }, function(err, result) { 
+					comics.find( { $text: { $search: query } }, function(err,comics){ // finds results
+						if (err) return callback(err, null);
+						var viewable_comics = new Array<Object>();
+						for (var i = 0; i < comics.length; i++) {
+						if (	comics[i].viewlist.indexOf(username) > -1 
+							||comics[i].editlist.indexOf(username) > -1 
+							|| comics[i].adminlist.indexOf(username) > -1) // checks if comic is viewable
+							viewable_comics.push(comics[i]);
+						}
+						newdb.close();
+						return callback(null,viewable_comics);
+					 });
+				});
+			});
+		});	
 	}
+	
+		// Advanced Search Helper
+	searchByCriteria(criteria:string, username:string, query:string, collection:any,lock:any, callback:any){
+			var comics = this.db.get('comics');			
+			lock.writeLock(function (release) {
+	// do stuff 
+				
+				console.log("SEARCHING FOR: " + query + " with criteria: " + criteria);
+				collection.dropIndex("TextIndex", function(err, result) {
+				var field = {};
+				field[criteria] = "text"; 
+					collection.ensureIndex(  // makes every field of each comic a searchable string
+								field,
+        	        			           	{ name: "TextIndex" }, function(err, result) { 
+						comics.find( { $text: { $search: query } }, function(err,comics){ // finds results
+							if (err) return callback(err, null);
+							var viewable_comics = new Array<Object>();
+							for (var i = 0; i < comics.length; i++) {
+							if (	comics[i].viewlist.indexOf(username) > -1 
+								||comics[i].editlist.indexOf(username) > -1 
+								|| comics[i].adminlist.indexOf(username) > -1) // checks if comic is viewable
+								viewable_comics.push(comics[i]);
+							}
+								console.log(viewable_comics);		
+								release();								
+								callback(null, viewable_comics);
+								
+						});
+					 });
+				});
+			});	
+	}
+	// Advanced Search, requires list of criteria
+	searchAdvanced(criteria:string[], username:string, query:string, callback:any){
+		var dbm:DatabaseManager = this;
+		var url = 'mongodb://localhost:27018/cpsc310'; 		// Connection URL 
+		// Use connect method to connect to the Server 
+		MongoClient.connect(url, function(err, newdb) {
+			console.log("Connected correctly to server");
+			var lock = new ReadWriteLock();			
+			var collection = newdb.collection('comics');		
+			var comics = [];	
+			var searched = 0;	
+			for (var i = 0; i < criteria.length; i++) {
+				dbm.searchByCriteria(criteria[i], username, query, collection,lock, function(err, viewable_comics){
+					if (!err && viewable_comics) comics = comics.concat(viewable_comics);
+					console.log("returned from helper, i =" + i + " criteria.length = "+ criteria.length);
+					if (++searched == criteria.length) {
+        					callback(null, comics);
+      					}
+				}); 
+			}	
+		});
+	}
+		
 		
 	// creates a hash for the given password
 	computeHash(password: string): string {

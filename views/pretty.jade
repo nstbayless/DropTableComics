@@ -39,4 +39,6 @@ block content_layout
 		//- 	li.headerlink
 		//- 		a(href="javascript:searchSubmit();").lowpad
 		//- 		img(src="/images/headerbar_icon_search.png" alt="Search")
-	block content
+	div(ng-app="authentication" ng-controller="authController")
+		div(class="container bs-docs-container")
+			block content

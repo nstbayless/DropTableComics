@@ -578,7 +578,7 @@ class RouteComic {
 				if (success)
 					res.redirect('/');
 				else
-					res.status(400).send({message:"failure to correctly input old password"})
+					res.status(400).send({msg:"failure to correctly input old password"})
 			});
 
 		});

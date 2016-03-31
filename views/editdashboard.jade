@@ -9,46 +9,46 @@ block content
 			form(ng-init="comics=#{comics_js}")
 			form(method='post' enctype='multipart/form-data' action= '/editdashboard' style = "text-align:center;")
 				p(class="dashboard_a")	-Avatar- 
-				input(type="file" name="image" id='image_upload' style="margin-left:auto;")
+				input(type="file" name="image" id='image_upload' style="")
 				p
 				p(class="dashboard_b") -Description- 
 				p(class="dashboard_c") current: #{description}
 				p
 				if (!description)
-					input(type="text" name="description" placeholder="Enter Description..")
+					input(class="form-control" type="text" name="description" placeholder="Enter Description..")
 				else
-					input(type="text" name="description" placeholder="Enter Description.." value="#{description}")
+					input(class="form-control" type="text" name="description" placeholder="Enter Description.." value="#{description}")
 				p
 				p(class="dashboard_a") -Name- 
 				p(class="dashboard_c") current: #{name}
 				p
 				if (!name)
-					input(type="text" name="name" placeholder= "Enter Name...")
+					input(class="form-control" type="text" name="name" placeholder= "Enter Name...")
 				else
-					input(type="text" name="name" placeholder= "Enter Name..." value="#{name}")
+					input(class="form-control" type="text" name="name" placeholder= "Enter Name..." value="#{name}")
 				p
 				p(class="dashboard_b") -Email- 
 				p(class="dashboard_c") current: #{email}
 				p
 				if (!email)
-					input(type="email" name="email" placeholder="Change Email...")
+					input(class="form-control" type="email" name="email" placeholder="Change Email...")
 				else
-					input(type="email" name="email" placeholder="Change Email..." value="#{email}")
+					input(class="form-control" type="email" name="email" placeholder="Change Email..." value="#{email}")
 				p
 				p(class="dashboard_a") -Location- 
 				p(class="dashboard_c") current: #{location}
 				p
 				if (!location)
-					input(type="text" name="location" placeholder="Enter Location...")
+					input(class="form-control" type="text" name="location" placeholder="Enter Location...")
 				else
-					input(type="text" name="location" placeholder="Enter Location..." value="#{location}")
+					input(class="form-control" type="text" name="location" placeholder="Enter Location..." value="#{location}")
 				p
 				p(class="dashboard_b") -Add Link to Other Sites- 
 				p(class="dashboard_c") current: #{link}
 				if (!link)
-					input(type="text" name="link" placeholder="Enter Link...")
+					input(class="form-control" type="text" name="link" placeholder="Enter Link...")
 				else
-					input(type="text" name="link" placeholder="Enter Link..." value="#{link}")
+					input(class="form-control" type="text" name="link" placeholder="Enter Link..." value="#{link}")
 				p
 
 				if(isartist == false) 
@@ -59,4 +59,4 @@ block content
 					b Hide
 					
 				p
-				input(type='submit')
+				input(class="btn btn-primary" type='submit')

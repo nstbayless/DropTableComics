@@ -6,6 +6,20 @@ body {
   height:100%;
 }
 
+.twitter-share-button{
+  margin-top:2px;
+}
+
+#containerwrapper {
+width:100%;
+background:#242729;
+position:relative;
+}
+#headercontent {
+  margin:0 auto;
+  width:960px;
+}
+
 #wrapperbottom{
   min-height:100%;
   position:relative;
@@ -239,6 +253,22 @@ p.form-title
     color: #FFFFFF;
     margin-top: 2.5%;
     text-transform: uppercase;
+    letter-spacing: 4px;
+}
+p.titleleft
+{
+    font-family: 'Cornerstone';
+    font-size: 30px;
+    font-weight: 600;
+    margin-top: 2.5%;
+    letter-spacing: 4px;
+}
+.titleleftsmall
+{
+    font-family: 'Cornerstone';
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 2.5%;
     letter-spacing: 4px;
 }
 p.form-subtitle
@@ -556,10 +586,10 @@ a.share {
 
 /* Style The Dropdown Button */
 .dropbtn {
-    background-color: rgb(89, 89, 89);
-    color: white;
+    background-color: white;
+    color: black;
     font-size: 12px;
-    border: none;
+    border: 1px solid #e1e8ed;
     cursor: pointer;
     height:25px;
     position:relative;
@@ -592,6 +622,7 @@ a.share {
     text-decoration: none;
     position: right;
     display: block;
+    font-size:12px;
 }
 
 /* Change color of dropdown links on hover */

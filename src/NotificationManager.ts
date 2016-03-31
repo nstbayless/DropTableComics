@@ -26,8 +26,8 @@ export class NotificationManager {
 	constructor(dbmanager:DatabaseManager){
 	this.dbmanager = dbmanager;
 	}
-	
-	/** Send Mail */
+
+/** Send Mail */
 	sendMail(username:string, notification:Notification){
 		if (config.email)
 			this.dbmanager.getUser(username, function(err, user){	
@@ -47,7 +47,43 @@ export class NotificationManager {
 				});
 			});
 	}
+	
+	/** Send Mail 
+	sendMailHelper(username:string, message:string){
 		
+		this.dbmanager.getUser(username, function(err, user){
+			console.log(user)	
+			smtpTransport.sendMail({  //email options
+   				from: '"DropComix 👥" <dropcomixupdates@gmail.com>', 
+				// sender address.  Must be the same as authenticated user if using GMail.
+   				to: user.getEmail(), // receiver
+   				subject: "DropComix", // subject
+   				text: message// body
+			}, function(error, response){  //callback
+   			if(error){
+       				console.log(error);
+   			}else{
+       			console.log("Message sent: " + response.message);
+   			}
+   
+   smtpTransport.close(); // shut down the connection pool, no more messages.  Comment this line out to continue sending emails.
+});
+		});
+	}
+		
+
+	//send mail for password retrevial
+	sendMailPassword(username:string, password:string){
+		this.sendMailHelper(username, `This is your temporary password: ${password}
+			Please change it after you retrieve your account.`);
+	}
+
+	//send mail for notificactions
+	sendMailNotifcation(username:string, notification:Notification){
+		this.sendMailHelper(username, notification.getMessage());
+	}
+
+
 	/* Async subscribes user to a given event */
 	/* callback:[](err, event_id) */
 	subscribeEvent(event:EventSignal, username:string, callback:any){

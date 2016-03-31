@@ -11,10 +11,6 @@ block content
 						div(class="twPc-div")
 							a(class="twPc-bg twPc-block")
 							div
-								//- edit information button
-								div(class="twPc-button")
-									a(type="button" href="/editdashboard" class="btn btn-primary" style="padding-top:2px;padding-bottom:2px") edit info
-								//- edit information button end
 							a(title="#{username}" href="/profile/#{username}" class="twPc-avatarLink")
 								img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg")
 							div(class="twPc-divUser")
@@ -26,8 +22,7 @@ block content
 									p(style="padding-left:10px;line-height:150%;") Name: #{name} <br />
 										| Email: #{email} <br />
 										| Location: #{location} <br />
-										| Time Zone: #{timezone} <br />
-										| link:
+										| Link:
 										a(href='#{link}') #{link}
 					//- END OF PROFILE BOX
 				//- COMIC BOX TABS
@@ -36,12 +31,14 @@ block content
 						div(id="custom_carousel" class="carousel slide dashboardcomicbox")
 							div(class="controls")
 								ul(class="nav nav-tabs" role="tablist" style="padding-top:10px")
-									li(role="presentation" class="active" data-target="#custom_carousel" data-slide-to="0")
-										a(href="#" aria-controls="comics" role="tab" data-toggle="tab")
-											small Comics
-									li(role="presentation" data-target="#custom_carousel" data-slide-to="1")
-										a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab")
-											small Subscriptions
+									if(comics_length != 0)
+										li(role="presentation" class="active" data-target="#custom_carousel" data-slide-to="0")
+											a(href="#" aria-controls="comics" role="tab" data-toggle="tab")
+												small Comics
+									if(isartist == false)
+										li(role="presentation" data-target="#custom_carousel" data-slide-to="1")
+											a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab")
+												small Subscriptions
 									//- li(data-target="#custom_carousel" data-slide-to="2")
 									//- 	a(href="#")
 									//- 		img(src="http://placehold.it/50x50")
@@ -50,30 +47,37 @@ block content
 									//- 	a(href="#")
 									//- 		img(src="http://placehold.it/50x50")
 									//- 		small Slide Four
-							hr
+							<br />
 							div(class="carousel-inner")
+							if(comics_length != 0)
 								div(class="item active")
 									div(class="container-fluid")
+										b #{username}'s Comics
 										div(class="col-md-3")
 											img(src="http://placehold.it/350x250" class="img-responsive")
 										div(class="col-md-9")
-											h2 Comics
-								//- 			if(isartist == true && comics_length != 0)
-								//- 				p Created Comics
-								//- 			if(isartist == false && comics_length != 0)
-								//- 				p My Comics
-								//- 			ul
-								//- 				each comic, i in comics
-								//- 					li
-								//- 						a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+												if(comics_length != 0) 
+												ul
+													each comic, i in comics
+														li
+															a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+							//- 			if(isartist == true && comics_length != 0)
+							//- 				p Created Comics
+							//- 			if(isartist == false && comics_length != 0)
+							//- 				p My Comics
+							//- 			ul
+							//- 				each comic, i in comics
+							//- 					li
+							//- 						a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
+							if(isartist == false)
 								div(class="item")
 									div(class="container-fluid")
 										div(class="col-md-3")
 											img(src="http://placehold.it/350x250" class="img-responsive")
 										div(class="col-md-9")
-											h2 Subscriptions
-											if (shouldShowSubscription == true) 
-												p Subscriptions: #{subscriptions}
+											if(shouldShowSubscription = true) 
+											b #{username}'s Subscriptions
+											p #{subscriptions}
 								//- div(class="item")
 								//- 	div(class="container-fluid")
 								//- 		div(class="col-md-3")

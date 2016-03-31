@@ -145,7 +145,7 @@ class RouteComic {
 								"description": req.user.getDescription(),
 								"email": req.user.getEmail(),
 								"location": req.user.getLocation(),
-								"timezone": req.user.getTimeZone(),
+								//"timezone": req.user.getTimeZone(),
 								"link": req.user.getLink(),
 								"shouldShowSubscription": req.user.subscriptionChoice(),
 								"subscriptions": comic_ids,
@@ -515,18 +515,40 @@ class RouteComic {
 			});
 		});
 
+	
+		/* GET change password page. */
+		router.get("/changepassword", function(req, res, next) {
+			res.render('changepassword');
+		});
+
+		//TODO (NaOH): the bodyparser didn't work for me :(
+		/* PUT user password changes. */
+		router.post("/changepassword", upload.single('image'), function(req, res, next) {
+			var username: string = req.user.getUsername();
+			var path:string = "";
+			req.dbManager.postPasswordChange(username, path, req.body, function(err, password) {
+			res.redirect('/');
+			});
+
+		});
+
+		/* TODO(NaOH): I am a bit confused on how you are doing the path to
+		include the user name in angular */
+		/* GET edit dashboard page. */
 		router.get(/^\/editdashboard\/?$/, function(req, res, next) {
 			res.render('editdashboard');
 		});
 
 		//TODO(tina): this is not a RESTful URI~! should PUT to /account/(username)
 		// POST (should be PUT) changes to user profile
+		//TODO: tried PUT, it didn't work, looked it up. It is becase HTML forms only support GET and POST
+		/* PUT user profile changes. */
 		router.post(/^\/editdashboard\/?$/, upload.single('image'), function(req, res, next) {
 			var username: string = req.user.getUsername();
 			var path:string = "";
 			if(req.file)
 				path = req.file.path;
-			req.dbManager.postAvatar(username, path, req.body, function(err, avatar) {
+			req.dbManager.postAvatarandInfo(username, path, req.body, function(err, avatar) {
 				if (err)
 					res.status(500).send("error uploading changes to profile");
 				else //TODO(tina): server redirect is bad practice. Client should redirect itself.
@@ -541,15 +563,24 @@ class RouteComic {
 			req.dbManager.getUser(username, function(err, user) {
 				if (err||!user) 
 					return next();
-				 res.render('profile', {
-					"username": user.getUsername(),
-					"name": user.getName(),
-					"description": user.getDescription(),
-					location: user.getLocation(),
-					"email": user.getEmail(),
-					"link": user.getLink(),
-					title: "User: " + user.getUsername()
-				// TODO: Render list of comics created by user viewable by visitor 
+				var isartist = user.isArtist();
+				req.dbManager.getSubscriptions(username, function(err, comic_ids) {
+					req.dbManager.getComics(username, function(err, comics) {
+						res.render('profile', {
+							"isartist": isartist,
+							"username": user.getUsername(),
+							"name": user.getName(),
+							"description": user.getDescription(),
+							"shouldShowSubscription": req.user.subscriptionChoice(),
+							"subscriptions": comic_ids,
+							location: user.getLocation(),
+							"email": user.getEmail(),
+							"link": user.getLink(),
+							comics: comics,// Render list of comics created by user if user is an artist
+							comics_length: comics.length,
+							title: "User: " + user.getUsername()
+						});
+					});
 				});
 			})
 		});
@@ -569,7 +600,7 @@ class RouteComic {
 			})
 		});
 
-		/* POST panel */
+ 		 /* POST panel */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/, upload.single('image'), function(req, res, next) {
 			var comic_creator = parseComicCreator(req.url);
 			var comic_uri = parseComicURI(req.url);

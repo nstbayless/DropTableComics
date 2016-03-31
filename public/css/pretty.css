@@ -55,6 +55,7 @@ body {
 
 .twPc-div {
     background: #fff none repeat scroll 0 0;
+    opacity: 0.7;
     border: 1px solid #e1e8ed;
     border-radius: 6px;
     height: wrap-content;
@@ -531,6 +532,27 @@ a.share {
 .pleblevel{
   color: green;
 }
+
+.dashboard_a{
+  color: rgba(0,0,255,0.5); 
+  font-family: inherit;
+  font-size: 15px;
+  font-weight:700;
+}
+
+.dashboard_b{
+  color: rgba(36, 144, 168, 0.9); 
+  font-family: inherit;
+  font-size: 15px;
+  font-weight:700;
+}
+
+.dashboard_c {
+    color: rgba(0,39,59,.35);
+    font-style: italic;
+    font-weight:400;
+}
+
 
 /* Style The Dropdown Button */
 .dropbtn {

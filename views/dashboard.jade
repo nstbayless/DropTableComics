@@ -2,8 +2,6 @@ extends pretty
 - var comics_js = JSON.stringify(comics)
 
 block content
-	div(id="bg")
-		background-colour: white; 
 	form(ng-init="comics=#{comics_js}")
 		div(class="container bs-docs-container")
 				p(class="form-subtitle") Dashboard

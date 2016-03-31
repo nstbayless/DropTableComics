@@ -536,7 +536,21 @@ class RouteComic {
 		include the user name in angular */
 		/* GET edit dashboard page. */
 		router.get(/^\/editdashboard\/?$/, function(req, res, next) {
-			res.render('editdashboard');
+			var username = req.user.getUsername();
+			req.dbManager.getUser(username, function(err, user) {
+				if (err || !user) return res.status(401).send({ success: false, msg: 'User does not exist' }); 
+				var isartist = user.isArtist();
+				res.render('editdashboard', {
+					"username": req.user.getUsername(),
+					"name": req.user.getName(),
+					"description": req.user.getDescription(),
+					"email": req.user.getEmail(),
+					"location": req.user.getLocation(),
+					"link": req.user.getLink(),
+					"shouldShowSubscription": req.user.subscriptionChoice(),
+					"isartist": isartist,
+				});
+			});
 		});
 
 		//TODO(tina): this is not a RESTful URI~! should PUT to /account/(username)

@@ -526,8 +526,11 @@ class RouteComic {
 		router.post("/changepassword", upload.single('image'), function(req, res, next) {
 			var username: string = req.user.getUsername();
 			var path:string = "";
-			req.dbManager.postPasswordChange(username, path, req.body, function(err, password) {
-			res.redirect('/');
+			req.dbManager.postPasswordChange(username, path, req.body, function(success) {
+				if (success)
+					res.redirect('/');
+				else
+					res.status(400).send({message:"failure to correctly input old password"})
 			});
 
 		});

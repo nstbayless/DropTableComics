@@ -682,13 +682,12 @@ class DatabaseManager {
 	}
 
 	// POSTs the new password 
+	// callback []()->bool
+		// returns false if failure
 	postPasswordChange(username: string, path: string, body: any, callback: any) {
 		var db = this.db;
 		var users = db.get('users');
 		var dbm = this;
-		console.log(username);
-		console.log(body.confirmpass);
-		console.log(body.newpass);
 		this.getUser(username, (err, user) => {
 			var hash: string = "";
 
@@ -707,8 +706,10 @@ class DatabaseManager {
 						}, {
 							upsert: true
 						})
-					return callback();
+					return callback(true);
 				}
+			} else {
+				return callback(false);
 			}
 
 		});

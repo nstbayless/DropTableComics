@@ -87,7 +87,6 @@ class DatabaseManager {
 	getUser(username: string, callback:any) {
 		var users = this.db.get('users');
 		users.findOne({username:username}, function(err,user_canon){
-			console.log("BLAH:" + user_canon);
 			if (err||!user_canon) return callback(err,null);
 			var user: User;
 			if (user_canon.type=="artist")
@@ -715,7 +714,7 @@ class DatabaseManager {
 
 	// sets a temporary password for the user to retrieve their account with 
 	// emails user with temp password. 
-	postPasswordRetrival(usernameoremail: string): Boolean {
+	postPasswordRetrival(usernameoremail: string, callback: any) {
 		var db = this.db;
 		var users = db.get('users');
 		var dbm = this;
@@ -737,10 +736,14 @@ class DatabaseManager {
 				{ email: usernameoremail }
 				
 		]}, (err, user) => {
-			console.log(user);
-			if (!user) return false;
-		
-			this.sendMailPassword(user.username, temppass);
+			console.log("this is user: " + user);
+			if (user != null) {
+				this.sendMailPassword(user.username, temppass);
+				callback(true);
+			}
+			else {
+				callback(false);
+			}
 		});
 
 		users.update({
@@ -755,13 +758,11 @@ class DatabaseManager {
 			}, {
 				upsert: true
 			});
-		return true;
-
 	}
 
 	/** Send Mail */
 	sendMailPassword(username:string, message:string){
-		console.log("HELLO:" + username);
+		console.log("send mail to user :" + username);
 		this.getUser(username, function(err, user){
 
 			smtpTransport.sendMail({  //email options

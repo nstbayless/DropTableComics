@@ -108,9 +108,12 @@ class RouteAuth {
 
 		/*POST forgot my password */
 		router.post("/forgotpassword", upload.single('image'), function(req, res, next){
-			var userexists = req.dbManager.postPasswordRetrival(req.body.usernameoremail);
-			res.append('userexists',userexists);
-				res.render('forgotmypasswordsent');
+			req.dbManager.postPasswordRetrival(req.body.usernameoremail, function(userexists) {
+			console.log("User exist: " + userexists);
+			res.render('forgotmypasswordsent', {
+				"userexists": userexists
+			});
+			});
 		});
 
 		router.get("/forgotpassword/sent", function(req, res, next) {

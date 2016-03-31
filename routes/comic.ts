@@ -514,15 +514,18 @@ class RouteComic {
 			req.dbManager.getUser(username, function(err, user) {
 				if (err||!user) 
 					return next();
-				 res.render('profile', {
-					"username": user.getUsername(),
-					"name": user.getName(),
-					"description": user.getDescription(),
-					location: user.getLocation(),
-					"email": user.getEmail(),
-					"link": user.getLink(),
-					title: "User: " + user.getUsername()
-				// TODO: Render list of comics created by user viewable by visitor 
+				req.dbManager.getComics(username, function(err, comics) {
+					res.render('profile', {
+						"username": user.getUsername(),
+						"name": user.getName(),
+						"description": user.getDescription(),
+						location: user.getLocation(),
+						"email": user.getEmail(),
+						"link": user.getLink(),
+						comics: comics,// Render list of comics created by user if user is an artist
+						comics_length: comics.length,
+						title: "User: " + user.getUsername()
+					});
 				});
 			})
 		});

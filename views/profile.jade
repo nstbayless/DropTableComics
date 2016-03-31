@@ -12,7 +12,15 @@ block content
 	p Name: #{name}
 	p Email: #{email}
 	p Location: #{location}
-	p link: 
+	p Link: 
 		a(href='#{link}') #{link}
 	if (shouldShowSubscription == true) 
 		p Subscriptions: #{subscriptions}
+
+
+	if(comics_length != 0)
+		h2 #{username}'s Comics
+	ul
+		each comic, i in comics
+			li
+				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title

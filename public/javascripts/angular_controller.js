@@ -142,14 +142,14 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			text=text +'?tags';
 		}
   		window.location.href="/comics\/asearch="+text;
-		$http.get("/comics\/search="+text, {
-		}).then(function(response){
-			if (response.data.success)
-				window.location= '';
-		}, function errorCallback(response) {
-      			if (response.data.msg)
-				$scope.response = response.data.msg
-	  	})
+	//	$http.get("/comics\/search="+text, {
+	//	}).then(function(response){
+	//		if (response.data.success)
+	//			window.location= '';
+	//	}, function errorCallback(response) {
+      	//		if (response.data.msg)
+	//			$scope.response = response.data.msg
+	  //	})
 	}
 	//user attempts to subscribe
 	$scope.subscribe_comic = function(comic_uri){

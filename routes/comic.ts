@@ -66,9 +66,33 @@ function parseComicCreator(url: string):string {
   //  TODO: Add dash/space checking parseComicCreator
 	return author;
 }
+// parse query
+function parseQuery(url:string):string {
+	var list = url.split("=");
+	var query = list[1];
+	var list2 = query.split("?");
+	query = list2[0];
+	var query2 = query.split("%20");
+	query = "";
+	for (var i = 0; i < query2.length; i++){ // parsing query
+		query = query + query2 + " "; 
+	}
+	return query;
+}
+//parses criteria
+function parseCriteria(url:string):String[] {
+			var list = url.split("=");
+			var query = list[1];
+			var list2 = query.split("?");
+			var criteria = new Array<String>();
+			for(var i = 1; i < list2.length; i++){ // parsing criteria
+				criteria[i-1]=list2[i];
+			}
+			return criteria;
+}
 
 // Parses comic panel # from uri
-function parsePanelID(url: string):string {
+function parsePanelID(url: String):String {
 	var res = url.split("/");
 	var id=res.indexOf("panels");
 	if (!id)
@@ -178,19 +202,8 @@ class RouteComic {
 		/* GET advanced search results */
 		router.get(/^\/comics\/asearch\=[a-zA-Z0-9\-]*/, function(req, res, next) {
 			var username:string = req.user.getUsername();
-			var list = req.url.split("=");
-			var query = list[1];
-			var list2 = query.split("?");
-			query = list2[0];
-			var query2 = query.split("%20");
-			query = "";
-			for (var i = 0; i < query2.length; i++){ // parsing query
-				query = query + query2 + " "; 
-			}
-			var criteria = new Array<String>();
-			for(var i = 1; i < list2.length; i++){ // parsing criteria
-				criteria[i-1]=list2[i];
-			}
+			var query:String = parseQuery(req.url);
+			var criteria = parseCriteria(req.url);
 			console.log(query + " " + criteria.length);
 			req.dbManager.searchAdvanced(criteria, username, query, function(err, results) { // results are comics
 				console.log(results);				

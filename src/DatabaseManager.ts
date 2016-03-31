@@ -794,8 +794,8 @@ class DatabaseManager {
 			for (var i = 0; i < criteria.length; i++) {
 				dbm.searchByCriteria(criteria[i], username, query, collection,lock, function(err, viewable_comics){
 					if (!err && viewable_comics) comics = comics.concat(viewable_comics);
-					console.log("returned from helper, i =" + i + " criteria.length = "+ criteria.length);
 					if (++searched == criteria.length) {
+						console.log("FOUND " + comics.length +"  RESULTS");
         					callback(null, comics);
       					}
 				}); 

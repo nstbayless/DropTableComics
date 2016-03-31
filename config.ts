@@ -14,6 +14,11 @@ var config = {
   porthttps: '3001',     //port to serve on for https
   https:      false,      //use https instead of http; run https-genkey before
 
+	//site logic customization
+	email:      true,	     //use email notifications
+	email_user: "dropcomixupdates@gmail.com",
+	email_pass: "arnold4ever",
+
 	//mocha testing options
 	test_api: true,
 	test_dbm: false

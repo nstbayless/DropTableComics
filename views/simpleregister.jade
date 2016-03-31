@@ -1,24 +1,21 @@
 extends authentication
 
 block content_authentication_head
-  h2 Register
+  h3(class="panel-title") Register
 
 block content_authentication
-  div(ng-app="authentication" ng-controller="authController")
+  fieldset
     font(size="2")
-      p Already have an account? 
-        a(href="/auth/login") Sign in
-        | .
-    form
-      p Username
-        input(type="text" ng-model="auth_username" placeholder="Enter name here")
-      p Email Address
-        input(type="text" ng-model="auth_email" placeholder="myaddress@example.com")
-      p Password
-        input(type="password" ng-model="auth_password" placeholder="Password")
-      p Confirm Password
-        input(type="password" ng-model="auth_password_confirm" placeholder="Password")
-      p Select User Type
+        p Already have an account? 
+          a(href="/auth/login") Sign in
+          | .
+    div(class="form-group")
+      input(class="form-control" style="border:none;margin-bottom:2px;padding:20px 10px" type="text" ng-model="auth_username" placeholder="Enter name here")
+      input(class="form-control" style="border:none;margin-bottom:2px;padding:20px 10px" type="text" ng-model="auth_email" placeholder="email")
+      input(class="form-control" style="border:none;margin-bottom:2px;padding:20px 10px" type="password" ng-model="auth_password" placeholder="password")
+      input(class="form-control" style="border:none;margin-bottom:2px;padding:20px 10px" type="password" ng-model="auth_password_confirm" placeholder="confirm password")
+      hr(style="margin-top:1px")
+      p Select user type:
         p
           input(type="radio" ng-model="auth_usertype" value="pleb")
           b  Pleb: 
@@ -27,6 +24,6 @@ block content_authentication
           input(type="radio" ng-model="auth_usertype" value="artist")
           b  Artist: 
           i you can create and contribute to comics
-      button(ng-click="register()" ng-show="auth_username.length>0 && auth_usertype") Register as {{auth_username}}
-    p
+      button(class="btn btn-lg btn-primary btn-block" style="margin-top:20px" ng-click="register()" ng-show="auth_username.length>0 && auth_usertype") Register as {{auth_username}}
+    p(color="red")
       font(color="red") {{response}}

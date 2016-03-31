@@ -4,7 +4,7 @@
 var REDIRECT_TIMEOUT=200;
 
 var app = angular.module('authentication', [])
-app.controller('authController', function($location, $scope, $http, $timeout) {
+app.controller('authController', function($location, $scope, $http, $timeout, $interval) {
 	//read http headers:
 	var req = new XMLHttpRequest();
 	req.open('GET', document.location, false);
@@ -52,7 +52,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			password: $scope.auth_password
 		}).then(function(response){
 			if (response.data.success) //redirect to dashboard
-				$timeout(function(){window.location='/';},REDIRECT_TIMEOUT)
+				$timeout(function(){window.location.reload();},REDIRECT_TIMEOUT)
 			else if (response.data.msg)
 				$scope.response = response.data.msg
 		}, function errorCallback(response) {
@@ -120,7 +120,37 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 				$scope.response = response.data.msg
 	  })
 	}
-
+		
+		
+	//advanced search
+	$scope.a_search=function() {
+		$scope.response=""
+		var text = document.getElementById('asearch').value;
+		console.log(" Text box: "+text);
+		var title = document.getElementById('searchtitle').checked;
+		console.log(title);
+		if (document.getElementById('searchtitle').checked){
+			text = text +'?title';
+		}
+		if (document.getElementById('searchcreator').checked){
+			text=text +'?creator';
+		}
+		if (document.getElementById('searchdescription').checked){
+			text=text +'?description';
+		}
+		if (document.getElementById('searchtags').checked){
+			text=text +'?tags';
+		}
+  		window.location.href="/comics\/asearch="+text;
+		$http.get("/comics\/search="+text, {
+		}).then(function(response){
+			if (response.data.success)
+				window.location= '';
+		}, function errorCallback(response) {
+      			if (response.data.msg)
+				$scope.response = response.data.msg
+	  	})
+	}
 	//user attempts to subscribe
 	$scope.subscribe_comic = function(comic_uri){
 		$scope.response=""
@@ -341,32 +371,178 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 		}
 		reloaddraft();
 
+		//which panel user is hovering over, or -1 if none
 		$scope.mouseover_panel=-1;
+		//which overlay user is hovering over
+		//(at least one of mouseover_panel or mouseover_overlay must be -1)
+		$scope.mouseover_overlay=-1;
+		//overlay is grabbed (prevents changing selection)
+		$scope.overlay_grabbed=false;
+		//mouse position at start
+		$scope.grabx_init=0;
+		$scope.graby_init=0;
+		//current mouse position
+		$scope.grabx=0;
+		$scope.graby=0;
+
+		//overlays visible
+		$scope.overlays_vis=true;
+		//time when overlays last toggled
+		$scope.overlay_toggle_time=0;
+
 		//user mouses over panel
 		$scope.mouseover=function(panel){
+			if ($scope.overlay_grabbed) return;
 			$scope.mouseover_panel=panel;
+			$scope.mouseover_overlay=-1;
 		}
-		//user's mouse leaves panel
-		$scope.mouseleave=function(panel,e){
-			var target = e.target || e.srcElement;
+		//user mouses over an overlay
+		$scope.mouseover_lay=function(overlay){
+			if (!$scope.overlays_vis) return;
+			if ($scope.overlay_grabbed) return;
+			$scope.mouseover_overlay=overlay;
+			$scope.mouseover_panel=-1;
+		}
+		//user's mouse leaves panel or overlay
+		//- id: unique id of object (same as in mouseover_overlay or mouseover_panel)
+		//- objtype: 'panel' or 'overlay'
+		//- e: mouse event (pass in from dispatcher)
+		$scope.mouseleave=function(id, objtype,e){
+			if ($scope.overlay_grabbed) return;
+			var target = e.target || e.srcElement; //Firefox compatibility
 			var rect = target.getBoundingClientRect();
 			var x=e.x || (e.offsetX+rect.left);
 			var y=e.y || (e.offsetY+rect.top);
-			if (x==0&&y==0) //required for firefox compatibility
+			if (x==0&&y==0) //required for firefox compatibility. (x,y)==(0,0) is spurious
+				//this is a small hack as if the image actually is at (0,0) all events will fail,
+				//but as far as I can tell there's no better way to filter out Firefox's garbage.
+				//Fortunately, the page html is layed out to make this unlikely or impossible to happen.
 				return;
 			var box = $scope.boxgetattr();
-			if ($scope.mouseover_panel==panel || panel==-1)
-				if (x<box.left||y<box.top||x>box.left+box.width||y>box.top+box.height)
+			if (x<box.left||y<box.top||x>box.left+box.width||y>box.top+box.height) {
+				if (($scope.mouseover_panel==id && objtype=="panel") || id==-1)
 					$scope.mouseover_panel=-1;
+				if (($scope.mouseover_panel==id && objtype=="overlay") || id==-1)
+					$scope.mouseover_overlay=-1;
+			}
 		}
-		$scope.boxgetattr=function(){
-			if ($scope.mouseover_panel==-1)
-				return {width: 0, height: 0, left: 0, top: 0}
+
+		//bounds overlay position to be in comic border
+		boundoverlay=function(id,x,y){
+			var img_elem = document.getElementById('overlay'+id);
+			if (!img_elem)
+				return {x:x,y:y}
+			box= img_elem.getBoundingClientRect();
+			var x_bound_radius = document.getElementById('page-area').offsetWidth/2;
+			var y_bound_range = document.getElementById('page-area').offsetHeight;
+			if (x<-x_bound_radius)
+				x=-x_bound_radius;
+			if (x>x_bound_radius-box.width)
+				x=x_bound_radius-box.height;
+			if (y<0)
+				y=0;
+			if (y>y_bound_range-box.height)
+				y=y_bound_range-box.height;
+			return {x:x,y:y}
+		}
+
+		//user's mouse moves over an object
+		//this checks to see if any overlay should take priority and switches selection to the overlay instead
+		//- id: unique id of object (same as in mouseover_overlay or mouseover_panel)
+		//- objtype: 'panel' or 'overlay'
+		//- e: mouse event (pass in from dispatcher)
+		$scope.mousemove=function(id,objtype,e) {
+			if (!$scope.overlays_vis) return;
+			var target = e.target || e.srcElement; //Firefox compatibility
+			var rect = target.getBoundingClientRect();
+			var x=e.x || (e.offsetX+rect.left);
+			var y=e.y || (e.offsetY+rect.top);
+			if ($scope.overlay_grabbed) {
+				$scope.grabx=x;
+				$scope.graby=y;
+			}
 			else {
+				//console.log("mousemove: " + x+","+y);
+				//find if any overlays overlap
+				for (var i=$scope.draft.overlays.length-1;i>=0;i--) {
+					var img_elem = document.getElementById('overlay'+i);
+					if (!img_elem)
+						continue;
+					box= img_elem.getBoundingClientRect();
+					box_x=box.left;
+					box_y=box.top;
+					box_w=box.width;
+					box_h=box.height;
+					if (box_x<x&&box_y<y&&box_x+box_w>x&&box_y+box_h>y) {
+						//found an overlay that intersects mouse; switch to select it
+						$scope.mouseover_panel=-1;
+						$scope.mouseover_overlay=i;
+						break;
+					}
+				}
+			}
+		}
+
+		//user starts/stops pulling overlay currently selected
+		//- e: mouse event (pass in from dispatcher)
+		$scope.toggleGrabOverlay=function(e) {
+			if ($scope.mouseover_overlay==-1) return;
+			if (!$scope.overlays_vis) return;
+			$scope.overlay_grabbed=!$scope.overlay_grabbed;
+			if (!$scope.overlay_grabbed) {
+				//move overlay:
+				var x = $scope.draft.overlays[$scope.mouseover_overlay].x;
+				x+=$scope.grabx-$scope.grabx_init;
+				var y = $scope.draft.overlays[$scope.mouseover_overlay].y;
+				y+=$scope.graby-$scope.graby_init;
+				pos=boundoverlay($scope.mouseover_overlay,x,y);
+				$scope.draft.overlays[$scope.mouseover_overlay].x=pos.x;
+				$scope.draft.overlays[$scope.mouseover_overlay].y=pos.y;
+
+				$scope.draft.edited=true;
+
+				$scope.updateServer();
+			}
+
+			var target = e.target || e.srcElement; //Firefox compatibility
+			var rect = target.getBoundingClientRect();
+			var x=e.x || (e.offsetX+rect.left);
+			var y=e.y || (e.offsetY+rect.top);
+			$scope.grabx_init=$scope.grabx=x;
+			$scope.graby_init=$scope.graby=y;
+		}
+
+		$scope.getOverlayColourStyle=function() {
+			if ($scope.overlay_grabbed)
+				return "stroke-width:4;stroke:white;fill:white;fill-opacity:0.33;"
+			else
+				return "stroke-width:3;stroke:green;fill:green;fill-opacity:0.25;"
+		}
+
+		$scope.boxgetattr=function(){
+			if ($scope.mouseover_panel!=-1) {
 				var img_elem = document.getElementById('panel'+$scope.mouseover_panel);
 				return img_elem.getBoundingClientRect();
 			}
+			if ($scope.mouseover_overlay!=-1) {
+				var img_elem = document.getElementById('overlay'+$scope.mouseover_overlay);
+				return img_elem.getBoundingClientRect();
+			}
+			return {width: 0, height: 0, left: 0, top: 0}
 		}
+
+		$scope.updateServer=function(){
+			block_update=true;
+			$http.put("draft/json", {
+				draft:$scope.draft
+			}).then(function(response){
+				block_update=true;
+			}, function errorCallback(response) {
+ 	     if (response.data.msg)
+					$scope.response = response.data.msg
+		  })
+		}
+		
 		$scope.movepanel=function(panel, dst){
 			if (dst<0)
 				return;
@@ -376,16 +552,7 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			$scope.draft.panels.splice(dst,0,panel_move);
 			$scope.draft.edited=true;
 
-			block_update=true;
-
-			$http.put("draft/json", {
-				draft:$scope.draft
-			}).then(function(response){
-				block_update=true;
-			}, function errorCallback(response) {
- 	     if (response.data.msg)
-					$scope.response = response.data.msg
-		  })
+			$scope.updateServer();
 
 			$scope.mouseover_panel=-1;
 		}
@@ -393,19 +560,58 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
 			$scope.draft.panels.splice(panel,1);
 			$scope.draft.edited=true;
 
-			block_update=true;
-
-			$http.put("draft/json", {
-				draft:$scope.draft
-			}).then(function(response){
-				block_update=true;
-			}, function errorCallback(response) {
- 	     if (response.data.msg)
-					$scope.response = response.data.msg
-		  })
+			$scope.updateServer();
 
 			$scope.mouseover_panel=-1;
 		}
+
+		$scope.poppanel=function(panel) {
+			var panelID = $scope.draft.panels[panel];
+			var decal_obj = {panelID: panelID, x: 0, y: 32};
+			$scope.draft.panels.splice(panel,1);
+			var o = $scope.draft.overlays;
+			if (!(o instanceof Array))
+				o=[];
+			o.push(decal_obj);
+			$scope.draft.overlays=o;
+			$scope.draft.edited=true;
+
+			$scope.updateServer();
+
+			$scope.mouseover_panel=-1;
+		}
+
+		$scope.deleteoverlay=function(overlay) {
+			$scope.draft.overlays.splice(overlay,1);
+			$scope.draft.edited=true;
+
+			$scope.updateServer();
+
+			$scope.mouseover_overlay=-1;
+		}
+
+		// bring overlay to top
+		$scope.overlaytop=function(i) {
+			$scope.draft.overlays.push($scope.draft.overlays[i]);
+			$scope.draft.overlays.splice(i,1);
+			$scope.draft.edited=true;
+
+			$scope.updateServer();
+
+			$scope.mouseover_overlay=$scope.draft.overlays.length-1;
+		}
+
+		//push overlay to bottom
+		$scope.overlaybot=function(i) {
+			$scope.draft.overlays.unshift($scope.draft.overlays[i]);
+			$scope.draft.overlays.splice(i+1,1);
+			$scope.draft.edited=true;
+
+			$scope.updateServer();
+
+			$scope.mouseover_overlay=0;
+		}
+
 		$scope.revertPage=function(){
 			$http.delete("draft", {
 				draft:$scope.draft
@@ -415,6 +621,58 @@ app.controller('authController', function($location, $scope, $http, $timeout) {
  	     if (response.data.msg)
 					$scope.response = response.data.msg
 		  })
+		}
+
+		$scope.getOverlayPos=function(i){
+			//overlay is in place
+			var center=document.getElementById('page-area').offsetWidth/2;
+			x_offs= $scope.draft.overlays[i].x;
+			y_offs= $scope.draft.overlays[i].y;
+			if (i==$scope.mouseover_overlay&&$scope.overlay_grabbed) {
+				//overlay is being held by user
+				x_offs+=$scope.grabx-$scope.grabx_init;	
+				y_offs+=$scope.graby-$scope.graby_init;	
+			}
+			pos=boundoverlay(i,x_offs,y_offs)
+			return {x:(pos.x+center),y:pos.y}
+		}
+
+		$scope.getToggleOverlayText=function() {
+			if ($scope.draft.overlays.length<=0)
+				return "";
+			if ($scope.overlays_vis)
+				return "Partially hide overlays";
+			else
+				return "Show overlays";
+		}
+
+		$scope.toggleOverlays=function(){
+			$scope.overlays_vis=!$scope.overlays_vis;
+			$scope.overlay_toggle_time=Date.now();
+			var interval_k = $interval(function(){
+				//force angular to refresh
+				if (Date.now() - $scope.overlay_toggle_time > 1200)
+					$interval.cancel(interval_k);
+			},10)
+		}
+
+		$scope.getOverlayOpacity=function() {
+			//transparency animation
+			opacity=(Date.now() - $scope.overlay_toggle_time)/900;
+			if (!$scope.overlays_vis)
+				opacity=1-opacity;
+			else
+				//much faster for fade-in
+				opacity*=2.1;
+			if (opacity<0.0)
+				opacity=0.0;
+			if (opacity>1)
+				opacity=1;
+			//smoothing
+			opacity=(Math.cos((1-opacity)*3.14159265)+1)/2
+			opacity=opacity*opacity;
+			opacity=0.65*opacity+0.35;
+			return opacity;
 		}
 	}
 })

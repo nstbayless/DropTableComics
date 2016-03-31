@@ -86,10 +86,11 @@ block content_comic
 		| &nbsp
 		img(src="/images/icon_push.png" ng-click="overlaybot(mouseover_overlay);" title="push to back")
 	
-	ul
+	p <i> By-Requesters:
 		each user, i in requestlist
-			li
-				p #{user}
+			span  #{user},
+			</i>
+
 block content_comment
 	div(class="commentcontainer")
 		div(class="col-md-8 col-md-offset-2")

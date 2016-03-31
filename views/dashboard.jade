@@ -42,30 +42,45 @@ block content
 						div(id="custom_carousel" class="carousel slide dashboardcomicbox")
 							div(class="controls")
 								ul(class="nav nav-tabs " role="tablist" style="padding-top:10px")
+									li(role="presentation" data-target="#custom_carousel" data-slide-to="0")
+										a(href="#" aria-controls="public_comics" role="tab" data-toggle="tab" style="background-color:rgba(255, 255, 255, 0.5)")
+											small Public Comics
 									if(isartist == true)
-										li(role="presentation" class="active" data-target="#custom_carousel" data-slide-to="0")
-											a(href="#" aria-controls="comics" role="tab" data-toggle="tab" style="background-color:rgba(255, 255, 255, 0.5);")
+										li(role="presentation" class="active" data-target="#custom_carousel" data-slide-to="1")
+											a(href="#" aria-controls="comics" role="tab" data-toggle="tab" style="background-color:rgba(255, 255, 255, 0.5)")
 												small Comics
 									if(isartist == false)
-										li(role="presentation" data-target="#custom_carousel" data-slide-to="1")
-											a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab" style="background-color:rgba(255, 255, 255, 0.5);")
+										li(role="presentation" data-target="#custom_carousel" data-slide-to="2")
+											a(href="#" aria-controls="subscriptions" role="tab" data-toggle="tab" style="background-color:rgba(255, 255, 255, 0.5)")
 												small Subscriptions
-									//- li(data-target="#custom_carousel" data-slide-to="2")
-									//- 	a(href="#")
-									//- 		img(src="http://placehold.it/50x50")
-									//- 		small Slide Three
 									//- li(data-target="#custom_carousel" data-slide-to="3")
 									//- 	a(href="#")
 									//- 		img(src="http://placehold.it/50x50")
 									//- 		small Slide Four
 							<br />
 							div(class="carousel-inner")
-							if(isartist == true)
+								//- if(isartist == true)
 								div(class="item active")
+									div(class="container-fluid")
+										b Public Comics
+										div(class="col-md-3")
+											div(style="height:250px;")
+												img(class="img-responsive" id="test" src="http://placehold.it/350x250")
+										div(class="col-md-9")
+											<br/>
+											ul
+												each comic, i in public_comics
+													li
+														if (comic.panel_preview != undefined)
+															a(href="/accounts/" + comic.creator + "/comics/" + comic.uri onmouseover="document.getElementById('test').src='/accounts/#{comic.creator}/comics/#{comic.uri}/panels/#{comic.panel_preview}'")= comic.title
+														else if (comic.panel_preview === undefined)
+															a(href="/accounts/" + comic.creator + "/comics/" + comic.uri onmouseover="document.getElementById('test').src='http://placehold.it/350x250'")= comic.title
+								div(class="item")
 									div(class="container-fluid")
 										b Comics
 										div(class="col-md-3")
-											img(src="http://placehold.it/350x250" class="img-responsive")
+											div(style="height:250px;")
+												img(class="img-responsive" id="test1" src="http://placehold.it/350x250")
 										div(class="col-md-9")
 											<br/>
 											if(isartist == true && comics_length != 0)
@@ -75,8 +90,11 @@ block content
 											ul
 												each comic, i in comics
 													li
-														a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
-							if(isartist == false)
+														if (comic.panel_preview != undefined)
+															a(href="/accounts/" + comic.creator + "/comics/" + comic.uri onmouseover="document.getElementById('test1').src='/accounts/#{comic.creator}/comics/#{comic.uri}/panels/#{comic.panel_preview}'")= comic.title
+														else if (comic.panel_preview === undefined)
+															a(href="/accounts/" + comic.creator + "/comics/" + comic.uri onmouseover="document.getElementById('test1').src='http://placehold.it/350x250'")= comic.title
+								//- if(isartist == false)
 
 								div(class="item")
 									div(class="container-fluid")
@@ -86,15 +104,7 @@ block content
 										if(shouldShowSubscription = true)
 											b Subscriptions
 											p #{subscriptions}
-										
 											
-								//- div(class="item")
-								//- 	div(class="container-fluid")
-								//- 		div(class="col-md-3")
-								//- 			img(src="http://placehold.it/350x250" class="img-responsive")
-								//- 		div(class="col-md-9")
-								//- 			h2 Slide 3
-								//- 			p hello this is the third slide, hopefully it's working
 								//- div(class="item")
 								//- 	div(class="container-fluid")
 								//- 		div(class="col-md-3")

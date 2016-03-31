@@ -24,10 +24,14 @@ export class Comic {
 	panel_map:string[]; /**maps from panel-id to path to image*/
 	manager:DatabaseManager; /** Database Manager */
 	tags:string[];
+	public_view:string;
+	cover:string; //path to coverpage
+	panel_preview:string;
+	requestlist:string[]; /** A list of all users requesting to view the comic */
 
 	/*  CONSTRUCTOR */
 	/** Looks up Comic from database by name */
-	constructor(uri_sanitized: string, creator: string, description: string){
+	constructor(uri_sanitized: string, creator: string, description: string, public_view: string){
 		this.uri_sanitized = uri_sanitized;
 		this.creator = creator;
 		this.description = description;
@@ -40,6 +44,9 @@ export class Comic {
 		this.draftpages = [];
 		this.draftpages.push(new Page());
 		this.panel_map=[];
+		this.public_view=public_view;
+		this.requestlist = [];
+
 	} /** stub */
 	
 	/* GETTERS */
@@ -90,7 +97,29 @@ export class Comic {
 		return this.panel_map[panel];
 	}
 
+	getPublicView(): string{
+		return this.public_view;
+	}
+
+	getCover(): string{
+		return this.cover;
+	}
+
+	getRequestlist() {
+		return this.requestlist;
+	}
+
+	getPanelPreview():string {
+		return this.panel_preview;
+	}
+
 	/* PREDICATES */
+
+	getUserCanRequest(username:string) {
+		if (this.requestlist.indexOf(username)!=-1)
+			return true;
+		return this.getUserCanView(username);
+	}
 
 	getUserCanView(username: string) {
 		if (this.viewlist.indexOf(username)!=-1)

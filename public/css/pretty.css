@@ -53,6 +53,12 @@ position:relative;
   color:#767d84;
 }
 
+.textgreysmall{
+  color:#767d84;
+  font-size: 11px;
+  font-weight: 400;
+}
+
 /* Comic card and Notifcation card on dashboard*/
 .dashboardcomicbox {
   min-height:400px;

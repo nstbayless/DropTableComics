@@ -10,7 +10,10 @@ block content
 					input(type="text" class="form-control" ng-model="comic_name" placeholder="Enter name here")
 				p Description:
 					textarea(class="form-control noresize" type="text" rows="2" ng-model="comic_description" placeholder="Enter description here")
-				button(class="btn btn-primary" ng-click = "create_comic()" ng-show = "comic_name.length>0") Create {{comic_name}} <br />
+				input(type="checkbox" ng-model="comic_public_view" ng-true-value="1" ng-false-value="0")
+				|  Public?
+				br
+				button(class="btn btn-primary" ng-click = "create_comic()" ng-show = "comic_name.length>0" style="margin-top:10px") Create {{comic_name}} <br />
 				p(ng-show="comic_name.length>0")
 					font(color="gray" size="2") <br />URL: /accounts/{{username}}/comics/{{sanitizeName(comic_name)}}
 				p

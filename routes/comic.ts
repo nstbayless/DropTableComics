@@ -126,35 +126,41 @@ class RouteComic {
 				req.dbManager.getUser(username, function(err, user) {
 					if (err || !user) return res.status(401).send({ success: false, msg: 'User does not exist' });
 					var isartist = user.isArtist();
-					req.dbManager.getComics(username, function(err, comics) {
-						req.nManager.getNotifications(username, function(err, notifications: Notification[]) {
-							if (err || !notifications)
-								return res.status(500).send("Error: notifications not found")
-							var sorted_notifications: Notification[] = notifications.sort((n1, n2) => {
-								if (n1.timestamp.valueOf() < n2.timestamp.valueOf()) {
-									return 1;
-								}
-								if (n1.timestamp.valueOf() > n2.timestamp.valueOf()) {
-									return -1;
-								}
-								return 0;
-							});
-							res.render('dashboard', {
-								"username": req.user.getUsername(),
-								"name": req.user.getName(),
-								"description": req.user.getDescription(),
-								"email": req.user.getEmail(),
-								"location": req.user.getLocation(),
-								//"timezone": req.user.getTimeZone(),
-								"link": req.user.getLink(),
-								"shouldShowSubscription": req.user.subscriptionChoice(),
-								"subscriptions": comic_ids,
-								"isartist": isartist,
-								"notifications": sorted_notifications,
-								title: 'dashboard',
-								comics: comics,		// Render list of comics created by user
-								comics_length: comics.length,
-								notifications_length: notifications.length
+					req.dbManager.getPublicComics(1, function(err, public_comics) {
+						console.log(public_comics.length);
+						req.dbManager.getComics(username, function(err, comics) {
+							console.log(comics.length);
+							req.nManager.getNotifications(username, function(err, notifications: Notification[]) {
+								if (err || !notifications)
+									return res.status(500).send("Error: notifications not found")
+								var sorted_notifications: Notification[] = notifications.sort((n1, n2) => {
+									if (n1.timestamp.valueOf() < n2.timestamp.valueOf()) {
+										return 1;
+									}
+									if (n1.timestamp.valueOf() > n2.timestamp.valueOf()) {
+										return -1;
+									}
+									return 0;
+								});
+								res.render('dashboard', {
+									"username": req.user.getUsername(),
+									"name": req.user.getName(),
+									"description": req.user.getDescription(),
+									"email": req.user.getEmail(),
+									"location": req.user.getLocation(),
+									//"timezone": req.user.getTimeZone(),
+									"link": req.user.getLink(),
+									"shouldShowSubscription": req.user.subscriptionChoice(),
+									"subscriptions": comic_ids,
+									"isartist": isartist,
+									"notifications": sorted_notifications,
+									title: 'dashboard',
+									comics: comics,		// Render list of comics created by user
+									comics_length: comics.length,
+									public_comics: public_comics,
+									public_length: public_comics.length,
+									notifications_length: notifications.length
+								});
 							});
 
 						});
@@ -237,7 +243,7 @@ class RouteComic {
 						return res.status(409).send({success:false, msg: 'Comic already exists with that name'});
 					}
 					console.log("Creating comic: "+req.body.comic_name);
-					comic = req.dbManager.createComic(req.body.comic_name,username,req.body.description);
+					comic = req.dbManager.createComic(req.body.comic_name,username,req.body.description,req.body.public_view);
 					req.nManager.subscribeEvent( // subscribes user to comic updates
 						new EventSignal(EventType.Comic_Update, comic.getURI()),
 						 username, 
@@ -273,6 +279,7 @@ class RouteComic {
 				var comments: Comment[] = page.getComments();
 				return res.render('editcomic', {
 					title: comic.getName(),
+					requestlist: comic.getRequestlist(),
 					editcomments: comments,
 					username: req.user.getUsername(),
 					comic_creator: comic_creator,
@@ -302,7 +309,7 @@ class RouteComic {
 				if (err || !comic)
 					return next();
 				if (!comic.getUserCanView(req.user.getUsername()))
-					return next();
+					return res.redirect("/accounts/" + comic_creator + "/comics/" + comic_uri + "/request");
 				if (pageid<1)
 					return next();
 				if (!comic.getPage(pageid))
@@ -338,6 +345,47 @@ class RouteComic {
 					url_append: "/"
 				})
 			});
+		});
+
+		// Request Page
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/request?$/, function(req,res,next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				return res.render('requestcomic', {
+					title: comic.getName(),
+					description: comic.getDescription(),
+					username: req.user.getUsername(),
+					comic_uri: comic_uri,
+					comic_creator: comic_creator,
+					panel_preview: comic.getPanelPreview(),
+				});
+			});
+		});
+
+		// Request POST
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/request?$/, function(req,res,next){
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			var username = req.user.getUsername(); 
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator,comic_uri, function(err,comic) {
+				if (comic&&!err) {
+					if (!comic.getUserCanRequest(username)) {
+						console.log("adding user into request list");
+						req.dbManager.postRequest(username, comic_creator, comic_uri, function(err,request) {
+							if (!err) {res.status(200).send({ success : true });}
+							else res.status(400).send({msg: "error requesting"});
+						});
+					}else(res.status(400).send({msg: "Request Denied"}));
+				}
+			});
+
 		});
 
 		/* DELETE draft (reverts to published version of page) */
@@ -616,6 +664,44 @@ class RouteComic {
 				res.sendFile(path);
 			})
 		});
+
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/cover\/?$/, function(req,res,next) {
+			var comic_creator = parseComicCreator(req.url);
+			var comic_uri = parseComicURI(req.url);
+			req.dbManager.getComic(comic_creator, comic_uri, function(err,comic){
+				if (err||!comic)
+					return next();
+				var path = comic.getCover();
+				if (!path)
+					path = "public/images/default_avatar.png"
+				path=__dirname.substring(0,__dirname.lastIndexOf('/')+1) + path;
+				res.sendFile(path);
+			})
+		})
+
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/cover\/?$/, upload.single('image'), function(req,res,next) {
+			var comic_creator = parseComicCreator(req.url);
+			var comic_uri = parseComicURI(req.url); 
+			console.log("attempting to upload cover");
+			if (!comic_creator||!comic_uri==null)
+				return next();
+			if (!req.file)
+				return res.status(400).redirect(req.get('referer'));
+			if (!req.file.filename||!req.file.path)
+				return res.status(400).redirect(req.get('referer'));
+			var path:string = req.file.path;
+			var name:string = req.file.filename;
+			req.dbManager.postCover(comic_creator, comic_uri, path, function(err,cover) {
+				if (cover!=null &&!err) {
+					if (!err)
+						res.redirect(req.get('/'));
+					else res.status(400).send({msg: "error signalling update"});
+				} else {
+					res.status('500').send("Error uploading cover");
+				}
+			});
+		});
+
 
  		 /* POST panel */
 		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/panels\/?$/, upload.single('image'), function(req, res, next) {

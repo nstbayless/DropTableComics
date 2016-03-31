@@ -66,7 +66,8 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 		$scope.response=""
 		$http.post("/accounts/" + $scope.username + "/comics", {
 			comic_name: $scope.comic_name,
-			description: $scope.comic_description
+			description: $scope.comic_description,
+			public_view: $scope.comic_public_view,
 		}).then(function(response){
 			if (response.data.success)
 				window.location= "/accounts/" + response.data.comic_url;
@@ -185,6 +186,25 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 		})
 	}
 
+	$scope.requestlist_add=function() {
+		$scope.response10=""
+		$http.post('', {
+		}).then(function(response10){
+			if (response10.data.success) {//redirect to current page
+				window.location= '/';
+				console.log("successfully redirected");
+			}
+			else if (response10.data.msg) {
+				$scope.response10 = response10.data.msg
+				console.log("did not redirect");
+			}
+		}, function errorCallback(response10) {
+		if (response10.data.msg)
+				$scope.response10 = response10.data.msg
+		})
+	}
+
+
 	//user attempts to add user to editlist
 	$scope.editlist_add=function() {
 		$scope.response2=""
@@ -205,6 +225,7 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 		})
 	}
 
+
 	//returns list of users to remove from a certain list
 	//list can be one of:
 	// - "edit"
@@ -216,8 +237,8 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 			source_list=$scope.el;
 		else if (list=="view")
 			source_list=$scope.vl;
-		else if (list=="admin")
-			source_list=$scope.al;
+		else if (list=="request")
+			source_list=$scope.rl;
 		else
 			throw "Error, no list for " + list;
 		var return_list=[ ];
@@ -232,14 +253,15 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 	// - "edit"
 	// - "view"
 	// - "admin"
+	// - "request"
 	$scope.evict_users=function(l_users,list) {
 		if (list=="view") {
 			//TODO: we need a better system for the different responses
 			$scope.response1='';
 		} else if (list=="edit") {
 			$scope.response2='';
-		} else if (list=="admin") {
-			//TODO
+		} else if (list=="request") {
+			$scope.response3='';
 		}
 
 		$http.put('',{
@@ -255,8 +277,8 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 					$scope.response1=response.data.msg;
 				} else if (list=="edit") {
 					$scope.response2=response.data.msg;
-				} else if (list=="admin") {
-					//TODO
+				} else if (list=="request") {
+					$scope.response3=response.data.msg;
 				}
 			}
 		);

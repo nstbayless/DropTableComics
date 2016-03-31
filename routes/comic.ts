@@ -564,19 +564,22 @@ class RouteComic {
 				if (err||!user) 
 					return next();
 				var isartist = user.isArtist();
-				req.dbManager.getComics(username, function(err, comics) {
-					res.render('profile', {
-						"isartist": isartist,
-						"username": user.getUsername(),
-						"name": user.getName(),
-						"description": user.getDescription(),
-						"subscription": user.subscriptionChoice(), 
-						location: user.getLocation(),
-						"email": user.getEmail(),
-						"link": user.getLink(),
-						comics: comics,// Render list of comics created by user if user is an artist
-						comics_length: comics.length,
-						title: "User: " + user.getUsername()
+				req.dbManager.getSubscriptions(username, function(err, comic_ids) {
+					req.dbManager.getComics(username, function(err, comics) {
+						res.render('profile', {
+							"isartist": isartist,
+							"username": user.getUsername(),
+							"name": user.getName(),
+							"description": user.getDescription(),
+							"shouldShowSubscription": req.user.subscriptionChoice(),
+							"subscriptions": comic_ids,
+							location: user.getLocation(),
+							"email": user.getEmail(),
+							"link": user.getLink(),
+							comics: comics,// Render list of comics created by user if user is an artist
+							comics_length: comics.length,
+							title: "User: " + user.getUsername()
+						});
 					});
 				});
 			})

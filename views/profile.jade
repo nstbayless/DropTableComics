@@ -72,11 +72,11 @@ block content
 							if(isartist == false)
 								div(class="item")
 									div(class="container-fluid")
-										b #{username}'s Subscriptions
 										div(class="col-md-3")
 											img(src="http://placehold.it/350x250" class="img-responsive")
 										div(class="col-md-9")
-										if(shouldShowSubscription == true) 
+											if(shouldShowSubscription = true) 
+											b #{username}'s Subscriptions
 											p #{subscriptions}
 								//- div(class="item")
 								//- 	div(class="container-fluid")

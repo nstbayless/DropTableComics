@@ -81,14 +81,17 @@ block content
 													li
 														a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
 							if(isartist == false)
+
 								div(class="item")
 									div(class="container-fluid")
-										b Subscriptions
 										div(class="col-md-3")
 											img(src="http://placehold.it/350x250" class="img-responsive")
 										div(class="col-md-9")
-										if(shouldShowSubscription == true) 
+										if(shouldShowSubscription = true)
+											b Subscriptions
 											p #{subscriptions}
+										
+											
 								//- div(class="item")
 								//- 	div(class="container-fluid")
 								//- 		div(class="col-md-3")

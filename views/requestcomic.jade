@@ -1,0 +1,13 @@
+extends pretty
+
+block content
+	div(id="bg")
+		img(src="/images/background.png" alt="")
+	div(class="container")
+		p(class="form-subtitle posrel") Request Access
+		form(class="smallcenter opaquewhite")
+			center
+				h2 #{title}
+				p(class="textgreysmall") s#{description}
+				p(style="margin-top:20px") Request to be on the viewlist:
+				button(class="btn btn-primary" ng-model="#{username}") Submit request as "#{username}"

@@ -186,6 +186,26 @@ app.controller('authController', function($location, $scope, $http, $timeout, $i
 		})
 	}
 
+	$scope.requestlist_add=function(username) {
+		$scope.response10=""
+		$http.post('', {
+			editor: $scope.editor_input
+		}).then(function(response10){
+			if (response10.data.success) {//redirect to current page
+				window.location= '';
+				console.log("successfully redirected");
+			}
+			else if (response10.data.msg) {
+				$scope.response10 = response10.data.msg
+				console.log("did not redirect");
+			}
+		}, function errorCallback(response10) {
+		if (response10.data.msg)
+				$scope.response10 = response10.data.msg
+		})
+	}
+
+
 	//user attempts to add user to editlist
 	$scope.editlist_add=function() {
 		$scope.response2=""

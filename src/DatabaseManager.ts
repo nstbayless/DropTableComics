@@ -796,10 +796,10 @@ class DatabaseManager {
 		});
 	}
 
-
+	// trying to force a cover page upload, abandoned for panel thumbnail instead
 	postCover(username:string, comic_uri:string, path:string, callback: any) {
 		var db=this.db;
-		comic_uri = Comic.canonicalURI(comic_uri);
+		var comic_uri = Comic.canonicalURI(comic_uri);
 		this.getComic(username,comic_uri,function(err,comic){
 			try {
 				if (comic&&!err) {
@@ -819,9 +819,39 @@ class DatabaseManager {
 				}
 			} catch (err) {
 				callback(err,null);
-			}
-		})
+			};
+		});
 	}
+
+	// Aysnchrounsly inserts a user into the request list for a comic
+	// postRequest(username:string, comic_creator:string, comic_uri:string, callback:any){
+	// 	var db=this.db;
+	// 	var comic_uri = Comic.canonicalURI(comic_uri);
+	// 	this.getComic(comic_creator, comic_uri, function(err,comic){
+	// 		try {
+	// 			if(comic&&!err) {
+	// 				if(comic.getUserCanView(username)) {
+	// 					callback(err,null);
+	// 				}
+	// 				var requestlist = comic.getRequestlist();
+	// 				requestlist.push(username);
+	// 				var comics = db.get('comics');
+	// 				comics.update({
+	// 					"urisan":comic_uri,
+	// 					"creator":comic_creator
+	// 				}, {
+	// 					$set: {
+	// 						"requestlist":requestlist,
+	// 					}
+	// 				});
+	// 				callback(null,requestlist);
+	// 			} 
+	// 		};
+	// 			catch (err) {
+	// 				callback(err, null);
+	// 		};
+	// 	});
+	// }
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)

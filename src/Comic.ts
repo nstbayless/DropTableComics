@@ -27,6 +27,7 @@ export class Comic {
 	public_view:string;
 	cover:string; //path to coverpage
 	panel_preview:string;
+	requestlist:string[]; /** A list of all users requesting to view the comic */
 
 	/*  CONSTRUCTOR */
 	/** Looks up Comic from database by name */
@@ -44,6 +45,7 @@ export class Comic {
 		this.draftpages.push(new Page());
 		this.panel_map=[];
 		this.public_view=public_view;
+		this.requestlist = [];
 
 	} /** stub */
 	
@@ -101,6 +103,14 @@ export class Comic {
 
 	getCover(): string{
 		return this.cover;
+	}
+
+	getRequestlist() {
+		return this.requestlist;
+	}
+
+	getPanelPreview():string {
+		return this.panel_preview;
 	}
 
 	/* PREDICATES */

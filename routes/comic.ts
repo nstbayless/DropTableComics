@@ -308,7 +308,7 @@ class RouteComic {
 				if (err || !comic)
 					return next();
 				if (!comic.getUserCanView(req.user.getUsername()))
-					return next();
+					return res.redirect("/accounts/" + comic_creator + "/comics/" + comic_uri + "/request");
 				if (pageid<1)
 					return next();
 				if (!comic.getPage(pageid))
@@ -344,6 +344,40 @@ class RouteComic {
 					url_append: "/"
 				})
 			});
+		});
+
+		// Request Page
+		router.get(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/request?$/, function(req,res,next) {
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.getComic(comic_creator, comic_uri, function(err, comic: Comic) {
+				if (err || !comic)
+					return next();
+				return res.render('requestcomic', {
+					title: comic.getName(),
+					description: comic.getDescription(),
+					username: req.user.getUsername(),
+					comic_uri: comic_uri,
+					comic_creator: comic_creator,
+					panel_preview: comic.getPanelPreview(),
+				});
+			});
+		});
+
+		// Request POST
+		router.post(/^\/accounts\/[a-zA-Z0-9\-]*\/comics\/[a-zA-Z0-9\-]*\/request?$/, function(req,res,next){
+			var comic_uri = parseComicURI(req.url);
+			var comic_creator = parseComicCreator(req.url);
+			var username = req.user.getUsername(); 
+			if (!comic_uri || !comic_creator)
+				return next();
+			req.dbManager.postRequest(username, comic_creator, comic_uri, function(err,request) {
+				if (!err) {res.status(200).send({ success : true });}
+				else res.status(400).send({msg: "error requesting"});
+			});
+
 		});
 
 		/* DELETE draft (reverts to published version of page) */

@@ -79,6 +79,7 @@ class RouteAdminPage {
 					title: comic.getName(),
 					viewlist: comic.getViewlist(),
 					editlist: comic.getEditlist(),
+					requestlist: comic.getRequestlist(),
 					comic_creator: comic_creator,
 					comic_name: comic.getName(),
 					comic_uri: comic_uri,
@@ -179,7 +180,7 @@ class RouteAdminPage {
 			//make sure user doesn't remove self:
 			if (l_users.indexOf(req.user.getUsername())>=0)
 				return res.status(403).send({success: false, msg: "You cannot remove yourself from the list"})
-			if (!(relevant_list=='admin'||relevant_list=='view'||relevant_list=='edit'))
+			if (!(relevant_list=='admin'||relevant_list=='view'||relevant_list=='edit'||relevant_list=='request'))
 				return res.status(400).send({ success: false, msg: 'Unknown list ' + relevant_list })
 			if (l_users.indexOf(comic_creator)>=0)
 				return res.status(403).send({success: false, msg: "You cannot remove the comic creator"})
@@ -190,11 +191,14 @@ class RouteAdminPage {
 				if (!comic.getUserCanEdit(req.user.getUsername()))
 					return next();
 				//TODO: migrate all following deletion code to a dbManager method:
+				console.log("before creating new list");
 				var new_list;
 				if (relevant_list=='view')
 					new_list=comic.getViewlist();
 				if (relevant_list=='edit')
 					new_list=comic.getEditlist();
+				if (relevant_list=='request')
+					new_list=comic.getRequestlist();
 				//TODO: implement adminList
 				new_list=new_list.slice();//prevent editing original object
 				//remove all users from relevant list:
@@ -221,6 +225,10 @@ class RouteAdminPage {
 				if (relevant_list=="admin")
 					set_db={
 						"adminlist":new_list
+					}
+				if (relevant_list=="request")
+					set_db={
+						"requestlist":new_list
 					}
 				req.db.get('comics').update({
 					"urisan": Comic.canonicalURI(comic_uri),

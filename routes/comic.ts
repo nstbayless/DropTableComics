@@ -279,6 +279,7 @@ class RouteComic {
 				var comments: Comment[] = page.getComments();
 				return res.render('editcomic', {
 					title: comic.getName(),
+					requestlist: comic.getRequestlist(),
 					editcomments: comments,
 					username: req.user.getUsername(),
 					comic_creator: comic_creator,
@@ -373,9 +374,16 @@ class RouteComic {
 			var username = req.user.getUsername(); 
 			if (!comic_uri || !comic_creator)
 				return next();
-			req.dbManager.postRequest(username, comic_creator, comic_uri, function(err,request) {
-				if (!err) {res.status(200).send({ success : true });}
-				else res.status(400).send({msg: "error requesting"});
+			req.dbManager.getComic(comic_creator,comic_uri, function(err,comic) {
+				if (comic&&!err) {
+					if (!comic.getUserCanRequest(username)) {
+						console.log("adding user into request list");
+						req.dbManager.postRequest(username, comic_creator, comic_uri, function(err,request) {
+							if (!err) {res.status(200).send({ success : true });}
+							else res.status(400).send({msg: "error requesting"});
+						});
+					}else(res.status(400).send({msg: "Request Denied"}));
+				}
 			});
 
 		});

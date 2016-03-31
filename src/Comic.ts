@@ -115,6 +115,12 @@ export class Comic {
 
 	/* PREDICATES */
 
+	getUserCanRequest(username:string) {
+		if (this.requestlist.indexOf(username)!=-1)
+			return true;
+		return this.getUserCanView(username);
+	}
+
 	getUserCanView(username: string) {
 		if (this.viewlist.indexOf(username)!=-1)
 			return true;

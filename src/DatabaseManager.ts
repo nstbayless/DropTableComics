@@ -126,12 +126,14 @@ class DatabaseManager {
 		var viewlist = new Array<string>();
 		var adminlist = new Array<string>();
 		var editlist = new Array<string>();
+		var requestlist = new Array<string>();
 		editlist[0] = artist;
 		adminlist[0] = artist;
 		var comics = this.db.get('comics');
 		console.log("creating comic");
 		comics.insert({"uri": uri, "urisan": uri_sanitized,
 									"title":name,"viewlist":viewlist,
+									"requestlist":requestlist,
 									"public_view": public_view,
 									"editlist":editlist,"adminlist":adminlist,"creator":artist,
 									"description":description,
@@ -238,6 +240,7 @@ class DatabaseManager {
 			comic.viewlist = comic_canon.viewlist;
 			comic.editlist = comic_canon.editlist;
 			comic.adminlist = comic_canon.adminlist;
+			comic.requestlist = comic_canon.requestlist;
 			comic.pages = [];
 			comic.tags = comic_canon.tags;
 			comic.public_view= comic_canon.public_view;
@@ -824,34 +827,30 @@ class DatabaseManager {
 	}
 
 	// Aysnchrounsly inserts a user into the request list for a comic
-	// postRequest(username:string, comic_creator:string, comic_uri:string, callback:any){
-	// 	var db=this.db;
-	// 	var comic_uri = Comic.canonicalURI(comic_uri);
-	// 	this.getComic(comic_creator, comic_uri, function(err,comic){
-	// 		try {
-	// 			if(comic&&!err) {
-	// 				if(comic.getUserCanView(username)) {
-	// 					callback(err,null);
-	// 				}
-	// 				var requestlist = comic.getRequestlist();
-	// 				requestlist.push(username);
-	// 				var comics = db.get('comics');
-	// 				comics.update({
-	// 					"urisan":comic_uri,
-	// 					"creator":comic_creator
-	// 				}, {
-	// 					$set: {
-	// 						"requestlist":requestlist,
-	// 					}
-	// 				});
-	// 				callback(null,requestlist);
-	// 			} 
-	// 		};
-	// 			catch (err) {
-	// 				callback(err, null);
-	// 		};
-	// 	});
-	// }
+	postRequest(username:string, comic_creator:string, comic_uri:string, callback:any){
+		var db=this.db;
+		var comic_uri = Comic.canonicalURI(comic_uri);
+		this.getComic(comic_creator, comic_uri, function(err,comic){
+			try {
+				if(comic&&!err) {
+					var requestlist = comic.getRequestlist();
+					requestlist.push(username);
+					var comics = db.get('comics');
+					comics.update({
+						"urisan":comic_uri,
+						"creator":comic_creator
+					}, {
+						$set: {
+							"requestlist":requestlist,
+						}
+					});
+					callback(null,requestlist);
+				} 
+			} catch (err) {
+					callback(err, null);
+			};
+		});
+	}
 
 	// Asynchronously inserts the given image (by path) into the given page (counting from 1)
 	// callback: [](err, new_panel_id)

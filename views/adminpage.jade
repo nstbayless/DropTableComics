@@ -41,3 +41,17 @@ block content
 					button(class="btn btn-default" ng-click="editlist_add()" ng-show="editor_input.length>0") Submit {{editor_input}}
 				p
 					font(color="red") {{response2}}
+		div(class="smallcenter opaquewhite" style="margin-top:30px")
+			h2 By-Request Permissions
+			hr
+			div(id="editlistdiv3")
+				p Comic Requestlist: #{requestlist.length}
+				p
+					each user, i in requestlist
+						input(type="checkbox" ng-model="rl.#{user}")
+						| #{user}
+						br
+				button(class="btn btn-warning" ng-show="evict_list('request').length>0" ng-click="evict_users(evict_list('request'),'request')")
+					| Evict {{evict_list('request').join(', ')}}
+				p
+					font(color="red") {{response3}}

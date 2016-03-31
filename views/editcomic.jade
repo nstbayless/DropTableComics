@@ -66,26 +66,51 @@ block content_comic
 
 block content_comment
 	div(class="commentcontainer")
-		form
-			p COMMENT:
-			p
-				textarea(id="commenttextarea" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150" rows=10 cols=100)
-				button(ng-click = "submit_editcomment('#{comic_creator}', '#{comic_uri}', '#{pageid}')" ng-show='comment_input.length>0') Submit 
-			p
-				font(color="red") {{response3}}
+		div(class="col-md-8 col-md-offset-2")
+			h2 Comment on the page
+			hr
+			div(class="row")
+				div(class="col-md-2")
+					img(alt="#{username}" src="/accounts/#{username}/avatar" class="twPc-avatarImg center-block")
+				div(class="col-md-10")
+					p
+						textarea(class="noresize form-control" id="commenttextarea" type="text" ng-model="comment_input" placeholder="Enter comment here... (Maximum 150 characters)" ng-maxlength="150")
+						div(class="text-right")
+							button(class="btn btn-default" ng-click = "submit_editcomment('#{comic_creator}', '#{comic_uri}', '#{pageid}')" ng-show='comment_input.length>0') Submit 
+					p
+						font(color="red") {{response3}}
+			hr
 			each comment, i in editcomments
-				if comment.adminlevel == 2
-					p(class="comment; purplelevel") 
-						|#{comment.username}: 
-						|#{comment.description}  <br />
-						p(class="timestamp")|#{comment.postDate}	
-				else if comment.adminlevel == 1
-					p(class="comment; bluelevel")
-						|#{comment.username}: 
-						|#{comment.description}  <br />
-						p(class="timestamp")|#{comment.postDate}	
-				else
-					p(class="comment; pleblevel")
-						|#{comment.username}: 
-						|#{comment.description}  <br />
-						p(class="timestamp")|#{comment.postDate}
+				div(class="row")
+					div(class="col-md-2")
+						div(style="padding-top:20px;padding-bottom:20px")
+							img(alt="#{comment.username}" src="/accounts/#{comment.username}/avatar" class="twPc-avatarImg center-block")
+					div(class="col-md-10")
+						div(style="padding-top:30px")
+							if comment.adminlevel == 2
+								header
+									span
+										a(class="purplelevel" href="/profile/#{comment.username}") #{comment.username}   
+									span
+										span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
+										span(class="timestamp") #{comment.postDate}
+								p
+									|#{comment.description}  <br />
+							else if comment.adminlevel == 1
+								header
+									span
+										a(class="bluelevel" href="/profile/#{comment.username}") #{comment.username}   
+									span
+										span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
+										span(class="timestamp") #{comment.postDate}
+								p
+									|#{comment.description}  <br />	
+							else
+								header
+									span
+										a(class="pleblevel" href="/profile/#{comment.username}") #{comment.username}   
+									span
+										span(class="nicegrey") &nbsp;&nbsp;-&nbsp;&nbsp;    
+										span(class="timestamp") #{comment.postDate}
+								p
+									|#{comment.description}  <br />

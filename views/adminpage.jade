@@ -30,9 +30,9 @@ block content
 				br
 		button(class="btn btn-warning" ng-show="evict_list('edit').length>0" ng-click="evict_users(evict_list('edit'),'edit')")
 			| Evict {{evict_list('edit').join(', ')}}
-		//- form
-		//- 	p Invite a new Artist to collaborate:
-		//- 		input(type="text" ng-model="editor_input" placeholder="Enter username here")
-		//- 	button(class="btn btn-default" ng-click="editlist_add()" ng-show="editor_input.length>0") Submit {{editor_input}}
-		//- p
-		//- 	font(color="red") {{response2}}
+		form
+			p Invite a new Artist to collaborate:
+				input(type="text" ng-model="editor_input" placeholder="Enter username here")
+			button(class="btn btn-default" ng-click="editlist_add()" ng-show="editor_input.length>0") Submit {{editor_input}}
+		p
+			font(color="red") {{response2}}

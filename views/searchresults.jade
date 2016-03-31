@@ -1,14 +1,17 @@
 extends pretty
 
 block content
-	h2 Search Results
+	p(class="form-subtitle") Search
+	b Search Results: 
 	ul
 		each comic, i in comics
 			li
 				a(href="/accounts/" + comic.creator + "/comics/" + comic.uri)= comic.title
 	form#aform(name='cat', method='GET')
-		p Advanced Search
+		b Advanced Search <br />
 			input#asearch(type="text" ng-model="query" placeholder="Enter Query")
+		br
+		br
 		label 
 			input#searchtitle(type='checkbox' name='title' checked) 
 		| Title
